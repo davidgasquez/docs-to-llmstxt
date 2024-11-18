@@ -24,7 +24,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Files to prompt
-        run: uvx --with 'files-to-prompt' files-to-prompt 'src/app/[locale]/specs/'
+        run: uvx --with 'files-to-prompt' files-to-prompt 'atproto/src/app/[locale]/specs/'
 
       - name: Extract documentation
         run: |
