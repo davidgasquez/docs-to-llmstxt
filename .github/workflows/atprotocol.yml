@@ -24,11 +24,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Files to prompt
-        run: uvx --with 'files-to-prompt' files-to-prompt 'atproto/src/app/[locale]/specs/'
-
-      - name: Extract documentation
-        run: |
-          echo "# AT Protocol" > docs/atproto/specs/llms.txt
+        run: uvx --with 'files-to-prompt' files-to-prompt 'atproto/src/app/[locale]/specs/' > docs/atproto/specs/llms.txt
 
       - name: Commit and push changes
         run: |
