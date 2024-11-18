@@ -1,0 +1,34 @@
+name: AT Protocol Documentation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  clone:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+
+      - name: Clone AT Protocol repository
+        run: |
+          git clone https://github.com/bluesky-social/atproto.git atproto
+
+      - name: Create docs directory
+        run: mkdir -p docs/atproto
+
+      - name: Extract documentation
+        run: |
+          echo "# AT Protocol" > docs/atproto/llms.txt
+
+      - name: Commit and push changes
+        run: |
+          cd current-repo
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/
+          git commit -m "Update documentation from atproto" || echo "No changes to commit"
+          git push
