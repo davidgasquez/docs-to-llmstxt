@@ -21,16 +21,16 @@ jobs:
           git clone https://github.com/bluesky-social/atproto-website.git atproto
 
       - name: Create docs directory
-        run: mkdir -p docs/atproto/specs docs/atproto/guides
+        run: mkdir -p docs/atproto
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
       - name: Spec files to prompt
-        run: uvx --with 'files-to-prompt' files-to-prompt 'atproto/src/app/[locale]/specs/' > docs/atproto/specs/llms.txt
+        run: uvx --with 'files-to-prompt' files-to-prompt 'atproto/src/app/[locale]/specs/' > docs/atproto/specs.txt
 
       - name: Guides files to prompt
-        run: uvx --with 'files-to-prompt' files-to-prompt 'atproto/src/app/[locale]/guides/**/en.mdx' > docs/atproto/guides/llms.txt
+        run: uvx --with 'files-to-prompt' files-to-prompt atproto/src/app/\[locale\]/guides/**/*en.mdx > docs/atproto/guides.txt
 
       - name: Commit and push changes
         run: |
