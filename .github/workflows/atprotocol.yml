@@ -1,6 +1,9 @@
 name: AT Protocol Documentation
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
@@ -18,7 +21,7 @@ jobs:
           git clone https://github.com/bluesky-social/atproto-website.git atproto
 
       - name: Create docs directory
-        run: mkdir -p docs/atproto/specs
+        run: mkdir -p docs/atproto/specs docs/atproto/guides
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
