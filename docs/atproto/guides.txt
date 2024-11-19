@@ -1,0 +1,1594 @@
+atproto/src/app/[locale]/guides/applications/en.mdx
+---
+import Link from 'next/link'
+import {FooterCTA} from "@/components/FooterCTA"
+import AppBanner from './app-banner.png'
+import AppLogin from './app-login.png'
+import AppScreenshot from './app-screenshot.png'
+import AppStatusHistory from './app-status-history.png'
+import AppStatusOptions from './app-status-options.png'
+import DiagramEventStream from './diagram-event-stream.png'
+import DiagramInfoFlow from './diagram-info-flow.png'
+import DiagramOauth from './diagram-oauth.png'
+import DiagramOptimisticUpdate from './diagram-optimistic-update.png'
+import DiagramRepo from './diagram-repo.png'
+
+export const metadata = {
+  title: 'Quick start guide to building applications on AT Protocol',
+  description:
+    'In this guide, we\'re going to build a simple multi-user app that publishes your current "status" as an emoji.',
+}
+
+# Quick start guide to building applications on AT Protocol
+
+<Link href="https://github.com/bluesky-social/statusphere-example-app" className="not-prose flex items-center gap-2 bg-blue-100 dark:bg-blue-950 dark:text-white px-4 py-3 text-base rounded-lg hover:underline">
+  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-6 dark:text-white">
+    <path
+      fill="currentColor"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M10 1.667c-4.605 0-8.334 3.823-8.334 8.544 0 3.78 2.385 6.974 5.698 8.106.417.075.573-.182.573-.406 0-.203-.011-.875-.011-1.592-2.093.397-2.635-.522-2.802-1.002-.094-.246-.5-1.005-.854-1.207-.291-.16-.708-.556-.01-.567.656-.01 1.124.62 1.281.876.75 1.292 1.948.93 2.427.705.073-.555.291-.93.531-1.143-1.854-.213-3.791-.95-3.791-4.218 0-.929.322-1.698.854-2.296-.083-.214-.375-1.09.083-2.265 0 0 .698-.224 2.292.876a7.576 7.576 0 0 1 2.083-.288c.709 0 1.417.096 2.084.288 1.593-1.11 2.291-.875 2.291-.875.459 1.174.167 2.05.084 2.263.53.599.854 1.357.854 2.297 0 3.278-1.948 4.005-3.802 4.219.302.266.563.78.563 1.58 0 1.143-.011 2.061-.011 2.35 0 .224.156.491.573.405a8.365 8.365 0 0 0 4.11-3.116 8.707 8.707 0 0 0 1.567-4.99c0-4.721-3.73-8.545-8.334-8.545Z"
+    />
+  </svg>
+  <span>
+    Find the source code for the example application on GitHub.
+  </span>
+</Link>
+
+In this guide, we're going to build a simple multi-user app that publishes your current "status" as an emoji. Our application will look like this: {{className: 'lead'}}
+
+<Image alt="A screenshot of our example application" src={AppScreenshot} />
+
+We will cover how to: {{className: 'lead'}}
+
+- Signin via OAuth {{className: 'lead'}}
+- Fetch information about users (profiles) {{className: 'lead'}}
+- Listen to the network firehose for new data {{className: 'lead'}}
+- Publish data on the user's account using a custom schema {{className: 'lead'}}
+
+We're going to keep this light so you can quickly wrap your head around ATProto. There will be links with more information about each step. {{className: 'lead'}}
+
+## Introduction
+
+Data in the Atmosphere is stored on users' personal repos. It's almost like each user has their own website. Our goal is to aggregate data from the users into our SQLite DB. 
+
+Think of our app like a Google. If Google's job was to say which emoji each website had under `/status.json`, then it would show something like:
+
+- `nytimes.com` is feeling 📰 according to `https://nytimes.com/status.json`
+- `bsky.app` is feeling 🦋 according to `https://bsky.app/status.json`
+- `reddit.com` is feeling 🤓 according to `https://reddit.com/status.json`
+
+The Atmosphere works the same way, except we're going to check `at://` instead of `https://`. Each user has a data repo under an `at://` URL. We'll crawl all the user data repos in the Atmosphere for all the  "status.json" records and aggregate them into our SQLite database.
+
+> `at://` is the URL scheme of the AT Protocol. Under the hood it uses common tech like HTTP and DNS, but it adds all of the features we'll be using in this tutorial.
+
+## Step 1. Starting with our ExpressJS app
+
+Start by cloning the repo and installing packages.
+
+```bash
+git clone https://github.com/bluesky-social/statusphere-example-app.git
+cd statusphere-example-app
+cp .env.template .env
+npm install
+npm run dev
+# Navigate to http://localhost:8080
+```
+
+Our repo is a regular Web app. We're rendering our HTML server-side like it's 1999. We also have a SQLite database that we're managing with [Kysely](https://kysely.dev/).
+
+Our starting stack:
+
+- Typescript
+- NodeJS web server ([express](https://expressjs.com/))
+- SQLite database ([Kysely](https://kysely.dev/))
+- Server-side rendering ([uhtml](https://www.npmjs.com/package/uhtml))
+
+With each step we'll explain how our Web app taps into the Atmosphere. Refer to the codebase for more detailed code &mdash; again, this tutorial is going to keep it light and quick to digest.
+
+## Step 2. Signing in with OAuth
+
+When somebody logs into our app, they'll give us read & write access to their personal `at://` repo. We'll use that to write the status json record.
+
+We're going to accomplish this using OAuth ([spec](https://github.com/bluesky-social/proposals/tree/main/0004-oauth)). Most of the OAuth flows are going to be handled for us using the [@atproto/oauth-client-node](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-node) library. This is the arrangement we're aiming toward:
+
+<Image alt="A diagram of the OAuth elements" src={DiagramOauth} />
+
+When the user logs in, the OAuth client will create a new session with their repo server and give us read/write access along with basic user info.
+
+<Image alt="A screenshot of the login UI" src={AppLogin} />
+
+Our login page just asks the user for their "handle," which is the domain name associated with their account. For [Bluesky](https://bsky.app) users, these tend to look like `alice.bsky.social`, but they can be any kind of domain (eg `alice.com`).
+
+```html
+<!-- src/pages/login.ts -->
+<form action="/login" method="post" class="login-form">
+  <input
+    type="text"
+    name="handle"
+    placeholder="Enter your handle (eg alice.bsky.social)"
+    required
+  />
+  <button type="submit">Log in</button>
+</form>
+```
+
+When they submit the form, we tell our OAuth client to initiate the authorization flow and then redirect the user to their server to complete the process.
+
+```typescript
+/** src/routes.ts **/
+// Login handler
+router.post(
+  '/login',
+  handler(async (req, res) => {
+    // Initiate the OAuth flow
+    const handle = req.body?.handle
+    const url = await oauthClient.authorize(handle, {
+      scope: 'atproto transition:generic',
+    })
+    return res.redirect(url.toString())
+  })
+)
+```
+
+This is the same kind of SSO flow that Google or GitHub uses. The user will be asked for their password, then asked to confirm the session with your application.
+
+When that finishes, the user will be sent back to `/oauth/callback` on our Web app. The OAuth client will store the access tokens for the user's server, and then we attach their account's [DID](https://atproto.com/specs/did) to the cookie-session.
+
+```typescript
+/** src/routes.ts **/
+// OAuth callback to complete session creation
+router.get(
+  '/oauth/callback',
+  handler(async (req, res) => {
+    // Store the credentials
+    const { session } = await oauthClient.callback(params)
+
+    // Attach the account DID to our user via a cookie
+    const cookieSession = await getIronSession(req, res)
+    cookieSession.did = session.did
+    await cookieSession.save()
+
+    // Send them back to the app
+    return res.redirect('/')
+  })
+)
+```
+
+With that, we're in business! We now have a session with the user's repo server and can use that to access their data.
+
+## Step 3. Fetching the user's profile
+
+Why don't we learn something about our user? In [Bluesky](https://bsky.app), users publish a "profile" record which looks like this:
+
+```typescript
+interface ProfileRecord {
+  displayName?: string // a human friendly name
+  description?: string // a short bio
+  avatar?: BlobRef     // small profile picture
+  banner?: BlobRef     // banner image to put on profiles
+  createdAt?: string   // declared time this profile data was added
+  // ...
+}
+```
+
+You can examine this record directly using [atproto-browser.vercel.app](https://atproto-browser.vercel.app). For instance, [this is the profile record for @bsky.app](https://atproto-browser.vercel.app/at?u=at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.actor.profile/self).
+
+We're going to use the [Agent](https://github.com/bluesky-social/atproto/tree/main/packages/api) associated with the user's OAuth session to fetch this record.
+
+```typescript
+await agent.com.atproto.repo.getRecord({
+  repo: agent.assertDid,                // The user
+  collection: 'app.bsky.actor.profile', // The collection
+  rkey: 'self',                         // The record key
+})
+```
+
+When asking for a record, we provide three pieces of information.
+
+- **repo** The [DID](https://atproto.com/specs/did) which identifies the user,
+- **collection** The collection name, and
+- **rkey** The record key
+
+We'll explain the collection name shortly. Record keys are strings with [some restrictions](https://atproto.com/specs/record-key#record-key-syntax) and a couple of common patterns. The `"self"` pattern is used when a collection is expected to only contain one record which describes the user.
+
+Let's update our homepage to fetch this profile record:
+
+```typescript
+/** src/routes.ts **/
+// Homepage
+router.get(
+  '/',
+  handler(async (req, res) => {
+    // If the user is signed in, get an agent which communicates with their server
+    const agent = await getSessionAgent(req, res, ctx)
+
+    if (!agent) {
+      // Serve the logged-out view
+      return res.type('html').send(page(home()))
+    }
+
+    // Fetch additional information about the logged-in user
+    const { data: profileRecord } = await agent.com.atproto.repo.getRecord({
+      repo: agent.assertDid,                // our user's repo
+      collection: 'app.bsky.actor.profile', // the bluesky profile record type
+      rkey: 'self',                         // the record's key
+    })
+
+    // Serve the logged-in view
+    return res
+      .type('html')
+      .send(page(home({ profile: profileRecord.value || {} })))
+  })
+)
+```
+
+With that data, we can give a nice personalized welcome banner for our user:
+
+<Image alt="A screenshot of the banner image" src={AppBanner} />
+
+```html
+<!-- pages/home.ts -->
+<div class="card">
+  ${profile
+    ? html`<form action="/logout" method="post" class="session-form">
+        <div>
+          Hi, <strong>${profile.displayName || 'friend'}</strong>.
+          What's your status today?
+        </div>
+        <div>
+          <button type="submit">Log out</button>
+        </div>
+      </form>`
+    : html`<div class="session-form">
+        <div><a href="/login">Log in</a> to set your status!</div>
+        <div>
+          <a href="/login" class="button">Log in</a>
+        </div>
+      </div>`}
+</div>
+```
+
+## Step 4. Reading & writing records
+
+You can think of the user repositories as collections of JSON records:
+
+<Image alt="A diagram of a repository" src={DiagramRepo} />
+
+Let's look again at how we read the "profile" record:
+
+```typescript
+await agent.com.atproto.repo.getRecord({
+  repo: agent.assertDid,                // The user
+  collection: 'app.bsky.actor.profile', // The collection
+  rkey: 'self',                         // The record key
+})
+```
+
+We write records using a similar API. Since our goal is to write "status" records, let's look at how that will happen:
+
+```typescript
+// Generate a time-based key for our record
+const rkey = TID.nextStr()
+
+// Write the 
+await agent.com.atproto.repo.putRecord({
+  repo: agent.assertDid,                 // The user
+  collection: 'xyz.statusphere.status',  // The collection
+  rkey,                                  // The record key
+  record: {                              // The record value
+    status: "👍",
+    createdAt: new Date().toISOString()
+  }
+})
+```
+
+Our `POST /status` route is going to use this API to publish the user's status to their repo.
+
+```typescript
+/** src/routes.ts **/
+// "Set status" handler
+router.post(
+  '/status',
+  handler(async (req, res) => {
+    // If the user is signed in, get an agent which communicates with their server
+    const agent = await getSessionAgent(req, res, ctx)
+    if (!agent) {
+      return res.status(401).type('html').send('<h1>Error: Session required</h1>')
+    }
+
+    // Construct their status record
+    const record = {
+      $type: 'xyz.statusphere.status',
+      status: req.body?.status,
+      createdAt: new Date().toISOString(),
+    }
+
+    try {
+      // Write the status record to the user's repository
+      await agent.com.atproto.putRecord({
+        repo: agent.assertDid, 
+        collection: 'xyz.statusphere.status',
+        rkey: TID.nextStr(),
+        record,
+      })
+    } catch (err) {
+      logger.warn({ err }, 'failed to write record')
+      return res.status(500).type('html').send('<h1>Error: Failed to write record</h1>')
+    }
+
+    res.status(200).json({})
+  })
+)
+```
+
+Now in our homepage we can list out the status buttons:
+
+```html
+<!-- src/pages/home.ts -->
+<form action="/status" method="post" class="status-options">
+  ${STATUS_OPTIONS.map(status => html`
+    <button class="status-option" name="status" value="${status}">
+      ${status}
+    </button>
+  `)}
+</form>
+```
+
+And here we are!
+
+<Image alt="A screenshot of the app's status options" src={AppStatusOptions} />
+
+## Step 5. Creating a custom "status" schema
+
+Repo collections are typed, meaning that they have a defined schema. The `app.bsky.actor.profile` type definition [can be found here](https://github.com/bluesky-social/atproto/blob/main/lexicons/app/bsky/actor/profile.json).
+
+Anybody can create a new schema using the [Lexicon](https://atproto.com/specs/lexicon) language, which is very similar to [JSON-Schema](http://json-schema.org/). The schemas use [reverse-DNS IDs](https://atproto.com/specs/nsid) which indicate ownership. In this demo app we're going to use `xyz.statusphere` which we registered specifically for this project (aka statusphere.xyz).
+
+> ### Why create a schema?
+>
+> Schemas help other applications understand the data your app is creating. By publishing your schemas, you make it easier for other application authors to publish data in a format your app will recognize and handle.
+
+Let's create our schema in the `/lexicons` folder of our codebase. You can [read more about how to define schemas here](https://atproto.com/guides/lexicon).
+
+```json
+/** lexicons/status.json **/
+{
+  "lexicon": 1,
+  "id": "xyz.statusphere.status",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["status", "createdAt"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "minLength": 1,
+            "maxGraphemes": 1,
+            "maxLength": 32
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Now let's run some code-generation using our schema:
+
+```bash
+./node_modules/.bin/lex gen-server ./src/lexicon ./lexicons/*
+```
+
+This will produce Typescript interfaces as well as runtime validation functions that we can use in our app. Here's what that generated code looks like:
+
+```typescript
+/** src/lexicon/types/xyz/statusphere/status.ts **/
+export interface Record {
+  status: string
+  createdAt: string
+  [k: string]: unknown
+}
+
+export function isRecord(v: unknown): v is Record {
+  return (
+    isObj(v) &&
+    hasProp(v, '$type') &&
+    (v.$type === 'xyz.statusphere.status#main' || v.$type === 'xyz.statusphere.status')
+  )
+}
+
+export function validateRecord(v: unknown): ValidationResult {
+  return lexicons.validate('xyz.statusphere.status#main', v)
+}
+```
+
+Let's use that code to improve the `POST /status` route:
+
+```typescript
+/** src/routes.ts **/
+import * as Status from '#/lexicon/types/xyz/statusphere/status'
+// ...
+// "Set status" handler
+router.post(
+  '/status',
+  handler(async (req, res) => {
+    // ...
+
+    // Construct & validate their status record
+    const record = {
+      $type: 'xyz.statusphere.status',
+      status: req.body?.status,
+      createdAt: new Date().toISOString(),
+    }
+    if (!Status.validateRecord(record).success) {
+      return res.status(400).json({ error: 'Invalid status' })
+    }
+
+    // ...
+  })
+)
+```
+
+## Step 6. Listening to the firehose
+
+So far, we have:
+
+- Logged in via OAuth
+- Created a custom schema
+- Read & written records for the logged in user
+
+Now we want to fetch the status records from other users.
+
+Remember how we referred to our app as being like Google, crawling around the repos to get their records? One advantage we have in the AT Protocol is that each repo publishes an event log of their updates.
+
+<Image alt="A diagram of the event stream" src={DiagramEventStream} />
+
+Using a [Relay service](https://docs.bsky.app/docs/advanced-guides/federation-architecture#relay) we can listen to an aggregated firehose of these events across all users in the network. In our case what we're looking for are valid `xyz.statusphere.status` records.
+
+```typescript
+/** src/ingester.ts **/
+import { Firehose } from '@atproto/sync'
+import * as Status from '#/lexicon/types/xyz/statusphere/status'
+// ...
+
+new Firehose({
+  filterCollections: ['xyz.statusphere.status'],
+  handleEvent: async (evt) => {
+    // Watch for write events
+    if (evt.event === 'create' || evt.event === 'update') {
+      const record = evt.record
+
+      // If the write is a valid status update
+      if (
+        evt.collection === 'xyz.statusphere.status' &&
+        Status.isRecord(record) &&
+        Status.validateRecord(record).success
+      ) {
+        // Store the status
+        // TODO
+      }
+    }
+  },
+})
+```
+
+Let's create a SQLite table to store these statuses:
+
+```typescript
+/** src/db.ts **/
+// Create our statuses table
+await db.schema
+  .createTable('status')
+  .addColumn('uri', 'varchar', (col) => col.primaryKey())
+  .addColumn('authorDid', 'varchar', (col) => col.notNull())
+  .addColumn('status', 'varchar', (col) => col.notNull())
+  .addColumn('createdAt', 'varchar', (col) => col.notNull())
+  .addColumn('indexedAt', 'varchar', (col) => col.notNull())
+  .execute()
+```
+
+Now we can write these statuses into our database as they arrive from the firehose:
+
+```typescript
+/** src/ingester.ts **/
+// If the write is a valid status update
+if (
+  evt.collection === 'xyz.statusphere.status' &&
+  Status.isRecord(record) &&
+  Status.validateRecord(record).success
+) {
+  // Store the status in our SQLite
+  await db
+    .insertInto('status')
+    .values({
+      uri: evt.uri.toString(),
+      authorDid: evt.author,
+      status: record.status,
+      createdAt: record.createdAt,
+      indexedAt: new Date().toISOString(),
+    })
+    .onConflict((oc) =>
+      oc.column('uri').doUpdateSet({
+        status: record.status,
+        indexedAt: new Date().toISOString(),
+      })
+    )
+    .execute()
+}
+```
+
+You can almost think of information flowing in a loop:
+
+<Image alt="A diagram of the flow of information" src={DiagramInfoFlow} />
+
+Applications write to the repo. The write events are then emitted on the firehose where they're caught by the apps and ingested into their databases.
+
+Why sync from the event log like this? Because there are other apps in the network that will write the records we're interested in. By subscribing to the event log, we ensure that we catch all the data we're interested in &mdash; including data published by other apps!
+
+## Step 7. Listing the latest statuses
+
+Now that we have statuses populating our SQLite, we can produce a timeline of status updates by users. We also use a [DID](https://atproto.com/specs/did)-to-handle resolver so we can show a nice username with the statuses:
+
+```typescript
+/** src/routes.ts **/
+// Homepage
+router.get(
+  '/',
+  handler(async (req, res) => {
+    // ...
+
+    // Fetch data stored in our SQLite
+    const statuses = await db
+      .selectFrom('status')
+      .selectAll()
+      .orderBy('indexedAt', 'desc')
+      .limit(10)
+      .execute()
+
+    // Map user DIDs to their domain-name handles
+    const didHandleMap = await resolver.resolveDidsToHandles(
+      statuses.map((s) => s.authorDid)
+    )
+
+    // ...
+  })
+)
+```
+
+Our HTML can now list these status records:
+
+```html
+<!-- src/pages/home.ts -->
+${statuses.map((status, i) => {
+  const handle = didHandleMap[status.authorDid] || status.authorDid
+  return html`
+    <div class="status-line">
+      <div>
+        <div class="status">${status.status}</div>
+      </div>
+      <div class="desc">
+        <a class="author" href="https://bsky.app/profile/${handle}">@${handle}</a>
+        was feeling ${status.status} on ${status.indexedAt}.
+      </div>
+    </div>
+  `
+})}
+```
+
+<Image alt="A screenshot of the app status timeline" src={AppStatusHistory} />
+
+## Step 8. Optimistic updates
+
+As a final optimization, let's introduce "optimistic updates."
+
+Remember the information flow loop with the repo write and the event log?
+
+<Image alt="A diagram of the flow of information" src={DiagramInfoFlow} />
+
+Since we're updating our users' repos locally, we can short-circuit that flow to our own database:
+
+<Image alt="A diagram illustrating optimistic updates" src={DiagramOptimisticUpdate} />
+
+This is an important optimization to make, because it ensures that the user sees their own changes while using your app. When the event eventually arrives from the firehose, we just discard it since we already have it saved locally.
+
+To do this, we just update `POST /status` to include an additional write to our SQLite DB:
+
+```typescript
+/** src/routes.ts **/
+// "Set status" handler
+router.post(
+  '/status',
+  handler(async (req, res) => {
+    // ...
+
+    let uri
+    try {
+      // Write the status record to the user's repository
+      const res = await agent.com.atproto.repo.putRecord({
+        repo: agent.assertDid, 
+        collection: 'xyz.statusphere.status',
+        rkey: TID.nextStr(),
+        record,
+      })
+      uri = res.uri
+    } catch (err) {
+      logger.warn({ err }, 'failed to write record')
+      return res.status(500).json({ error: 'Failed to write record' })
+    }
+
+    try {
+      // Optimistically update our SQLite <-- HERE!
+      await db
+        .insertInto('status')
+        .values({
+          uri,
+          authorDid: agent.assertDid, 
+          status: record.status,
+          createdAt: record.createdAt,
+          indexedAt: new Date().toISOString(),
+        })
+        .execute()
+    } catch (err) {
+      logger.warn(
+        { err },
+        'failed to update computed view; ignoring as it should be caught by the firehose'
+      )
+    }
+
+    res.status(200).json({})
+  })
+)
+```
+
+You'll notice this code looks almost exactly like what we're doing in `firehose.ts`.
+
+## Thinking in AT Proto
+
+In this tutorial we've covered the key steps to building an atproto app. Data is published in its canonical form on users' `at://` repos and then aggregated into apps' databases to produce views of the network.
+
+When building your app, think in these four key steps:
+
+- Design the [Lexicon](#) schemas for the records you'll publish into the Atmosphere.
+- Create a database for aggregating the records into useful views.
+- Build your application to write the records on your users' repos.
+- Listen to the firehose to aggregate data across the network.
+
+Remember this flow of information throughout:
+
+<Image alt="A diagram of the flow of information" src={DiagramInfoFlow} />
+
+This is how every app in the Atmosphere works, including the [Bluesky social app](https://bsky.app).
+
+## Next steps
+
+If you want to practice what you've learned, here are some additional challenges you could try:
+
+- Sync the profile records of all users so that you can show their display names instead of their handles.
+- Count the number of each status used and display the total counts.
+- Fetch the authed user's `app.bsky.graph.follow` follows and show statuses from them.
+- Create a different kind of schema, like a way to post links to websites and rate them 1 through 4 stars.
+
+<FooterCTA href="/" title="Ready to learn more?" description="Specs, guides, and SDKs can be found here." />
+
+---
+atproto/src/app/[locale]/guides/data-repos/en.mdx
+---
+import {DescriptionList, Description} from '@/components/DescriptionList'
+
+export const metadata = {
+  title: 'Personal Data Repositories',
+  description:
+    'A guide to the AT Protocol repo structure.',
+}
+
+# Data Repositories
+
+A data repository is a collection of data published by a single user. Repositories are self-authenticating data structures, meaning each update is signed and can be verified by anyone.
+
+They are described in more depth in the [Repository specification](/specs/repository).
+
+## Data Layout
+
+The content of a repository is laid out in a [Merkle Search Tree (MST)](https://hal.inria.fr/hal-02303490/document) which reduces the state to a single root hash. It can be visualized as the following layout:
+
+```
+┌────────────────┐
+│     Commit     │  (Signed Root)
+└───────┬────────┘
+        ↓
+┌────────────────┐
+│   Tree Nodes   │
+└───────┬────────┘
+        ↓
+┌────────────────┐
+│     Record     │
+└────────────────┘
+```
+
+Every node is an [IPLD](https://ipld.io/) object ([dag-cbor](https://ipld.io/docs/codecs/known/dag-cbor/)) which is referenced by a [CID](https://github.com/multiformats/cid) hash. The arrows in the diagram above represent a CID reference.
+
+This layout is reflected in the [AT URIs](/specs/at-uri-scheme):
+
+```
+Root       | at://alice.com
+Collection | at://alice.com/app.bsky.feed.post
+Record     | at://alice.com/app.bsky.feed.post/1234
+```
+
+A “commit” to a data repository is simply a keypair signature over a Root node’s CID. Each mutation to the repository produces a new Commit node.
+
+## Identifier Types
+
+Multiple types of identifiers are used within a Personal Data Repository.
+
+<DescriptionList>
+  <Description title="DIDs"><a href="https://w3c.github.io/did-core/">Decentralized IDs (DIDs)</a> identify data repositories. They are broadly used as user IDs, but since every user has one data repository then a DID can be considered a reference to a data repository. The format of a DID varies by the “DID method” used but all DIDs ultimately resolve to a keypair and a list of service providers. This keypair can sign commits to the data repository.</Description>
+  <Description title="CIDs"><a href="https://github.com/multiformats/cid">Content IDs (CIDs)</a> identify content using a fingerprint hash. They are used throughout the repository to reference the objects (nodes) within it. When a node in the repository changes, its CID also changes. Parents which reference the node must then update their reference, which in turn changes the parent’s CID as well. This chains all the way to the Commit node, which is then signed.</Description>
+  <Description title="NSIDs"><a href="/specs/nsid">Namespaced Identifiers (NSIDs)</a> identify the Lexicon type for groups of records within a repository.</Description>
+  <Description title="rkey"><a href="/specs/record-key">Record Keys</a> ("rkeys") identify individual records within a collection in a given repository. The format is specified by the collection Lexicon, with some collections having only a single record with a key like "self", and other collections having many records, with keys using a base32-encoded timestamp called a Timestamp Identifier (TID).</Description>
+</DescriptionList>
+
+---
+atproto/src/app/[locale]/guides/faq/en.mdx
+---
+export const metadata = {
+  title: 'FAQ',
+  description:
+    'Frequently Asked Questions about AT Protocol.',
+}
+
+# FAQ
+
+Frequently Asked Questions about the Authenticated Transfer Protocol (AT Proto). For FAQ about Bluesky, visit [here](https://bsky.social/about/faq).
+
+## Is the AT Protocol a blockchain?
+
+No. The AT Protocol is a [federated protocol](https://en.wikipedia.org/wiki/Federation_(information_technology)). It's not a blockchain nor does it use a blockchain.
+
+## Why not use ActivityPub?
+
+[ActivityPub](https://en.wikipedia.org/wiki/ActivityPub) is a federated social networking technology popularized by [Mastodon](https://joinmastodon.org/).
+
+Account portability is a major reason why we chose to build a separate protocol. We consider portability to be crucial because it protects users from sudden bans, server shutdowns, and policy disagreements. Our solution for portability requires both [signed data repositories](/guides/data-repos) and [DIDs](/guides/identity), neither of which are easy to retrofit into ActivityPub. The migration tools for ActivityPub are comparatively limited; they require the original server to provide a redirect and cannot migrate the user's previous data.
+
+Another major reason is scalability. ActivityPub depends heavily on delivering messages between a wide network of small-to-medium sized nodes, which can cause individual nodes to be flooded with traffic and generally struggles to provide global views of activity. The AT Protocol uses aggregating applications to merge activity from the users' hosts, reducing the overall traffic and dramatically reducing the load on individual hosts.
+
+Other smaller differences include: a different viewpoint about how schemas should be handled, a preference for domain usernames over AP's double-@ email usernames, and the goal of having large scale search and algorithmic feeds.
+
+## Why create Lexicon instead of using JSON-LD or RDF?
+
+Atproto exchanges data and RPC commands across organizations. For the data and RPC to be useful, the software needs to correctly handle schemas created by separate teams. This is the purpose of [Lexicon](/guides/lexicon).
+
+We want engineers to feel comfortable using and creating new schemas, and we want developers to enjoy the DX of the system. Lexicon helps us produce strongly typed APIs which are extremely familiar to developers and which provides a variety of runtime correctness checks.
+
+[RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework) is intended for extremely general cases in which the systems share very little infrastructure. It's conceptually elegant but difficult to use, often adding a lot of syntax which devs don't understand. JSON-LD simplifies the task of consuming RDF vocabularies, but it does so by hiding the underlying concepts, not by making RDF more legible.
+
+We looked very closely at using RDF but just didn't love the developer experience (DX) or the tooling it offered.
+
+## What is “XRPC,” and why not use ___?
+
+[XRPC](/specs/xrpc) is HTTP with some added conventions. We're aiming to retire the term "XRPC" and just refer to it as the ATProto usage of HTTP.
+
+XRPC uses [Lexicon](/guides/lexicon) to describe HTTP calls and maps them to `/xrpc/{methodId}`. For example, this API call:
+
+```typescript
+await api.com.atproto.repo.listRecords({
+  user: 'alice.com',
+  collection: 'app.bsky.feed.post'
+})
+```
+
+...maps to:
+
+```text
+GET /xrpc/com.atproto.repo.listRecords
+  ?user=alice.com
+  &collection=app.bsky.feed.post
+```
+
+Lexicon establishes a shared method id (`com.atproto.repo.listRecords`) and the expected query params, input body, and output body. By using Lexicon we get runtime checks on the inputs and outputs of the call, and can generate typed code like the API call example above.
+
+
+---
+atproto/src/app/[locale]/guides/glossary/en.mdx
+---
+export const metadata = {
+  title: 'Glossary of terms',
+  description:
+    'A collection of terminology used in the AT Protocol and their definitions.',
+}
+
+# Glossary of terms
+
+The AT Protocol uses a lot of terms that may not be immediately familiar. This page gives a quick reference to these terms and includes some links to move information. {{className: 'lead'}}
+
+## Atmosphere
+
+The "Atmosphere" is the term we use to describe the ecosystem around the [AT Protocol](#at-protocol).
+
+## AT Protocol
+
+The AT Protocol stands for "Authenticated Transfer Protocol." This name is in reference to the fact that all user-data is signed by the authoring users, which makes it possible to broadcast the data through many services and prove it's real without having to speak directly to the originating server.
+
+The name is also a play on the "@" symbol, aka the "at" symbol, since atproto is designed for social systems.
+
+## PDS (Personal Data Server)
+
+A PDS, or Personal Data Server, is a server that hosts a user. A PDS will always store the user's [data repo](#data-repo) and signing keys. It may also assign the user a [handle](#handle) and a [DID](#did). Many PDSes will host multiple users.
+
+A PDS communicates with [AppViews](#appview) to run applications. A PDS doesn't typically run any applications itself, though it will have general account management interfaces such as the OAuth login screen. PDSes actively sync their [data repos](#data-repo) with [Relays](#relay).
+
+## AppView
+
+An AppView is an application in the [Atmosphere](#atmosphere). It's called an "AppView" because it's just one view of the network. The canonical data lives in [data repos](#data-repo) which is hosted by [PDSes](#pds-personal-data-server), and that data can be viewed many different ways.
+
+AppViews function a bit like search engines on the Web: they aggregate data from across the Atmosphere to produce their UIs. The difference is that AppViews also communicate with users' [PDSes](#pds) to publish information on their [repos](#data-repo), forming the full application model. This communication is established as a part of the OAuth login flow.
+
+## Relay
+
+A Relay is an aggregator of [data repos](#data-repo) from across the [Atmosphere](#atmosphere). They sync the repos from [PDSes](#pds) and produce a firehose of change events. [AppViews](#appview) use a Relay to fetch user data.
+
+Relays are an optimization and are not strictly necessary. An [AppView](#appview) could communicate directly with [PDSes](#pds) (in fact, this is encouraged if needed). The Relay serves to reduce the number of connections that are needed in the network.
+
+## Lexicon
+
+Lexicon is a schema language. It's used in the [Atmosphere](#atmosphere) to describe [data records](#record) and HTTP APIs. Functionally it's very similar to [JSON-Schema](https://json-schema.org/) and [OpenAPI](https://www.openapis.org/).
+
+Lexicon's sole purpose is to help developers build compatible software.
+
+- [An introduction to Lexicon](/guides/lexicon)
+- [Lexicon spec](/specs/lexicon)
+
+## Data Repo
+
+The "data repository" or "repo" is the public dataset which represents a user. It is comprised of [collections](#collection) of JSON [records](#record) and unstructured [blobs](#blob). Every repo is assigned a single permanent [DID](#did) which identifies it. Repos may also have any number of [domain handles](#handle) which act as human-readable names.
+
+Data repositories are signed merkle trees. Their signatures can be verified against the key material published under the repo's [did](#did). 
+
+- [An introduction to data repos](/guides/data-repos)
+- [Repository spec](/specs/repository)
+
+## Collection
+
+The "collection" is a bucket of JSON [records](#record) in a [data repository](#data-repo). They support ordered list operations. Every collection is identified by an [NSID](#nsid) which is expected to map to a [Lexicon](#lexicon) schema.
+
+## Record
+
+A "record" is a JSON document inside a [repo](#data-repo) [collection](#collection). The type of a record is identified by the `$type` field, which is expected to map to a [Lexicon](#lexicon) schema. The type is also expected to match the [collection](#collection) which contains it.
+
+- [Record key spec](/specs/record-key)
+
+## Blob
+
+Blobs are unstructured data stored inside a [repo](#data-repo). They are most commonly used to store media such as images and video.
+
+## Label
+
+Labels are metadata objects which are attached to [repos](#data-repo) and [records](#record). They are typically referenced by their values, such as "nudity" or "graphic-media," which identify the meaning of the label. Labels are primarily used by applications for moderation, but they can be used for other purposes.
+
+- [Labels spec](/specs/label)
+
+## Handle
+
+Handles are domain names which are used to identify [data repos](#data-repo). More than one handle may be assigned to a repo. Handles may be used in `at://` URIs in the domain segment.
+
+- [Handle spec](/specs/handle)
+- [URI Scheme spec](/specs/at-uri-scheme)
+
+## DID (Decentralized ID)
+
+DIDs, or Decentralized IDentifiers, are universally-unique identifiers which represent [data repos](#data-repo). They are permanent and non-human-readable. DIDs are a [W3C specification](https://www.w3.org/TR/did-core/). The AT Protocol currently supports `did:web` and `did:plc`, two different DID methods.
+
+DIDs resolve to documents which contain metadata about a [repo](#data-repo), including the address of the repo's [PDS](#pds), the repo's [handles](#handle), and the public signing keys.
+
+- [DID spec](/specs/did)
+
+## NSID (Namespaced ID)
+
+NSIDs, or Namespaced IDentifiers, are an identifier format used in the [Atmosphere](#atmosphere) to identify [Lexicon](#lexicon) schemas. They follow a reverse DNS format such as `app.bsky.feed.post`. They were chosen because they give clear schema governance via the domain ownership. The reverse-DNS format was chosen to avoid confusion with domains in URIs.
+
+- [NSID spec](/specs/nsid)
+
+## TID (Timestamp ID)
+
+TIDs, or Timestamp IDentifiers, are an identifier format used for [record](#record) keys. They are derived from the current time and designed to avoid collisions, maintain a lexicographic sort, and efficiently balance the [data repository's](#data-repo) internal data structures.
+
+- [Record keys spec](/specs/record-key)
+
+## CID (Content ID)
+
+CIDs, or Content Identifiers, are cryptographic hashes of [records](#record). They are used to track specific versions of records.
+
+## DAG-CBOR
+
+DAG-CBOR is a serialization format used by [atproto](#at-protocol). It was chosen because it provides a reliable canonical form, which is important for cryptographic verification.
+
+- [Data model spec](/specs/data-model)
+
+## XRPC
+
+XRPC is a term we are deprecating, but it was historically used to describe [atproto's](#at-protocol) flavor of HTTP usage. It stood for "Cross-organizational Remote Procedure Calls" and we regret inventing it, because really we're just using HTTP.
+
+- [HTTP API spec](/specs/xrpc)
+
+
+---
+atproto/src/app/[locale]/guides/identity/en.mdx
+---
+import {DescriptionList, Description} from '@/components/DescriptionList'
+
+export const metadata = {
+  title: 'Identity',
+  description:
+    'How the AT Protocol handles user identity.',
+}
+
+# Identity
+
+The atproto identity system has a number of requirements:
+
+* **ID provision.** Users should be able to create global IDs which are stable across services. These IDs should rarely change to ensure that links to their content are stable.
+* **Public key distribution.** Distributed systems rely on cryptography to prove the authenticity of data and provide end-to-end privacy. The identity system must publish their public keys with strong security.
+* **Key rotation.** Users must be able to rotate their key material without disrupting their identity.
+* **Service discovery.** To interact with users, applications must be able to discover the services in use by a given user.
+* **Usability.** Users should have human-readable and memorable names.
+* **Portability.** Identities should be portable across services. Changing a provider should not cause a user to lose their identity, social graph, or content.
+
+Adopting this system should give applications the tools for end-to-end encryption, signed user data, service sign in, and general interoperation.
+
+## Identifiers
+
+We use two interrelated forms of identifiers: the _handle_ and the _DID_. Handles are DNS names while DIDs are an [emerging W3C standard](https://www.w3.org/TR/did-core/) which act as secure & stable IDs.
+
+The following are all valid user identifiers:
+
+```
+alice.host.com
+at://alice.host.com
+at://did:plc:bv6ggog3tya2z3vxsub7hnal
+```
+
+The relationship between them can be visualized as:
+
+```
+┌──────────────────┐                 ┌───────────────┐
+│ DNS name         ├──resolves to──→ │ DID           │
+│ (alice.host.com) │                 │ (did:plc:...) │
+└──────────────────┘                 └─────┬─────────┘
+       ↑                                   │
+       │                               resolves to
+       │                                   │
+       │                                   ↓
+       │                            ┌───────────────┐
+       └───────────references───────┤ DID Document  │
+                                    │ {"id":"..."}  │
+                                    └───────────────┘
+```
+
+The DNS handle is a user-facing identifier — it should be shown in UIs and promoted as a way to find users. Applications resolve handles to DIDs and then use the DID as the stable canonical identifier. The DID can then be securely resolved to a DID document which includes public keys and user services.
+
+<DescriptionList>
+  <Description title="Handles">Handles are DNS names. They are resolved using the `com.atproto.identity.resolveHandle` XRPC method and should be confirmed by a matching entry in the DID document. Details in the <a href="/specs/handle">Handle specification</a>.</Description>
+  <Description title="DIDs">DIDs are an emerging <a href="https://www.w3.org/TR/did-core/">W3C standard</a> for providing stable & secure IDs. They are used as stable, canonical IDs of users. Details of how they are used in AT Protocol in the <a href="/specs/did">DID specification</a>.</Description>
+  <Description title="DID Documents">
+    DID Documents are standardized objects which are hosted by DID registries. They include the following information:
+    <ul>
+      <li>The handle associated with the DID.</li>
+      <li>The signing key.</li>
+      <li>The URL of the user’s PDS.</li>
+    </ul>
+  </Description>
+</DescriptionList>
+
+
+## DID Methods
+
+The [DID standard](https://www.w3.org/TR/did-core/) supports custom "methods" of publishing and resolving DIDs to the [DID Document](https://www.w3.org/TR/did-core/#core-properties). A variety of existing methods [have been published](https://w3c.github.io/did-spec-registries/#did-methods) so we must establish criteria for inclusion in this proposal:
+
+- **Strong consistency.** For a given DID, a resolution query should produce only one valid document at any time. (In some networks, this may be subject to probabilistic transaction finality.)
+- **High availability**. Resolution queries must succeed reliably.
+- **Online API**. Clients must be able to publish new DID documents through a standard API.
+- **Secure**. The network must protect against attacks from its operators, a MITM, and other users.
+- **Low cost**. Creating and updating DID documents must be affordable to services and users.
+- **Key rotation**. Users must be able to rotate keypairs without losing their identity.
+- **Decentralized governance**. The network should not be governed by a single stakeholder; it must be an open network or a consortium of providers.
+
+When we started the project, none of the DID methods met our standards fully. **Therefore, we chose to support [did-web](https://w3c-ccg.github.io/did-method-web/), and a novel method we've created called [DID PLC](https://github.com/bluesky-social/did-method-plc).**
+
+## Handle Resolution
+
+Handles in atproto are domain names which resolve to a DID, which in turn resolves to a DID Document containing the user's signing pubkey and hosting service.
+
+Handle resolution uses the `com.atproto.identity.resolveHandle` XRPC method. The method call should be sent to the server identified by the handle, and the handle should be passed as a parameter.
+
+Here is the algorithm in pseudo-TypeScript:
+
+```typescript
+async function resolveHandle(handle: string) {
+  const origin = `https://${handle}`
+  const res = await xrpc(origin, 'com.atproto.identity.resolveHandle', {handle})
+  assert(typeof res?.did === 'string' && res.did.startsWith('did:'))
+  return res.did
+}
+```
+
+### Example: Hosting service
+
+Consider a scenario where a hosting service is using PLC and is providing the handle for the user as a subdomain:
+
+- The handle: `alice.pds.com`
+- The DID: `did:plc:12345`
+- The hosting service: `https://pds.com`
+
+At first, all we know is `alice.pds.com`, so we call `com.atproto.identity.resolveHandle()` on `alice.pds.com`. This tells us the DID.
+
+```typescript
+await xrpc.service('https://alice.pds.com').com.atproto.identity.resolveHandle() // => {did: 'did:plc:12345'}
+```
+
+Next we call the PLC resolution method on the returned DID so that we can learn the hosting service's endpoint and the user's key material.
+
+```typescript
+await didPlc.resolve('did:plc:12345') /* => {
+  id: 'did:plc:12345',
+  alsoKnownAs: `https://alice.pds.com`,
+  verificationMethod: [...],
+  service: [{serviceEndpoint: 'https://pds.com', ...}]
+}*/
+```
+
+We can now communicate with `https://pds.com` to access Alice's data.
+
+### Example: Hosting service with separate domain name
+
+Suppose we have the same scenario as before, except the user has supplied their own domain name:
+
+- The handle: `alice.com` (this differs from before)
+- The DID: `did:plc:12345`
+- The hosting service: `https://pds.com`
+
+We call `com.atproto.identity.resolveHandle()` on `alice.com` to get the DID.
+
+```typescript
+await xrpc.service('https://alice.com').com.atproto.identity.resolveHandle() // => {did: 'did:plc:12345'}
+```
+
+Then we resolve the DID as before:
+
+```typescript
+await didPlc.resolve('did:plc:12345') /* => {
+  id: 'did:plc:12345',
+  alsoKnownAs: `https://alice.com`,
+  verificationMethod: [...],
+  service: [{serviceEndpoint: 'https://pds.com', ...}]
+}*/
+```
+
+We can now communicate with `https://pds.com` to access Alice's data. The `https://alice.com` endpoint only serves to handle the `com.atproto.identity.resolveHandle()` call. The actual user data lives on `pds.com`.
+
+### Example: Self-hosted
+
+Let's consider a self-hosting scenario. If it's using `did:plc`, it would look something like:
+
+- The handle: `alice.com`
+- The DID: `did:plc:12345`
+- The hosting service: `https://alice.com`
+
+However, **if the self-hoster is confident they will retain ownership of the domain name**, they can use `did:web` instead of `did:plc`:
+
+- The handle: `alice.com`
+- The DID: `did:web:alice.com`
+- The hosting service: `https://alice.com`
+
+We call `com.atproto.identity.resolveHandle()` on `alice.com` to get the DID.
+
+```typescript
+await xrpc.service('https://alice.com').com.atproto.identity.resolveHandle() // => {did: 'did:web:alice.com'}
+```
+
+We then resolve using `did:web`:
+
+```typescript
+await didWeb.resolve('did:web:alice.com') /* => {
+  id: 'did:web:alice.com',
+  alsoKnownAs: `https://alice.com`,
+  verificationMethod: [...],
+  service: [{serviceEndpoint: 'https://alice.com', ...}]
+}*/
+```
+
+
+---
+atproto/src/app/[locale]/guides/lexicon/en.mdx
+---
+export const metadata = {
+  title: 'Lexicon',
+  description:
+    'A schema-driven interoperability framework',
+}
+
+# Intro to Lexicon
+
+Lexicon is a schema system used to define RPC methods and record types. Every Lexicon schema is written in JSON, in a format similar to [JSON-Schema](https://json-schema.org/) for defining constraints.
+
+The schemas are identified using [NSIDs](/specs/nsid) which are a reverse-DNS format. Here are some example methods:
+
+```typescript
+com.atproto.repo.getRecord()
+com.atproto.identity.resolveHandle()
+app.bsky.feed.getPostThread()
+app.bsky.notification.listNotifications()
+```
+
+And here are some example record types:
+
+```typescript
+app.bsky.feed.post
+app.bsky.feed.like
+app.bsky.actor.profile
+app.bsky.graph.follow
+```
+
+The schema types, definition language, and validation constraints are described in the [Lexicon specification](/specs/lexicon), and representations in JSON and CBOR are described in the [Data Model specification](/specs/data-model).
+
+## Why is Lexicon needed?
+
+**Interoperability.** An open network like atproto needs a way to agree on behaviors and semantics. Lexicon solves this while making it relatively simple for developers to introduce new schemas.
+
+**Lexicon is not RDF.** While RDF is effective at describing data, it is not ideal for enforcing schemas. Lexicon is easier to use because it doesn't need the generality that RDF provides. In fact, Lexicon's schemas enable code-generation with types and validation, which makes life much easier!
+
+## HTTP API methods
+
+The AT Protocol's API system, [XRPC](/specs/xrpc), is essentially a thin wrapper around HTTPS. Its purpose is to apply the Lexicon to HTTPS.
+
+For example, a call to:
+
+```typescript
+com.example.getProfile()
+```
+
+is actually just an HTTP request:
+
+```text
+GET /xrpc/com.example.getProfile
+```
+
+The schemas establish valid query parameters, request bodies, and response bodies.
+
+```json
+{
+  "lexicon": 1,
+  "id": "com.example.getProfile",
+  "type": "query",
+  "parameters": {
+    "user": {"type": "string", "required": true}
+  },
+  "output": {
+    "encoding": "application/json",
+    "schema": {
+      "type": "object",
+      "required": ["did", "name"],
+      "properties": {
+        "did": {"type": "string"},
+        "name": {"type": "string"},
+        "displayName": {"type": "string", "maxLength": 64},
+        "description": {"type": "string", "maxLength": 256}
+      }
+    }
+  }
+}
+```
+
+With code-generation, these schemas become very easy to use:
+
+```typescript
+await client.com.example.getProfile({user: 'bob.com'})
+// => {name: 'bob.com', did: 'did:plc:1234', displayName: '...', ...}
+```
+
+## Record types
+
+Schemas define the possible values of a record. Every record has a "type" which maps to a schema and also establishes the URL of a record.
+
+For instance, this "follow" record:
+
+```json
+{
+  "$type": "com.example.follow",
+  "subject": "at://did:plc:12345",
+  "createdAt": "2022-10-09T17:51:55.043Z"
+}
+```
+
+...would have a URL like:
+
+```text
+at://bob.com/com.example.follow/12345
+```
+
+...and a schema like:
+
+```json
+{
+  "lexicon": 1,
+  "id": "com.example.follow",
+  "type": "record",
+  "description": "A social follow",
+  "record": {
+    "type": "object",
+    "required": ["subject", "createdAt"],
+    "properties": {
+      "subject": { "type": "string" },
+      "createdAt": {"type": "string", "format": "datetime"}
+    }
+  }
+}
+```
+
+## Tokens
+
+Tokens declare global identifiers which can be used in data.
+
+Let's say a record schema wanted to specify three possible states for a traffic light: 'red', 'yellow', and 'green'.
+
+```json
+{
+  "lexicon": 1,
+  "id": "com.example.trafficLight",
+  "type": "record",
+  "record": {
+    "type": "object",
+    "required": ["state"],
+    "properties": {
+      "state": { "type": "string", "enum": ["red", "yellow", "green"] },
+    }
+  }
+}
+```
+
+This is perfectly acceptable, but it's not extensible. You could never add new states, like "flashing yellow" or "purple" (who knows, it could happen).
+
+To add flexibility, you could remove the enum constraint and just document the possible values:
+
+```json
+{
+  "lexicon": 1,
+  "id": "com.example.trafficLight",
+  "type": "record",
+  "record": {
+    "type": "object",
+    "required": ["state"],
+    "properties": {
+      "state": {
+        "type": "string",
+        "description": "Suggested values: red, yellow, green"
+      },
+    }
+  }
+}
+```
+
+This isn't bad, but it lacks specificity. People inventing new values for state are likely to collide with each other, and there won't be clear documentation on each state.
+
+Instead, you can define Lexicon tokens for the values you use:
+
+```json
+{
+  "lexicon": 1,
+  "id": "com.example.green",
+  "type": "token",
+  "description": "Traffic light state representing 'Go!'.",
+}
+{
+  "lexicon": 1,
+  "id": "com.example.yellow",
+  "type": "token",
+  "description": "Traffic light state representing 'Stop Soon!'.",
+}
+{
+  "lexicon": 1,
+  "id": "com.example.red",
+  "type": "token",
+  "description": "Traffic light state representing 'Stop!'.",
+}
+```
+
+This gives us unambiguous values to use in our trafficLight state. The final schema will still use flexible validation, but other teams will have more clarity on where the values originate from and how to add their own:
+
+```json
+{
+  "lexicon": 1,
+  "id": "com.example.trafficLight",
+  "type": "record",
+  "record": {
+    "type": "object",
+    "required": ["state"],
+    "properties": {
+      "state": {
+        "type": "string",
+        "knownValues": [
+          "com.example.green",
+          "com.example.yellow",
+          "com.example.red"
+        ]
+      },
+    }
+  }
+}
+```
+
+## Versioning
+
+Once a schema is published, it can never change its constraints. Loosening a constraint (adding possible values) will cause old software to fail validation for new data, and tightening a constraint (removing possible values) will cause new software to fail validation for old data. As a consequence, schemas may only add optional constraints to previously unconstrained fields.
+
+If a schema must change a previously-published constraint, it should be published as a new schema under a new NSID.
+
+## Schema distribution
+
+Schemas are designed to be machine-readable and network-accessible. While it is not currently _required_ that a schema is available on the network, it is strongly advised to publish schemas so that a single canonical & authoritative representation is available to consumers of the method.
+
+
+---
+atproto/src/app/[locale]/guides/overview/en.mdx
+---
+export const metadata = {
+  title: 'Protocol Overview',
+  description:
+    'An introduction to the AT Protocol.',
+}
+
+# Protocol Overview
+
+The **Authenticated Transfer Protocol**, aka **atproto**, is a federated protocol for large-scale distributed social applications. This document will introduce you to the ideas behind the AT Protocol.
+
+## Identity
+
+Users are identified by domain names on the AT Protocol. These domains map to cryptographic URLs which secure the user's account and its data.
+
+## Data repositories
+
+User data is exchanged in [signed data repositories](/guides/data-repos). These repositories are collections of records which include posts, comments, likes, follows, media blobs, etc.
+
+## Federation
+
+The AT Protocol syncs the repositories in a federated networking model. Federation was chosen to ensure the network is convenient to use and reliably available. Repository data is synchronized between servers over standard web technologies ([HTTP](/specs/xrpc) and [WebSockets](/specs/event-stream)).
+
+The three core services in our network are Personal Data Servers (PDS), Relays, and App Views. We're also working on feed generators and labelers.
+
+The lower-level primitives that can get stacked together differently are the repositories, lexicons, and DIDs. We published an overview of our technical decisions around federation architecture [on our blog](https://bsky.social/about/blog/5-5-2023-federation-architecture).
+
+## Interoperation
+
+A global schemas network called [Lexicon](/specs/lexicon) is used to unify the names and behaviors of the calls across the servers. Servers implement "lexicons" to support featuresets, including the core `com.atproto.*` lexicons for syncing user repositories and the `app.bsky.*` lexicons to provide basic social behaviors.
+
+While the Web exchanges documents, the AT Protocol exchanges schematic and semantic information, enabling the software from different orgs to understand each others' data. This gives atproto clients freedom to produce user interfaces independently of the servers, and removes the need to exchange rendering code (HTML/JS/CSS) while browsing content.
+
+## Achieving scale
+
+Personal data servers are your home in the cloud. They host your data, distribute it, manage your identity, and orchestrate requests to other services to give you your views.
+
+Relays handle all of your events, like retrieving large-scale metrics (likes, reposts, followers), content discovery (algorithms), and user search.
+
+This distinction is intended to achieve scale as well as a high degree of user-choice.
+
+## Algorithmic choice
+
+As with Web search engines, users are free to select their aggregators. Feeds, App Views, and search indices can be provided by independent third parties, with requests routed by the PDS based on user configuration.
+
+## Account portability
+
+We assume that a Personal Data Server may fail at any time, either by going offline in its entirety, or by ceasing service for specific users. The goal of the AT Protocol is to ensure that a user can migrate their account to a new PDS without the server's involvement.
+
+User data is stored in [signed data repositories](/guides/data-repos) and verified by [DIDs](/guides/identity). Signed data repositories are like Git repos but for database records, and DIDs are essentially registries of user certificates, similar in some ways to the TLS certificate system. They are expected to be secure, reliable, and independent of the user's PDS.
+
+Each DID document publishes two public keys: a signing key and a recovery key.
+
+* **Signing key**: Asserts changes to the DID Document *and* to the user's data repository.
+* **Recovery key**: Asserts changes to the DID Document; may override the signing key within a 72-hour window.
+
+The signing key is entrusted to the PDS so that it can manage the user's data, but the recovery key is saved by the user, e.g. as a paper key. This makes it possible for the user to update their account to a new PDS without the original host's help.
+
+A backup of the user’s data will be persistently synced to their client as a backup (contingent on the disk space available). Should a PDS disappear without notice, the user should be able to migrate to a new provider by updating their DID Document and uploading the backup.
+
+## Speech, reach, and moderation
+
+Atproto's model is that _speech_ and _reach_ should be two separate layers, built to work with each other. The “speech” layer should remain permissive, distributing authority and designed to ensure everyone has a voice. The “reach” layer lives on top, built for flexibility and designed to scale.
+
+The base layer of atproto (personal data repositories and federated networking) creates a common space for speech where everyone is free to participate, analogous to the Web where anyone can put up a website. The indexing services then enable reach by aggregating content from the network, analogous to a search engine.
+
+## Specifications
+
+Some of the primary specifications comprising the initial version of the AT Protocol are:
+
+- [Authenticated Transfer Protocol](/specs/atp)
+- [DIDs](/specs/did) and [Handles](/specs/handle)
+- [Repository](/specs/repository) and [Data Model](/specs/data-model)
+- [Lexicon](/specs/lexicon)
+- [HTTP API (XRPC)](/specs/xrpc) and [Event Streams](/specs/event-stream)
+
+
+From here, you can continue reading the [guides and specs](/).
+
+
+---
+atproto/src/app/[locale]/guides/self-hosting/en.mdx
+---
+export const metadata = {
+  title: 'Self-hosting',
+  description:
+    'Self-hosting a Bluesky PDS means running your own Personal Data Server that is capable of federating with the wider ATProto network.',
+}
+
+# Self-hosting
+
+Self-hosting a Bluesky PDS means running your own Personal Data Server that is capable of federating with the wider ATProto network. {{className: 'lead'}}
+
+## Table of Contents
+
+* [Preparation for self-hosting PDS](#preparation-for-self-hosting-pds)
+* [Open your cloud firewall for HTTP and HTTPS](#open-your-cloud-firewall-for-http-and-https)
+* [Configure DNS for your domain](#configure-dns-for-your-domain)
+* [Check that DNS is working as expected](#check-that-dns-is-working-as-expected)
+* [Installer on Ubuntu 20.04/22.04 and Debian 11/12](#installer-on-ubuntu-20-04-22-04-and-debian-11-12)
+* [Verifying that your PDS is online and accessible](#verifying-that-your-pds-is-online-and-accessible)
+* [Creating an account using pdsadmin](#creating-an-account-using-pdsadmin)
+* [Creating an account using an invite code](#creating-an-account-using-an-invite-code)
+* [Using the Bluesky app with your PDS](#using-the-bluesky-app-with-your-pds)
+* [Updating your PDS](#updating-your-pds)
+* [Getting help](#getting-help)
+
+
+## Preparation for self-hosting PDS
+
+Launch a server on any cloud provider, [Digital Ocean](https://digitalocean.com/) and [Vultr](https://vultr.com/) are two popular choices.
+
+Ensure that you can ssh to your server and have root access.
+
+**Server Requirements**
+* Public IPv4 address
+* Public DNS name
+* Public inbound internet access permitted on port 80/tcp and 443/tcp
+
+**Server Recommendations**
+|                  |              |
+| ---------------- | ------------ |
+| Operating System | Ubuntu 22.04 |
+| Memory (RAM)     | 1 GB         |
+| CPU Cores        | 1            |
+| Storage          | 20 GB SSD    |
+| Architectures    | amd64, arm64 |
+| Number of users  | 1-20         |
+
+**Note:** It is a good security practice to restrict inbound ssh access (port 22/tcp) to your own computer's public IP address. You can check your current public IP address using [ifconfig.me](https://ifconfig.me/).
+
+## Open your cloud firewall for HTTP and HTTPS
+
+One of the most common sources of misconfiguration is not opening firewall ports correctly. Please be sure to double check this step.
+
+In your cloud provider's console, the following ports should be open to inbound access from the public internet.
+
+* 80/tcp (Used only for TLS certification verification)
+* 443/tcp (Used for all application requests)
+
+**Note:** there is no need to set up TLS or redirect requests from port 80 to 443 because the Caddy web server, included in the Docker compose file, will handle this for you.
+
+## Configure DNS for your domain
+
+From your DNS provider's control panel, set up a domain with records pointing to your server.
+
+| Name            | Type | Value         | TTL |
+| --------------- | ---- | ------------- | --- |
+| `example.com`   | `A`  | `12.34.56.78` | 600 |
+| `*.example.com` | `A`  | `12.34.56.78` | 600 |
+
+**Note:**
+* Replace `example.com` with your domain name.
+* Replace `12.34.56.78` with your server's IP address.
+* Some providers may use the `@` symbol to represent the root of your domain.
+* The wildcard record is required when allowing users to create new accounts on your PDS.
+* The TTL can be anything but 600 (10 minutes) is reasonable
+
+## Check that DNS is working as expected
+
+Use a service like [DNS Checker](https://dnschecker.org/) to verify that you can resolve domain names.
+
+Examples to check (record type `A`):
+* `example.com`
+* `random.example.com`
+* `test123.example.com`
+
+These should all return your server's public IP.
+
+## Installer on Ubuntu 20.04/22.04 and Debian 11/12
+
+On your server via ssh, download the installer script using wget:
+
+```bash
+wget https://raw.githubusercontent.com/bluesky-social/pds/main/installer.sh
+```
+
+or download it using curl:
+
+```bash
+curl https://raw.githubusercontent.com/bluesky-social/pds/main/installer.sh >installer.sh
+```
+
+And then run the installer using bash:
+
+```bash
+sudo bash installer.sh
+```
+
+## Verifying that your PDS is online and accessible
+
+> [!TIP]
+> The most common problems with getting PDS content consumed in the live network are when folks substitute the provided Caddy configuration for nginx, apache, or similar reverse proxies. Getting TLS certificates, WebSockets, and virtual server names all correct can be tricky. We are not currently providing tech support for other configurations.
+
+You can check if your server is online and healthy by requesting the healthcheck endpoint.
+
+You can visit `https://example.com/xrpc/_health` in your browser. You should see a JSON response with a version, like:
+
+```
+{"version":"0.2.2-beta.2"}
+```
+
+You'll also need to check that WebSockets are working, for the rest of the network to pick up content from your PDS. You can test by installing a tool like `wsdump` and running a command like:
+
+```bash
+wsdump "wss://example.com/xrpc/com.atproto.sync.subscribeRepos?cursor=0"
+```
+
+Note that there will be no events output on the WebSocket until they are created in the PDS, so the above command may continue to run with no output if things are configured successfully.
+
+## Creating an account using pdsadmin
+
+Using ssh on your server, use `pdsadmin` to create an account if you haven't already.
+
+```bash
+sudo pdsadmin account create
+```
+
+## Creating an account using an invite code
+
+Using ssh on your server, use `pdsadmin` to create an invite code.
+
+```bash
+sudo pdsadmin create-invite-code
+```
+
+When creating an account using the app, enter this invite code.
+
+## Using the Bluesky app with your PDS
+
+You can use the Bluesky app to connect to your PDS.
+
+1. Get the Bluesky app
+    * [Bluesky for Web](https://bsky.app/)
+    * [Bluesky for iPhone](https://apps.apple.com/us/app/bluesky-social/id6444370199)
+    * [Bluesky for Android](https://play.google.com/store/apps/details?id=xyz.blueskyweb.app)
+1. Enter the URL of your PDS (e.g. `https://example.com/`)
+
+_Note: because the subdomain TLS certificate is created on-demand, it may take 10-30s for your handle to be accessible. If you aren't seeing your first post/profile, wait 30s and try to make another post._
+
+## Updating your PDS
+
+It is recommended that you keep your PDS up to date with new versions, otherwise things may break. You can use the `pdsadmin` tool to update your PDS.
+
+```bash
+sudo pdsadmin update
+```
+
+## Getting help
+
+- [Visit the GitHub](https://github.com/bluesky-social/pds) for issues and discussions.
+- [Join the AT Protocol PDS Admins Discord](https://discord.gg/e7hpHxRfBP) to chat with other folks hosting instances and get important updates about the PDS distribution.
+
+---
