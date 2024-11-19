@@ -23,8 +23,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
-      - name: Files to prompt
+      - name: Spec files to prompt
         run: uvx --with 'files-to-prompt' files-to-prompt 'atproto/src/app/[locale]/specs/' > docs/atproto/specs/llms.txt
+
+      - name: Guides files to prompt
+        run: uvx --with 'files-to-prompt' files-to-prompt 'atproto/src/app/[locale]/guides/**/en.mdx' > docs/atproto/guides/llms.txt
 
       - name: Commit and push changes
         run: |
