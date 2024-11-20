@@ -27,7 +27,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Docs to prompt
-        run: uvx --with 'files-to-prompt' files-to-prompt evidence/sites/docs/pages/ > docs/evidence/guides.txt
+        run: uvx --with 'files-to-prompt' files-to-prompt evidence/sites/docs/pages/ > docs/evidence/docs.txt
 
       - name: Commit and push changes
         run: |
