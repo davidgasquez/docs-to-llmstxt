@@ -1,0 +1,38 @@
+name: Evidence Documentation
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  clone:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+
+      - name: Clone Evidence repository
+        run: |
+          git clone https://github.com/evidence-dev/evidence.git evidence
+
+      - name: Create docs directory
+        run: mkdir -p docs/evidence
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Docs to prompt
+        run: uvx --with 'files-to-prompt' files-to-prompt https://github.com/evidence-dev/evidence/blob/next/sites/docs/pages/ > docs/evidence/guides.txt
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/
+          git commit -m "Update Evidence documentation" || echo "No changes to commit"
+          git push
