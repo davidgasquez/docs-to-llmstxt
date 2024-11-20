@@ -32,7 +32,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Docs to prompt
-        run: uvx --with 'files-to-prompt' files-to-prompt -e md duckdb/docs/ > docs/duckdb/docs.txt
+        run: uvx files-to-prompt -e md duckdb/docs/ | uvx strip-tags -m > docs/duckdb/docs.txt
 
       - name: Commit and push changes
         run: |
