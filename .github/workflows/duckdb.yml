@@ -20,8 +20,10 @@ jobs:
         run: |
           git clone https://github.com/duckdb/duckdb-web.git duckdb
 
-      - name: Remove archive directory
-        run: rm -rf duckdb/docs/archive
+      - name: Remove non relevant directories
+        run: |
+          rm -rf duckdb/docs/archive
+          rm -rf duckdb/docs/sql/tutorial
 
       - name: Create docs directory
         run: mkdir -p docs/duckdb
