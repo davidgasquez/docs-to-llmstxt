@@ -1936,6 +1936,13 @@ queries:
     required=false
     options="Excel-style format | built-in format name | custom format name"
 />
+<PropListing
+    name="seriesLabelFmt"
+    description="Format to use for series label (<a class=markdown href='/core-concepts/formatting'>see available formats<a/>)"
+    required=false
+    options="Excel-style format | built-in format name | custom format name"
+    defaultValue="-"
+/>
 <PropListing 
     name="shape"
     description="Options for which shape to use for bubble points"
@@ -3152,6 +3159,13 @@ Format to use for y column ([see available formats](/core-concepts/formatting))
 
 </PropListing>
 <PropListing
+    name="seriesLabelFmt"
+    description="Format to use for series label (<a class=markdown href='/core-concepts/formatting'>see available formats<a/>)"
+    required=false
+    options="Excel-style format | built-in format name | custom format name"
+    defaultValue="-"
+/>
+<PropListing
     name="shape"
     options="circle | emptyCircle | rect | triangle | diamond"
     defaultValue="circle"
@@ -3915,6 +3929,13 @@ queries:
     name=y2Fmt
     description="Format to use for y2 column(s) (<a class=markdown href='/core-concepts/formatting'>see available formats<a/>)"
     options="Excel-style format | built-in format name | custom format name"
+/>
+<PropListing
+    name="seriesLabelFmt"
+    description="Format to use for series label (<a class=markdown href='/core-concepts/formatting'>see available formats<a/>)"
+    required=false
+    options="Excel-style format | built-in format name | custom format name"
+    defaultValue="-"
 />
 <PropListing
     name=fillColor
@@ -8727,7 +8748,7 @@ SELECT 'Brazil', 'South America', 1609, 0.032, 0.1375, 0.1007, 0.091, -4.5, 80.2
 
 <DocTab>
     <div slot='preview'>
-        <DataTable data={countries} totalRow=true rows=5 wrapTitles groupBy=continent groupType=section totalRowColor=#f2f2f2>
+        <DataTable data={countries} totalRow=true rows=5 groupBy=continent groupType=section totalRowColor=#f2f2f2>
           <Column id=continent totalAgg="Total" totalFmt='# "Unique continents"'/>
           <Column id=country totalAgg=countDistinct totalFmt='0 "countries"'/>
           <Column id=gdp_usd totalAgg=sum fmt='$#,##0"B"' totalFmt='$#,##0.0,"T"' colGroup="GDP"/>
@@ -8742,7 +8763,7 @@ SELECT 'Brazil', 'South America', 1609, 0.032, 0.1375, 0.1007, 0.091, -4.5, 80.2
     </div>
 
 ```svelte
-<DataTable data={countries} totalRow=true rows=5 wrapTitles groupBy=continent groupType=section totalRowColor=#f2f2f2>
+<DataTable data={countries} totalRow=true rows=5 groupBy=continent groupType=section totalRowColor=#f2f2f2>
   <Column id=continent totalAgg="Total" totalFmt='# "Unique continents"'/>
   <Column id=country totalAgg=countDistinct totalFmt='0 "countries"'/>
   <Column id=gdp_usd totalAgg=sum fmt='$#,##0"B"' totalFmt='$#,##0.0,"T"' colGroup="GDP"/>
@@ -8756,7 +8777,6 @@ SELECT 'Brazil', 'South America', 1609, 0.032, 0.1375, 0.1007, 0.091, -4.5, 80.2
 </DataTable>
 ```
 </DocTab>
-
 
 ### Wrap Titles
 
@@ -18474,6 +18494,13 @@ group by all
     options="Excel-style format | built-in format name | custom format name"
 />
 <PropListing
+    name="seriesLabelFmt"
+    description="Format to use for series label (<a class=markdown href='/core-concepts/formatting'>see available formats<a/>)"
+    required=false
+    options="Excel-style format | built-in format name | custom format name"
+    defaultValue="-"
+/>
+<PropListing
     name=step
     description="Specifies whether the chart is displayed as a step line"
     options={["true", "false"]}
@@ -19063,6 +19090,13 @@ queries:
 <PropListing
     name="yFmt"
     description="Format to use for y column (<a class=markdown href='/core-concepts/formatting'>see available formats<a/>)"
+    required=false
+    options="Excel-style format | built-in format name | custom format name"
+    defaultValue="-"
+/>
+<PropListing
+    name="seriesLabelFmt"
+    description="Format to use for series label (<a class=markdown href='/core-concepts/formatting'>see available formats<a/>)"
     required=false
     options="Excel-style format | built-in format name | custom format name"
     defaultValue="-"
