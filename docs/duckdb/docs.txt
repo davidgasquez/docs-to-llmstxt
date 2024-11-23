@@ -5301,13 +5301,13 @@ build/release/duckdb
 For testing, it can be useful to build DuckDB with statically linked core extensions. To do so, run:
 
 ```bash
-CORE_EXTENSIONS='autocomplete;httpfs;icu;parquet;json' GEN=ninja make
+CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch' GEN=ninja make
 ```
 
 This option also accepts out-of-tree extensions:
 
 ```bash
-CORE_EXTENSIONS='autocomplete;httpfs;icu;parquet;json;delta' GEN=ninja make
+CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch;delta' GEN=ninja make
 ```
 
 For more details, see the [â€œBuilding Extensionsâ€� page]({% link docs/dev/building/building_extensions.md %}).
@@ -31455,7 +31455,7 @@ duckdb/docs/extensions/full_text_search.md
 ---
 layout: docu
 title: Full-Text Search Extension
-github_directory: https://github.com/duckdb/duckdb/tree/main/extension/fts
+github_directory: https://github.com/duckdb/duckdb_fts
 ---
 
 Full-Text Search is an extension to DuckDB that allows for search through strings, similar to [SQLite's FTS5 extension](https://www.sqlite.org/fts5.html).
