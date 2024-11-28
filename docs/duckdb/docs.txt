@@ -1091,7 +1091,7 @@ Below are parameters that can be passed to the CSV reader. These parameters are 
 | `delim` | Specifies the delimiter character that separates columns within each row (line) of the file. Alias for `sep`. | `VARCHAR` | `,` |
 | `escape` | Specifies the string that should appear before a data character sequence that matches the `quote` value. | `VARCHAR` | `"` |
 | `filename` | Whether or not an extra `filename` column should be included in the result. | `BOOL` | `false` |
-| `force_not_null` | Do not match the specified columns' values against the NULL string. In the default case where the `NULL` string is empty, this means that empty values will be read as zero-length strings rather than `NULL`s. | `VARCHAR[]` | `[]` |
+| `force_not_null` | Do not match the specified columns' values against the `NULL` string. In the default case where the `NULL` string is empty, this means that empty values will be read as zero-length strings rather than `NULL`s. | `VARCHAR[]` | `[]` |
 | `header` | Specifies that the file contains a header line with the names of each column in the file. | `BOOL` | `false` |
 | `hive_partitioning` | Whether or not to interpret the path as a [Hive partitioned path]({% link docs/data/partitioning/hive_partitioning.md %}). | `BOOL` | `false` |
 | `ignore_errors` | Option to ignore any parsing errors encountered â€“ and instead ignore rows with errors. | `BOOL` | `false` |
@@ -1099,7 +1099,7 @@ Below are parameters that can be passed to the CSV reader. These parameters are 
 | `names` | The column names as a list, see [example]({% link docs/data/csv/tips.md %}#provide-names-if-the-file-does-not-contain-a-header). | `VARCHAR[]` | (empty) |
 | `new_line` | Set the new line character(s) in the file. Options are `'\r'`,`'\n'`, or `'\r\n'`. Note that the CSV parser only distinguishes between single-character and double-character line delimiters. Therefore, it does not differentiate between `'\r'` and `'\n'`.| `VARCHAR` | (empty) |
 | `normalize_names` | Boolean value that specifies whether or not column names should be normalized, removing any non-alphanumeric characters from them. | `BOOL` | `false` |
-| `null_padding` | If this option is enabled, when a row lacks columns, it will pad the remaining columns on the right with null values. | `BOOL` | `false` |
+| `null_padding` | If this option is enabled, when a row lacks columns, it will pad the remaining columns on the right with `NULL` values. | `BOOL` | `false` |
 | `nullstr` | Specifies the string that represents a `NULL` value or (since v0.10.2) a list of strings that represent a `NULL` value. | `VARCHAR` or `VARCHAR[]` | (empty) |
 | `parallel` | Whether or not the parallel CSV reader is used. | `BOOL` | `true` |
 | `quote` | Specifies the quoting string to be used when a data value is quoted. | `VARCHAR` | `"` |
@@ -1213,7 +1213,7 @@ iconv -f ISO-8859-2 -t UTF-8 input.csv > input-utf-8.csv
 
 ## Order Preservation
 
-The CSV reader respects the `preserve_insertion_order` [configuration option]({% link docs/configuration/overview.md %}).
+The CSV reader respects the `preserve_insertion_order` [configuration option]({% link docs/configuration/overview.md %}) to [preserve insertion order]({% link docs/sql/dialect/order_preservation.md %}).
 When `true` (the default), the order of the rows in the resultset returned by the CSV reader is the same as the order of the corresponding lines read from the file(s).
 When `false`, there is no guarantee that the order is preserved.
 
@@ -4318,6 +4318,7 @@ In query plans, the [hash join](https://en.wikipedia.org/wiki/Hash_join) operato
 the _probe side_ of the join is the left operand, while the _build side_ is the right operand.
 
 Join operators in the query plan show the join type used:
+
 * Inner joins are denoted as `INNER`.
 * Left outer joins and right outer joins are denoted as `LEFT` and `RIGHT`, respectively.
 * Full outer joins are denoted as `FULL`.
@@ -5038,7 +5039,7 @@ DuckDB has built-in functions for generating test data.
 ### `test_all_types` Function
 
 The `test_all_types` table function generates a table whose columns correspond to types (`BOOL`, `TINYINT`, etc.).
-The table has three rows encoding the minimum value, the maximum value, and the null value for each type.
+The table has three rows encoding the minimum value, the maximum value, and the `NULL` value for each type.
 
 ```sql
 FROM test_all_types();
@@ -6426,7 +6427,7 @@ The `FILTER` clause may optionally follow an aggregate function in a `SELECT` st
 
 There are multiple types of situations where this is useful, including when evaluating multiple aggregates with different filters, and when creating a pivoted view of a dataset. `FILTER` provides a cleaner syntax for pivoting data when compared with the more traditional `CASE WHEN` approach discussed below.
 
-Some aggregate functions also do not filter out null values, so using a `FILTER` clause will return valid results when at times the `CASE WHEN` approach will not. This occurs with the functions `first` and `last`, which are desirable in a non-aggregating pivot operation where the goal is to simply re-orient the data into columns rather than re-aggregate it. `FILTER` also improves null handling when using the `list` and `array_agg` functions, as the `CASE WHEN` approach will include null values in the list result, while the `FILTER` clause will remove them.
+Some aggregate functions also do not filter out `NULL` values, so using a `FILTER` clause will return valid results when at times the `CASE WHEN` approach will not. This occurs with the functions `first` and `last`, which are desirable in a non-aggregating pivot operation where the goal is to simply re-orient the data into columns rather than re-aggregate it. `FILTER` also improves `NULL` handling when using the `list` and `array_agg` functions, as the `CASE WHEN` approach will include `NULL` values in the list result, while the `FILTER` clause will remove them.
 
 ## Examples
 
@@ -7561,7 +7562,7 @@ UNION ALL
 SELECT '111 Duck Duck Goose Ln', 'Duck Town', '11111-0001';
 ```
 
-Select the addresses, ordered by city name using the default null order and default order:
+Select the addresses, ordered by city name using the default `NULL` order and default order:
 
 ```sql
 SELECT *
@@ -9074,12 +9075,12 @@ The `duckdb_sequences()` function provides metadata about the sequences availabl
 | `max_value` | The maximum value of the sequence. | `BIGINT` |
 | `increment_by` | The value that is added to the current value of the sequence to draw the next value from the sequence. | `BIGINT` |
 | `cycle` | Whether the sequence should start over when drawing the next value would result in a value outside the range. | `BOOLEAN` |
-| `last_value` | `null` if no value was ever drawn from the sequence using `nextval(...)`. `1` if a value was drawn. | `BIGINT` |
+| `last_value` | `NULL` if no value was ever drawn from the sequence using `nextval(...)`. `1` if a value was drawn. | `BIGINT` |
 | `sql` | The definition of this object, expressed as SQL DDL-statement. | `VARCHAR` |
 
 Attributes like `temporary`, `start_value` etc. correspond to the various options available in the [`CREATE SEQUENCE`]({% link docs/sql/statements/create_sequence.md %}) statement and are documented there in full. Note that the attributes will always be filled out in the `duckdb_sequences` resultset, even if they were not explicitly specified in the `CREATE SEQUENCE` statement.
 
-> 1. The column name `last_value` suggests that it contains the last value that was drawn from the sequence, but that is not the case. It's either `null` if a value was never drawn from the sequence, or `1` (when there was a value drawn, ever, from the sequence).
+> 1. The column name `last_value` suggests that it contains the last value that was drawn from the sequence, but that is not the case. It's either `NULL` if a value was never drawn from the sequence, or `1` (when there was a value drawn, ever, from the sequence).
 >
 > 2. If the sequence cycles, then the sequence will start over from the boundary of its range, not necessarily from the value specified as start value.
 
@@ -9220,11 +9221,11 @@ The view that describes the catalog information for columns is `information_sche
 | `column_default` | Default expression of the column. |`VARCHAR`| `1.99` |
 | `is_nullable` | `YES` if the column is possibly nullable, `NO` if it is known not nullable. |`VARCHAR`| `'YES'` |
 | `data_type` | Data type of the column. |`VARCHAR`| `'DECIMAL(18, 2)'` |
-| `character_maximum_length` | If `data_type` identifies a character or bit string type, the declared maximum length; null for all other data types or if no maximum length was declared. |`INTEGER`| `255` |
-| `character_octet_length` | If `data_type` identifies a character type, the maximum possible length in octets (bytes) of a datum; null for all other data types. The maximum octet length depends on the declared character maximum length (see above) and the character encoding. |`INTEGER`| `1073741824` |
-| `numeric_precision` | If `data_type` identifies a numeric type, this column contains the (declared or implicit) precision of the type for this column. The precision indicates the number of significant digits. For all other data types, this column is null. |`INTEGER`| `18` |
-| `numeric_scale` | If `data_type` identifies a numeric type, this column contains the (declared or implicit) scale of the type for this column. The precision indicates the number of significant digits. For all other data types, this column is null. |`INTEGER`| `2` |
-| `datetime_precision` | If `data_type` identifies a date, time, timestamp, or interval type, this column contains the (declared or implicit) fractional seconds precision of the type for this column, that is, the number of decimal digits maintained following the decimal point in the seconds value. No fractional seconds are currently supported in DuckDB. For all other data types, this column is null. |`INTEGER`| `0` |
+| `character_maximum_length` | If `data_type` identifies a character or bit string type, the declared maximum length; `NULL` for all other data types or if no maximum length was declared. |`INTEGER`| `255` |
+| `character_octet_length` | If `data_type` identifies a character type, the maximum possible length in octets (bytes) of a datum; `NULL` for all other data types. The maximum octet length depends on the declared character maximum length (see above) and the character encoding. |`INTEGER`| `1073741824` |
+| `numeric_precision` | If `data_type` identifies a numeric type, this column contains the (declared or implicit) precision of the type for this column. The precision indicates the number of significant digits. For all other data types, this column is `NULL`. |`INTEGER`| `18` |
+| `numeric_scale` | If `data_type` identifies a numeric type, this column contains the (declared or implicit) scale of the type for this column. The precision indicates the number of significant digits. For all other data types, this column is `NULL`. |`INTEGER`| `2` |
+| `datetime_precision` | If `data_type` identifies a date, time, timestamp, or interval type, this column contains the (declared or implicit) fractional seconds precision of the type for this column, that is, the number of decimal digits maintained following the decimal point in the seconds value. No fractional seconds are currently supported in DuckDB. For all other data types, this column is `NULL`. |`INTEGER`| `0` |
 
 ### `constraint_column_usage`: Constraint Column Usage
 
@@ -9294,9 +9295,9 @@ The view that describes the catalog information for tables and views is `informa
 | `table_type` | The type of table. One of: `BASE TABLE`, `LOCAL TEMPORARY`, `VIEW`. | `VARCHAR` | `'BASE TABLE'` |
 | `self_referencing_column_name` | Applies to a feature not available in DuckDB. | `VARCHAR` | `NULL` |
 | `reference_generation` | Applies to a feature not available in DuckDB. | `VARCHAR` | `NULL` |
-| `user_defined_type_catalog` | If the table is a typed table, the name of the database that contains the underlying data type (always the current database), else null. Currently unimplemented. | `VARCHAR` | `NULL` |
-| `user_defined_type_schema` | If the table is a typed table, the name of the schema that contains the underlying data type, else null. Currently unimplemented. | `VARCHAR` | `NULL` |
-| `user_defined_type_name` | If the table is a typed table, the name of the underlying data type, else null. Currently unimplemented. | `VARCHAR` | `NULL` |
+| `user_defined_type_catalog` | If the table is a typed table, the name of the database that contains the underlying data type (always the current database), else `NULL`. Currently unimplemented. | `VARCHAR` | `NULL` |
+| `user_defined_type_schema` | If the table is a typed table, the name of the schema that contains the underlying data type, else `NULL`. Currently unimplemented. | `VARCHAR` | `NULL` |
+| `user_defined_type_name` | If the table is a typed table, the name of the underlying data type, else `NULL`. Currently unimplemented. | `VARCHAR` | `NULL` |
 | `is_insertable_into` | `YES` if the table is insertable into, `NO` if not (Base tables are always insertable into, views not necessarily.)| `VARCHAR` | `'YES'` |
 | `is_typed` | `YES` if the table is a typed table, `NO` if not. | `VARCHAR` | `'NO'` |
 | `commit_action` | Not yet implemented. | `VARCHAR` | `'NO'` |
@@ -9315,7 +9316,7 @@ The view that describes the catalog information for tables and views is `informa
 | `is_deferrable` | `YES` if the constraint is deferrable, `NO` if not. | `VARCHAR` | `'NO'` |
 | `initially_deferred` | `YES` if the constraint is deferrable and initially deferred, `NO` if not. | `VARCHAR` | `'NO'` |
 | `enforced` | Always `YES`. | `VARCHAR` | `'YES'` |
-| `nulls_distinct` | If the constraint is a unique constraint, then `YES` if the constraint treats nulls as distinct or `NO` if it treats nulls as not distinct, otherwise `NULL` for other types of constraints. | `VARCHAR` | `'YES'` |
+| `nulls_distinct` | If the constraint is a unique constraint, then `YES` if the constraint treats `NULL`s as distinct or `NO` if it treats `NULL`s as not distinct, otherwise `NULL` for other types of constraints. | `VARCHAR` | `'YES'` |
 
 ## Catalog Functions
 
@@ -16184,7 +16185,7 @@ The functions below are difficult to categorize into specific function types and
 
 
 
-| **Description** | Return null if a = b, else return a. Equivalent to `CASE WHEN a = b THEN NULL ELSE a END`. |
+| **Description** | Return `NULL` if a = b, else return a. Equivalent to `CASE WHEN a = b THEN NULL ELSE a END`. |
 | **Example** | `nullif(1+1, 2)` |
 | **Result** | `NULL` |
 
@@ -16602,10 +16603,10 @@ so the `SELECT` also needs to be explicitly sorted if that is desired.
 Framing specifies a set of rows relative to each row where the function is evaluated.
 The distance from the current row is given as an expression either `PRECEDING` or `FOLLOWING` the current row.
 This distance can either be specified as an integral number of `ROWS`
-or as a `RANGE` delta expression from the value of the ordering expression.
+or as a `RANGE` delta expression.
 For a `RANGE` specification, there must be only one ordering expression,
 and it has to support addition and subtraction (i.e., numbers or `INTERVAL`s).
-The default values for frames are from `UNBOUNDED PRECEDING` to `CURRENT ROW`.
+The default frame is from `UNBOUNDED PRECEDING` to `UNBOUNDED FOLLOWING` when no `ORDER BY` clause is present and from `UNBOUNDED PRECEDING` to `CURRENT ROW` when an `ORDER BY` clause is present.
 It is invalid for a frame to start after it ends.
 Using the [`EXCLUDE` clause](#exclude-clause), rows around the current row can be excluded from the frame.
 
@@ -18097,10 +18098,70 @@ layout: docu
 title: Order Preservation
 ---
 
-For many operations, DuckDB preserves the insertion order of rows, similarly to data frame libraries such as Pandas.
-The following operations and components respect insertion order:
+For many operations, DuckDB preserves the order of rows, similarly to data frame libraries such as Pandas.
 
-* [The CSV reader]({% link docs/data/csv/overview.md %}#order-preservation)
+## Example
+
+Take the following table for example:
+
+```sql
+CREATE TABLE tbl AS
+SELECT *
+FROM (VALUES (1, 'a'), (2, 'b'), (3, 'c')) t(x, y);
+
+SELECT *
+FROM tbl;
+```
+
+| x | y |
+|--:|---|
+| 1 | a |
+| 2 | b |
+| 3 | c |
+
+Let's take the following query that returns the rows where `x` is an odd number:
+
+```sql
+SELECT *
+FROM tbl
+WHERE x % 2 == 1;
+```
+
+| x | y |
+|--:|---|
+| 1 | a |
+| 3 | c |
+
+Because the row `(1, 'a')` occurs before `(3, 'c')` in the original table, it is guaranteed to come before that row in this table too.
+
+## Clauses
+
+The following clauses guarantee that the original row order is preserved:
+
+* `COPY` (see [Insertion Order](#insertion-order))
+* `FROM` with a single table
+* `LIMIT`
+* `OFFSET`
+* `SELECT`
+* `UNION ALL`
+* `WHERE`
+
+The following operations **do not** guarantee that the row order is preserved:
+
+* `FROM` with multiple tables and/or subqueries
+* `JOIN`
+* `SAMPLE`
+* `UNION`
+* `GROUP BY` (in particular, the output order is undefined and the order in which rows are fed into [order-sensitive aggregate functions](https://duckdb.org/docs/sql/functions/aggregates.html#order-by-clause-in-aggregate-functions) is undefined unless explicitly specified in the aggregate function)
+* `ORDER BY` (specifically, `ORDER BY` may not use a [stable algorithm](https://en.m.wikipedia.org/wiki/Stable_algorithm))
+
+## Insertion Order
+
+By default, the following components preserve insertion order:
+
+* [CSV reader]({% link docs/data/csv/overview.md %}#order-preservation)
+* [Parquet reader]({% link docs/data/parquet/overview.md %}#order-preservation)
+* [JSON reader]({% link docs/data/json/overview.md %}#order-preservation)
 
 Preservation of insertion order is controlled by the `preserve_insertion_order` [configuration option]({% link docs/configuration/overview.md %}).
 This setting is `true` by default, indicating that the order should be preserved.
@@ -28884,6 +28945,8 @@ SELECT * FROM 'https://blobs.duckdb.org/data/shakespeare.parquet';
 DESCRIBE corpus;
 ```
 
+
+
 | column_name | column_type | null | key | default | extra |
 |-------------|-------------|------|------|---------|-------|
 | line_id | VARCHAR | YES | NULL | NULL | NULL |
@@ -28902,7 +28965,7 @@ First, we create the index, specifying the table name, the unique id column, and
 PRAGMA create_fts_index('corpus', 'line_id', 'text_entry');
 ```
 
-The table is now ready to query using the [Okapi BM25](https://en.wikipedia.org/wiki/Okapi_BM25) ranking function. Rows with no match return a null score.
+The table is now ready to query using the [Okapi BM25](https://en.wikipedia.org/wiki/Okapi_BM25) ranking function. Rows with no match return a `NULL` score.
 
 What does Shakespeare say about butter?
 
@@ -28936,7 +28999,8 @@ Unlike standard indexes, full-text indexes don't auto-update as the underlying d
 
 ## Note on Generating the Corpus Table
 
-For more details, see the [â€œGenerating a Shakespeare corpus for full-text searching from JSONâ€� blog post](https://duckdb.blogspot.com/2023/04/generating-shakespeare-corpus-for-full.html)
+For more details, see the [â€œGenerating a Shakespeare corpus for full-text searching from JSONâ€� blog post](https://duckdb.blogspot.com/2023/04/generating-shakespeare-corpus-for-full.html).
+
 * The Columns are: line_id, play_name, line_number, speaker, text_entry.
 * We need a unique key for each row in order for full-text searching to work.
 * The line_id `KL/2.4.132` means King Lear, Act 2, Scene 4, Line 132.
@@ -29417,11 +29481,11 @@ A DSN (_Data Source Name_) is a string that identifies a database. It can be a f
 All functions in ODBC return a code which represents the success or failure of the function. This allows for easy error handling, as the application can simply check the return code of each function call to determine if it was successful. When unsuccessful, the application can then use the [`SQLGetDiagRec`](https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqlgetdiagrec-function?view=sql-server-ver16) function to retrieve the error information. The following table defines the [return codes](https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/return-codes-odbc?view=sql-server-ver16):
 
 | Return code | Description |
-|----------|---------------------|
+|-------------------------|----------------------------------------------------|
 | `SQL_SUCCESS` | The function completed successfully. |
 | `SQL_SUCCESS_WITH_INFO` | The function completed successfully, but additional information is available, including a warning |
 | `SQL_ERROR` | The function failed. |
-| `SQL_INVALID_HANDLE` | The handle provided was invalid, indicating a programming error, i.e., when a handle is not allocated before it is used, or is the wrong type |
+| `SQL_INVALID_HANDLE` | The handle provided was invalid, indicating a programming error, i.e., when a handle is not allocated before it is used, or is the wrong type. |
 | `SQL_NO_DATA` | The function completed successfully, but no more data is available |
 | `SQL_NEED_DATA` | More data is needed, such as when a parameter data is sent at execution time, or additional connection information is required. |
 | `SQL_STILL_EXECUTING` | A function that was asynchronously executed is still executing. |
@@ -33826,7 +33890,7 @@ All official extensions are distributed for the following platforms.
 
 
 | Platform name | Operating system | Architecture | CPU types | Used by |
-|--------------------|------------------|-----------------|---------------------------------|------------------------------|
+|--------------------|------------------|-----------------|--------------------------------|----------------------------|
 | `linux_amd64` | Linux | x86_64 (AMD64) | | Node.js packages, etc. |
 | `linux_amd64_gcc4` | Linux | x86_64 (AMD64) | | Python packages, CLI, etc. |
 | `linux_arm64` | Linux | AArch64 (ARM64) | AWS Graviton, Snapdragon, etc. | all packages |
@@ -36627,7 +36691,7 @@ Depending on you specific workload, you might want to experiment with the `max_n
 The following options can be passed to the `WITH` clause when creating an R-tree index: (e.g., `CREATE INDEX my_idx ON my_table USING RTREE (geom) WITH (âŸ¨optionâŸ© = âŸ¨valueâŸ©);`)
 
 | Option | Description | Default |
-|----------------------|-----------------------------------------------------------------------------------------------|---------|
+|----------------------|-----------------------------------------------------------------------------------------------|---------------------------|
 | `max_node_capacity` | The maximum number of entries per node in the R-tree. | `128` |
 | `min_node_capacity` | The minimum number of entries per node in the R-tree. | `0.4 * max_node_capacity` |
 
@@ -37051,8 +37115,8 @@ Below is a complete list of the supported parameters that can be used for both t
 | `ENDPOINT` | Specify a custom S3 endpoint | `S3`, `GCS`, `R2` | `STRING` | `s3.amazonaws.com` for `S3`, |
 | `URL_STYLE` | Either `vhost` or `path` | `S3`, `GCS`, `R2` | `STRING` | `vhost` for `S3`, `path` for `R2` and `GCS` |
 | `USE_SSL` | Whether to use HTTPS or HTTP | `S3`, `GCS`, `R2` | `BOOLEAN` | `true` |
-| `URL_COMPATIBILITY_MODE` | Can help when urls contain problematic characters. | `S3`, `GCS`, `R2` | `BOOLEAN` | `true` |
-| `ACCOUNT_ID` | The R2 account ID to use for generating the endpoint url | `R2` | `STRING` | - |
+| `URL_COMPATIBILITY_MODE` | Can help when URLs contain problematic characters | `S3`, `GCS`, `R2` | `BOOLEAN` | `true` |
+| `ACCOUNT_ID` | The R2 account ID to use for generating the endpoint URL | `R2` | `STRING` | - |
 
 ### Platform-Specific Secret Types
 
@@ -37069,7 +37133,7 @@ ACCOUNT_ID 'my_account_id'
 );
 ```
 
-Note the addition of the `ACCOUNT_ID` which is used to generate to correct endpoint url for you. Also note that for `R2` Secrets can also use both the `CONFIG` and `CREDENTIAL_CHAIN` providers. Finally, `R2` secrets are only available when using urls starting with `r2://`, for example:
+Note the addition of the `ACCOUNT_ID` which is used to generate to correct endpoint URL for you. Also note that for `R2` Secrets can also use both the `CONFIG` and `CREDENTIAL_CHAIN` providers. Finally, `R2` secrets are only available when using URLs starting with `r2://`, for example:
 
 ```sql
 SELECT *
@@ -37088,7 +37152,7 @@ SECRET 'my_secret'
 );
 ```
 
-Note that the above secret, will automatically have the correct Google Cloud Storage endpoint configured. Also note that for `GCS` Secrets can also use both the `CONFIG` and `CREDENTIAL_CHAIN` providers. Finally, `GCS` secrets are only available when using urls starting with `gcs://` or `gs://`, for example:
+Note that the above secret, will automatically have the correct Google Cloud Storage endpoint configured. Also note that for `GCS` Secrets can also use both the `CONFIG` and `CREDENTIAL_CHAIN` providers. Finally, `GCS` secrets are only available when using URLs starting with `gcs://` or `gs://`, for example:
 
 ```sql
 SELECT *
@@ -40092,14 +40156,23 @@ df = pd.DataFrame({
 'b': [True, None, False, True],
 'c': [42, 21, 13, 14]
 })
+```
 
-# selecting a single column
+Selecting a single column:
+
+```python
 col = duckdb.ColumnExpression('a')
 res = duckdb.df(df).select(col).fetchall()
 print(res)
-# [(1,), (2,), (3,), (4,)]
+```
 
-# selecting multiple columns
+```text
+[(1,), (2,), (3,), (4,)]
+```
+
+Selecting multiple columns:
+
+```python
 col_list = [
 duckdb.ColumnExpression('a') * 10,
 duckdb.ColumnExpression('b').isnull(),
@@ -40107,7 +40180,10 @@ duckdb.ColumnExpression('c') + 5
 ]
 res = duckdb.df(df).select(*col_list).fetchall()
 print(res)
-# [(10, False, 47), (20, True, 26), (30, False, 18), (40, False, 19)]
+```
+
+```text
+[(10, False, 47), (20, True, 26), (30, False, 18), (40, False, 19)]
 ```
 
 ## Star Expression
@@ -40130,7 +40206,10 @@ df = pd.DataFrame({
 star = duckdb.StarExpression(exclude = ['b'])
 res = duckdb.df(df).select(star).fetchall()
 print(res)
-# [(1, 42), (2, 21), (3, 13), (4, 14)]
+```
+
+```text
+[(1, 42), (2, 21), (3, 13), (4, 14)]
 ```
 
 ## Constant Expression
@@ -40150,7 +40229,10 @@ df = pd.DataFrame({
 const = duckdb.ConstantExpression('hello')
 res = duckdb.df(df).select(const).fetchall()
 print(res)
-# [('hello',), ('hello',), ('hello',), ('hello',)]
+```
+
+```text
+[('hello',), ('hello',), ('hello',), ('hello',)]
 ```
 
 ## Case Expression
@@ -40182,7 +40264,10 @@ CaseExpression(condition = ColumnExpression('b') == False, value = world) \
 .otherwise(hello)
 res = duckdb.df(df).select(case).fetchall()
 print(res)
-# [('hello',), ('hello',), ('world',), ('hello',)]
+```
+
+```text
+[('hello',), ('hello',), ('world',), ('hello',)]
 ```
 
 ## Function Expression
@@ -40211,7 +40296,10 @@ df = pd.DataFrame({
 ends_with = FunctionExpression('ends_with', ColumnExpression('a'), ConstantExpression('est'))
 res = duckdb.df(df).select(ends_with).fetchall()
 print(res)
-# [(True,), (True,), (False,), (True,)]
+```
+
+```text
+[(True,), (True,), (False,), (True,)]
 ```
 
 ## Common Operations
@@ -40219,7 +40307,7 @@ print(res)
 The Expression class also contains many operations that can be applied to any Expression type.
 
 | Operation | Description |
-|--------------------------------|----------------------------------------------------------------------------------------------------------------|
+|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
 | `.alias(name: str)` | Applies an alias to the expression. |
 | `.cast(type: DuckDBPyType)` | Applies a cast to the provided type on the expression. |
 | `.isin(*exprs: Expression)` | Creates an [`IN` expression]({% link docs/sql/expressions/in.md %}#in) against the provided expressions as the list. |
@@ -40232,7 +40320,7 @@ The Expression class also contains many operations that can be applied to any Ex
 When expressions are provided to `DuckDBPyRelation.order()`, the following order operations can be applied.
 
 | Operation | Description |
-|--------------------------------|----------------------------------------------------------------------------------------------------------------|
+|--------------------------------|------------------------------------------------------------------------------------|
 | `.asc()` | Indicates that this expression should be sorted in ascending order. |
 | `.desc()` | Indicates that this expression should be sorted in descending order. |
 | `.nulls_first()` | Indicates that the nulls in this expression should precede the non-null values. |
@@ -40281,14 +40369,14 @@ con.create_function(name, function, parameters, return_type)
 
 The `create_function` method takes the following parameters:
 
-1. **name**: A string representing the unique name of the UDF within the connection catalog.
-2. **function**: The Python function you wish to register as a UDF.
-3. **parameters**: Scalar functions can operate on one or more columns. This parameter takes a list of column types used as input.
-4. **return_type**: Scalar functions return one element per row. This parameter specifies the return type of the function.
-5. **type** (Optional): DuckDB supports both built-in Python types and PyArrow Tables. By default, built-in types are assumed, but you can specify `type = 'arrow'` to use PyArrow Tables.
-6. **null_handling** (Optional): By default, null values are automatically handled as Null-In Null-Out. Users can specify a desired behavior for null values by setting `null_handling = 'special'`.
-7. **exception_handling** (Optional): By default, when an exception is thrown from the Python function, it will be re-thrown in Python. Users can disable this behavior, and instead return `null`, by setting this parameter to `'return_null'`
-8. **side_effects** (Optional): By default, functions are expected to produce the same result for the same input. If the result of a function is impacted by any type of randomness, `side_effects` must be set to `True`.
+1. `name` A string representing the unique name of the UDF within the connection catalog.
+2. `function` The Python function you wish to register as a UDF.
+3. `parameters` Scalar functions can operate on one or more columns. This parameter takes a list of column types used as input.
+4. `return_type` Scalar functions return one element per row. This parameter specifies the return type of the function.
+5. `type` (optional): DuckDB supports both built-in Python types and PyArrow Tables. By default, built-in types are assumed, but you can specify `type = 'arrow'` to use PyArrow Tables.
+6. `null_handling` (optional): By default, `NULL` values are automatically handled as `NULL`-in `NULL`-out. Users can specify a desired behavior for `NULL` values by setting `null_handling = 'special'`.
+7. `exception_handling` (optional): By default, when an exception is thrown from the Python function, it will be re-thrown in Python. Users can disable this behavior, and instead return `NULL`, by setting this parameter to `'return_null'`
+8. `side_effects` (optional): By default, functions are expected to produce the same result for the same input. If the result of a function is impacted by any type of randomness, `side_effects` must be set to `True`.
 
 To unregister a UDF, you can call the `remove_function` method with the UDF name:
 
@@ -40323,7 +40411,7 @@ print(duckdb.sql("SELECT my_func(42)"))
 
 If only the parameter list types can be inferred, you'll need to pass in `None` as `parameters`.
 
-## Null Handling
+## `NULL` Handling
 
 By default when functions receive a `NULL` value, this instantly returns `NULL`, as part of the default `NULL`-handling.
 When this is not desired, you need to explicitly set this parameter to `"special"`.
@@ -40365,7 +40453,7 @@ print(res)
 ## Exception Handling
 
 By default, when an exception is thrown from the Python function, we'll forward (re-throw) the exception.
-If you want to disable this behavior, and instead return null, you'll need to set this parameter to `"return_null"`
+If you want to disable this behavior, and instead return `NULL`, you'll need to set this parameter to `"return_null"`.
 
 ```python
 import duckdb
@@ -40402,7 +40490,7 @@ At:
 By default DuckDB will assume the created function is a *pure* function, meaning it will produce the same output when given the same input.
 If your function does not follow that rule, for example when your function makes use of randomness, then you will need to mark this function as having `side_effects`.
 
-For example, this function will produce a new count for every invocation
+For example, this function will produce a new count for every invocation.
 
 ```python
 def count() -> int:
@@ -40417,7 +40505,7 @@ If we create this function without marking it as having side effects, the result
 
 ```python
 con = duckdb.connect()
-con.create_function("my_counter", count, side_effects = False)
+con.create_function("my_counter", count, side_effects=False)
 res = con.sql("SELECT my_counter() FROM range(10)").fetchall()
 print(res)
 ```
@@ -40426,12 +40514,12 @@ print(res)
 [(0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,), (0,)]
 ```
 
-Which is obviously not the desired result, when we add `side_effects = True`, the result is as we would expect:
+Which is obviously not the desired result, when we add `side_effects=True`, the result is as we would expect:
 
 ```python
 con.remove_function("my_counter")
 count.counter = 0
-con.create_function("my_counter", count, side_effects = True)
+con.create_function("my_counter", count, side_effects=True)
 res = con.sql("SELECT my_counter() FROM range(10)").fetchall()
 print(res)
 ```
@@ -41625,7 +41713,7 @@ title: Python Client API
 
   dense_rank(self: duckdb.duckdb.DuckDBPyRelation, window_spec: str, projected_columns: str = '') → duckdb.duckdb.DuckDBPyRelation¶   Computes the dense rank within the partition  
 
-  describe(self: duckdb.duckdb.DuckDBPyRelation) → duckdb.duckdb.DuckDBPyRelation¶   Gives basic statistics (e.g., min,max) and if null exists for each column of the relation.  
+  describe(self: duckdb.duckdb.DuckDBPyRelation) → duckdb.duckdb.DuckDBPyRelation¶   Gives basic statistics (e.g., min, max) and if `NULL` exists for each column of the relation.  
 
   property description¶   Return the description of the result  
 
@@ -44183,7 +44271,7 @@ The `markdown` mode is particularly useful for building documentation and the `l
 
 
 | Mode | Description |
-|--------------|----------------------------------------------|
+|--------------|---------------------------------------------|
 | `ascii` | Columns/rows delimited by 0x1F and 0x1E |
 | `box` | Tables using unicode box-drawing characters |
 | `csv` | Comma-separated values |
@@ -58213,7 +58301,7 @@ For primitive types, the underlying array can be obtained using the `duckdb_vect
 | DUCKDB_TYPE_TIME_TZ | duckdb_time_tz |
 | DUCKDB_TYPE_TIMESTAMP_TZ | duckdb_timestamp |
 
-### Null Values
+### `NULL` Values
 
 Any value in a vector can be `NULL`. When a value is `NULL`, the values contained within the primary array at that index is undefined (and can be uninitialized). The validity mask is a bitmask consisting of `uint64_t` elements. For every `64` values in the vector, one `uint64_t` element exists (rounded up). The validity mask has its bit set to 1 if the value is valid, or set to 0 if the value is invalid (i.e .`NULL`).
 
@@ -58605,9 +58693,11 @@ The bit is set to 1 if the value is valid (i.e., not NULL) or 0 if the value is 
 
 Validity of a specific value can be obtained like this:
 
+```c
 idx_t entry_idx = row_idx / 64;
 idx_t idx_in_entry = row_idx % 64;
 bool is_valid = validity_mask[entry_idx] & (1 << idx_in_entry);
+```
 
 Alternatively, the (slower) duckdb_validity_row_is_valid function can be used.
 
@@ -58624,7 +58714,7 @@ uint64_t *duckdb_vector_get_validity(
 
 ##### Return Value
 
-The pointer to the validity mask, or NULL if no validity mask is present
+The pointer to the validity mask, or `NULL` if no validity mask is present
 
 
 
@@ -58633,7 +58723,7 @@ The pointer to the validity mask, or NULL if no validity mask is present
 Ensures the validity mask is writable by allocating it.
 
 After this function is called, `duckdb_vector_get_validity` will ALWAYS return non-NULL.
-This allows null values to be written to the vector, regardless of whether a validity mask was present before.
+This allows `NULL` values to be written to the vector, regardless of whether a validity mask was present before.
 
 ##### Syntax
 
