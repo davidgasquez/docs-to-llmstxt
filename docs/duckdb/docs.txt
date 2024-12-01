@@ -5243,7 +5243,7 @@ Additionally, we recommend using the [Ninja build system](https://ninja-build.or
 
 Install Xcode and [Homebrew](https://brew.sh/). Then, install the required packages with:
 
-```bash
+```batch
 brew install git cmake ninja
 ```
 
@@ -5253,19 +5253,19 @@ Install the required packages with the package manager of your distribution.
 
 #### Ubuntu and Debian
 
-```bash
+```batch
 sudo apt-get update && sudo apt-get install -y git g++ cmake ninja-build libssl-dev
 ```
 
 #### Fedora, CentOS, and Red Hat
 
-```bash
+```batch
 sudo yum install -y git g++ cmake ninja-build openssl-devel
 ```
 
 #### Alpine Linux
 
-```bash
+```batch
 apk add g++ git make cmake ninja
 ```
 
@@ -5276,7 +5276,7 @@ There are no official binaries distributed for musl libc but DuckDB can be build
 
 Clone the DuckDB repository:
 
-```bash
+```batch
 git clone https://github.com/duckdb/duckdb
 ```
 
@@ -5286,7 +5286,7 @@ We recommend creating a full clone of the repository. Note that the directory us
 
 To build DuckDB, we use a Makefile which in turn calls into CMake. We also advise using [Ninja](https://ninja-build.org/manual.html) as the generator for CMake.
 
-```bash
+```batch
 GEN=ninja make
 ```
 
@@ -5294,7 +5294,7 @@ GEN=ninja make
 
 Once the build finishes successfully, you can find the `duckdb` binary in the `build` directory:
 
-```bash
+```batch
 build/release/duckdb
 ```
 
@@ -5302,13 +5302,13 @@ build/release/duckdb
 
 For testing, it can be useful to build DuckDB with statically linked core extensions. To do so, run:
 
-```bash
+```batch
 CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch' GEN=ninja make
 ```
 
 This option also accepts out-of-tree extensions:
 
-```bash
+```batch
 CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch;delta' GEN=ninja make
 ```
 
@@ -5361,13 +5361,13 @@ Once the build finishes successfully, you can find the `duckdb.exe` binary in th
 
 DuckDB runs on Android. To build the command line client in the [Termux application](https://termux.dev/), install the following packages:
 
-```bash
+```batch
 pkg install -y git ninja clang cmake python3
 ```
 
 Clone the DuckDB repository and build it as follows:
 
-```bash
+```batch
 mkdir build
 cd build
 export CXXFLAGS="-Wno-missing-template-arg-list-after-template-kw"
@@ -5383,7 +5383,7 @@ cmake --build . --config Release
 
 Note that you can also use the Python client:
 
-```bash
+```batch
 pip install --pre --upgrade duckdb
 ```
 
@@ -5410,7 +5410,7 @@ Ninja parallelizes the build, which can cause out-of-memory issues on systems wi
 These issues have also been reported to occur on Alpine Linux, especially on machines with limited resources.
 In these cases, avoid using Ninja by setting the Makefile generator to empty (`GEN=`):
 
-```bash
+```batch
 GEN= make
 ```
 
@@ -6425,14 +6425,20 @@ The `TABLESAMPLE` clause is essentially equivalent to creating a subquery with t
 Sample 20% of `tbl` **before** the join:
 
 ```sql
-SELECT * FROM tbl TABLESAMPLE reservoir(20%), tbl2 WHERE tbl.i = tbl2.i;
+SELECT *
+FROM
+tbl TABLESAMPLE reservoir(20%),
+tbl2
+WHERE tbl.i = tbl2.i;
 ```
 
 Sample 20% of `tbl` **before** the join:
 
 ```sql
 SELECT *
-FROM (SELECT * FROM tbl USING SAMPLE reservoir(20%)) tbl, tbl2
+FROM
+(SELECT * FROM tbl USING SAMPLE reservoir(20%)) tbl,
+tbl2
 WHERE tbl.i = tbl2.i;
 ```
 
@@ -13166,6 +13172,8 @@ SELECT [4, 5, 6] AS l, [x FOR x, i IN l IF i != 2] filtered;
 |-----------|----------|
 | [4, 5, 6] | [4, 6] |
 
+Under the hood, `[f(x) FOR x IN y IF g(x)]` is translated to `list_transform(list_filter(y, x -> f(x)), x -> f(x))`.
+
 ## Range Functions
 
 DuckDB offers two range functions, [`range(start, stop, step)`](#range) and [`generate_series(start, stop, step)`](#generate_series), and their variants with default arguments for `stop` and `step`. The two functions' behavior is different regarding their `stop` argument. This is documented below.
@@ -13645,17 +13653,17 @@ title: Map Functions
 | Name | Description |
 |:--|:-------|
 | [`cardinality(map)`](#cardinalitymap) | Return the size of the map (or the number of entries in the map). |
-| [`element_at(map, key)`](#element_atmap-key) | Return a list containing the value for a given key or an empty list if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
+| [`element_at(map, key)`](#element_atmap-key) | Return the value for a given key, or `NULL` if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
 | [`map_contains(map, key)`](#map_containsmap-key) | Checks if a map contains a given key. |
 | [`map_contains_entry(map, key, value)`](#map_contains_entrymap-key-value) | Check if a map contains a given key-value pair. |
 | [`map_contains_value(map, value)`](#map_contains_valuemap-value) | Checks if a map contains a given value. |
 | [`map_entries(map)`](#map_entriesmap) | Return a list of struct(k, v) for each key-value pair in the map. |
-| [`map_extract(map, key)`](#map_extractmap-key) | Alias of `element_at`. Return a list containing the value for a given key or an empty list if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
+| [`map_extract(map, key)`](#map_extractmap-key) | Return the value for a given key, or `NULL` if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
 | [`map_from_entries(STRUCT(k, v)[])`](#map_from_entriesstructk-v) | Returns a map created from the entries of the array. |
 | [`map_keys(map)`](#map_keysmap) | Return a list of all keys in the map. |
 | [`map_values(map)`](#map_valuesmap) | Return a list of all values in the map. |
 | [`map()`](#map) | Returns an empty map. |
-| [`map[entry]`](#mapentry) | Alias for `element_at`. |
+| [`map[entry]`](#mapentry) | Return the value for a given key, or `NULL` if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
 
 #### `cardinality(map)`
 
@@ -13669,9 +13677,10 @@ title: Map Functions
 
 
 
-| **Description** | Return a list containing the value for a given key or an empty list if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
+| **Description** | Return the value for a given key, or `NULL` if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
 | **Example** | `element_at(map([100, 5], [42, 43]), 100)` |
-| **Result** | `[42]` |
+| **Result** | `42` |
+| **Aliases** | `map_extract(map, key)`, `map[key]` |
 
 #### `map_contains(map, key)`
 
@@ -13709,9 +13718,10 @@ title: Map Functions
 
 
 
-| **Description** | Alias of `element_at`. Return a list containing the value for a given key or an empty list if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
+| **Description** | Return the value for a given key, or `NULL` if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
 | **Example** | `map_extract(map([100, 5], [42, 43]), 100)` |
-| **Result** | `[42]` |
+| **Result** | `42` |
+| **Aliases** | `element_at(map, key)`, `map[key]` |
 
 #### `map_from_entries(STRUCT(k, v)[])`
 
@@ -13749,9 +13759,10 @@ title: Map Functions
 
 
 
-| **Description** | Alias for `element_at`. |
+| **Description** | Return the value for a given key, or `NULL` if the key is not contained in the map. The type of the key provided in the second parameter must match the type of the map's keys else an error is returned. |
 | **Example** | `map([100, 5], ['a', 'b'])[100]` |
-| **Result** | `[a]` |
+| **Result** | `'a'` |
+| **Aliases** | `element_at(map, key)`, `map_extract(map, key)` |
 
 ---
 duckdb/docs/sql/functions/nested.md
@@ -14347,6 +14358,12 @@ This can be rewritten as follows:
 SELECT goose_name.replace('goose', 'duck') AS duck_name
 FROM unnest(['African goose', 'Faroese goose', 'Hungarian goose', 'Pomeranian goose']) breed(goose_name);
 ```
+
+> Tip To apply function chaining to a single value, use parentheses, e.g.:
+>
+> ```sql
+> SELECT ('hello world').replace(' ', '_');
+> ```
 
 ## Query Functions
 
@@ -15025,6 +15042,7 @@ title: Timestamp Functions
 
 
 This section describes functions and operators for examining and manipulating [`TIMESTAMP` values]({% link docs/sql/data_types/timestamp.md %}).
+See also the related [`TIMESTAMPTZ` functions]({% link docs/sql/functions/timestamptz.md %}).
 
 ## Timestamp Operators
 
@@ -15047,7 +15065,7 @@ The table below shows the available scalar functions for `TIMESTAMP` values.
 | [`age(timestamp, timestamp)`](#agetimestamp-timestamp) | Subtract arguments, resulting in the time difference between the two timestamps. |
 | [`age(timestamp)`](#agetimestamp) | Subtract from current_date. |
 | [`century(timestamp)`](#centurytimestamp) | Extracts the century of a timestamp. |
-| [`current_timestamp`](#current_timestamp) | Returns the current timestamp (at the start of the transaction). |
+| [`current_localtimestamp()`](#current_localtimestamp) | Returns the current timestamp (at the start of the transaction). |
 | [`date_diff(part, startdate, enddate)`](#date_diffpart-startdate-enddate) | The number of [partition]({% link docs/sql/functions/datepart.md %}) boundaries between the timestamps. |
 | [`date_part([part, ...], timestamp)`](#date_partpart--timestamp) | Get the listed [subfields]({% link docs/sql/functions/datepart.md %}) as a `struct`. The list must be constant. |
 | [`date_part(part, timestamp)`](#date_partpart-timestamp) | Get [subfield]({% link docs/sql/functions/datepart.md %}) (equivalent to `extract`). |
@@ -15079,7 +15097,6 @@ The table below shows the available scalar functions for `TIMESTAMP` values.
 | [`strptime(text, format)`](#strptimetext-format) | Converts the string `text` to timestamp according to the [format string]({% link docs/sql/functions/dateformat.md %}#format-specifiers). Throws an error on failure. To return `NULL` on failure, use [`try_strptime`](#try_strptimetext-format). |
 | [`time_bucket(bucket_width, timestamp[, offset])`](#time_bucketbucket_width-timestamp-offset) | Truncate `timestamp` by the specified interval `bucket_width`. Buckets are offset by `offset` interval. |
 | [`time_bucket(bucket_width, timestamp[, origin])`](#time_bucketbucket_width-timestamp-origin) | Truncate `timestamp` by the specified interval `bucket_width`. Buckets are aligned relative to `origin` timestamp. `origin` defaults to 2000-01-03 00:00:00 for buckets that don't include a month or year interval, and to 2000-01-01 00:00:00 for month and year buckets. |
-| [`to_timestamp(double)`](#to_timestampdouble) | Converts seconds since the epoch to a timestamp with time zone. |
 | [`try_strptime(text, format-list)`](#try_strptimetext-format-list) | Converts the string `text` to timestamp applying the [format strings]({% link docs/sql/functions/dateformat.md %}) in the list until one succeeds. Returns `NULL` on failure. |
 | [`try_strptime(text, format)`](#try_strptimetext-format) | Converts the string `text` to timestamp according to the [format string]({% link docs/sql/functions/dateformat.md %}#format-specifiers). Returns `NULL` on failure. |
 
@@ -15113,13 +15130,13 @@ In general, if the function needs to examine the parts of the infinite date, the
 | **Example** | `century(TIMESTAMP '1992-03-22')` |
 | **Result** | `20` |
 
-#### `current_timestamp`
+#### `current_localtimestamp()`
 
 
 
 | **Description** | Returns the current timestamp with time zone (at the start of the transaction). |
-| **Example** | `current_timestamp` |
-| **Result** | `2024-04-16T09:14:36.098Z` |
+| **Example** | `current_localimestamp()` |
+| **Result** | `2024-11-30 13:28:48.895` |
 
 #### `date_diff(part, startdate, enddate)`
 
@@ -15369,14 +15386,6 @@ In general, if the function needs to examine the parts of the infinite date, the
 | **Example** | `time_bucket(INTERVAL '2 weeks', TIMESTAMP '1992-04-20 15:26:00', TIMESTAMP '1992-04-01 00:00:00')` |
 | **Result** | `1992-04-15 00:00:00` |
 
-#### `to_timestamp(double)`
-
-
-
-| **Description** | Converts seconds since the epoch to a timestamp with time zone. |
-| **Example** | `to_timestamp(1284352323.5)` |
-| **Result** | `2010-09-13 04:32:03.5+00` |
-
 #### `try_strptime(text, format-list)`
 
 
@@ -15431,11 +15440,12 @@ title: Timestamp with Time Zone Functions
 This section describes functions and operators for examining and manipulating [`TIMESTAMP WITH TIME ZONE`
 (or `TIMESTAMPTZ`) values]({% link docs/sql/data_types/timestamp.md %}).
 
-Despite the name, these values do not store a time zone â€“ just an instant like `TIMESTAMP`.
-Instead, they request that the instant be binned and formatted using the current time zone.
+See also the related [`TIMESTAMP` functions]({% link docs/sql/functions/timestamptz.md %}).
 
-Time zone support is not built in but can be provided by an extension,
-such as the [ICU extension]({% link docs/extensions/icu.md %}) that ships with DuckDB.
+Despite the name, these values do not store a time zone â€“ just an instant like `TIMESTAMP`.
+Instead, they request that the instant be binned and formatted using the current time zone, see the [blog post on DuckDB's timezone support](https://duckdb.org/2022/01/06/time-zones.html) for more information.
+
+Time zone support is provided by the built-in [ICU extension]({% link docs/extensions/icu.md %}).
 
 In the examples below, the current time zone is presumed to be `America/Los_Angeles`
 using the Gregorian calendar.
@@ -15455,6 +15465,7 @@ they are always available.
 | [`isinf(timestamptz)`](#isinftimestamptz) | Returns true if the timestamp with time zone is infinite, false otherwise. |
 | [`least(timestamptz, timestamptz)`](#leasttimestamptz-timestamptz) | The earlier of two timestamps. |
 | [`now()`](#now) | Current date and time (start of current transaction). |
+| [`to_timestamp(double)`](#to_timestampdouble) | Converts seconds since the epoch to a timestamp with time zone. |
 | [`transaction_timestamp()`](#transaction_timestamp) | Current date and time (start of current transaction). |
 
 #### `current_timestamp`
@@ -15512,6 +15523,14 @@ they are always available.
 | **Description** | Current date and time (start of current transaction). |
 | **Example** | `now()` |
 | **Result** | `2022-10-08 12:44:46.122-07` |
+
+#### `to_timestamp(double)`
+
+
+
+| **Description** | Converts seconds since the epoch to a timestamp with time zone. |
+| **Example** | `to_timestamp(1284352323.5)` |
+| **Result** | `2010-09-13 04:32:03.5+00` |
 
 #### `transaction_timestamp()`
 
@@ -15998,7 +16017,7 @@ The functions below are difficult to categorize into specific function types and
 | [`checkpoint(database)`](#checkpointdatabase) | Synchronize WAL with file for (optional) database without interrupting transactions. |
 | [`coalesce(expr, ...)`](#coalesceexpr-) | Return the first expression that evaluates to a non-`NULL` value. Accepts 1 or more parameters. Each expression can be a column, literal value, function result, or many others. |
 | [`constant_or_null(arg1, arg2)`](#constant_or_nullarg1-arg2) | If `arg2` is `NULL`, return `NULL`. Otherwise, return `arg1`. |
-| [`count_if(x)`](#count_ifx) | Returns 1 if `x` is `true` or a non-zero number. |
+| [`count_if(x)`](#count_ifx) | Aggregate function; rows contribute 1 if `x` is `true` or a non-zero number, else 0. |
 | [`current_catalog()`](#current_catalog) | Return the name of the currently active catalog. Default is memory. |
 | [`current_schema()`](#current_schema) | Return the name of the currently active schema. Default is main. |
 | [`current_schemas(boolean)`](#current_schemasboolean) | Return list of schemas. Pass a parameter of `true` to include implicit schemas. |
@@ -16021,7 +16040,7 @@ The functions below are difficult to categorize into specific function types and
 | [`pg_typeof(expression)`](#pg_typeofexpression) | Returns the lower case name of the data type of the result of the expression. For PostgreSQL compatibility. |
 | [`query(`*`query_string_literal`*`)`](#queryquery_string_literal) | Table function that parses and executes the query defined in *`query_string_literal`*. Only literal strings are allowed. Warning: this function allows invoking arbitrary queries, potentially altering the database state. |
 | [`query_table(`*`tbl_name`*`)`](#query_tabletbl_name) | Table function that returns the table given in *`tbl_name`*. |
-| [`query_table(`*`tbl_names`*`, [`*`by_name`*`])`](#query_tabletbl_names-by_name) | Table function that returns the union of tables given in *`tbl_names`*. If the optional *`by_name`* parameter is set to `true`, it uses [`UNION ALL BY NAME`](../../sql/query_syntax/setops#union-all-by-name) semantics. |
+| [`query_table(`*`tbl_names`*`, [`*`by_name`*`])`](#query_tabletbl_names-by_name) | Table function that returns the union of tables given in *`tbl_names`*. If the optional *`by_name`* parameter is set to `true`, it uses [`UNION ALL BY NAME`]({% link docs/sql/query_syntax/setops.md %}#union-all-by-name) semantics. |
 | [`read_blob(source)`](#read_blobsource) | Returns the content from `source` (a filename, a list of filenames, or a glob pattern) as a `BLOB`. See the [`read_blob` guide]({% link docs/guides/file_formats/read_file.md %}#read_blob) for more details. |
 | [`read_text(source)`](#read_textsource) | Returns the content from `source` (a filename, a list of filenames, or a glob pattern) as a `VARCHAR`. The file content is first validated to be valid UTF-8. If `read_text` attempts to read a file with invalid UTF-8 an error is thrown suggesting to use `read_blob` instead. See the [`read_text` guide]({% link docs/guides/file_formats/read_file.md %}#read_text) for more details. |
 | [`sha256(value)`](#sha256value) | Returns a `VARCHAR` with the SHA-256 hash of the `value`. |
@@ -16067,7 +16086,7 @@ The functions below are difficult to categorize into specific function types and
 
 
 
-| **Description** | Returns 1 if `x` is `true` or a non-zero number. |
+| **Description** | Aggregate function; rows contribute 1 if `x` is `true` or a non-zero number, else 0. |
 | **Example** | `count_if(42)` |
 | **Result** | 1 |
 
@@ -16192,7 +16211,7 @@ The functions below are difficult to categorize into specific function types and
 
 
 
-| **Description** | Returns the MD5 hash of the `string` as a `BIGINT`. |
+| **Description** | Returns the lower 8 bytes of the MD5 hash of `string` as a `BIGINT`. |
 | **Example** | `md5_number_lower('123')` |
 | **Result** | `8091599832034528150` |
 
@@ -16200,7 +16219,7 @@ The functions below are difficult to categorize into specific function types and
 
 
 
-| **Description** | Returns the MD5 hash of the `string` as a `BIGINT`. |
+| **Description** | Returns the higher 8 bytes of the MD5 hash of `string` as a `BIGINT`. |
 | **Example** | `md5_number_higher('123')` |
 | **Result** | `6559309979213966368` |
 
@@ -16228,27 +16247,27 @@ The functions below are difficult to categorize into specific function types and
 | **Example** | `pg_typeof('abc')` |
 | **Result** | `varchar` |
 
-#### `query(`*`query_string_literal`*`)`
+#### `query(query_string_literal)`
 
 
 
-| **Description** | Table function that parses and executes the query defined in *`query_string_literal`*. Only literal strings are allowed. Warning: this function allows invoking arbitrary queries, potentially altering the database state. |
+| **Description** | Table function that parses and executes the query defined in `query_string_literal`. Only literal strings are allowed. Warning: this function allows invoking arbitrary queries, potentially altering the database state. |
 | **Example** | `query('SELECT 42 AS x')` |
 | **Result** | `42` |
 
-#### `query_table(`*`tbl_name`*`)`
+#### `query_table(tbl_name)`
 
 
 
-| **Description** | Table function that returns the table given in *`tbl_name`*. |
-| **Example** | `query(t1)` |
+| **Description** | Table function that returns the table given in `tbl_name`. |
+| **Example** | `query('t1')` |
 | **Result** | (the rows of `t1`) |
 
-#### `query_table(`*`tbl_names`*`, [`*`by_name`*`])`
+#### `query_table(tbl_names, [by_name])`
 
 
 
-| **Description** | Table function that returns the union of tables given in *`tbl_names`*. If the optional *`by_name`* parameter is set to `true`, it uses [`UNION ALL BY NAME`](../../sql/query_syntax/setops#union-all-by-name) semantics. |
+| **Description** | Table function that returns the union of tables given in `tbl_names`. If the optional `by_name` parameter is set to `true`, it uses [`UNION ALL BY NAME`]({% link docs/sql/query_syntax/setops.md %}#union-all-by-name) semantics. |
 | **Example** | `query(['t1', 't2'])` |
 | **Result** | (the union of the two tables) |
 
@@ -17186,7 +17205,7 @@ railroad: expressions/in.js
 
 ## `IN`
 
-The `IN` operator checks containment of the left expression inside the set of expressions on the right hand side (RHS). The `IN` operator returns true if the expression is present in the RHS, false if the expression is not in the RHS and the RHS has no `NULL` values, or `NULL` if the expression is not in the RHS and the RHS has `NULL` values.
+The `IN` operator checks containment of the left expression inside the collection the right hand side (RHS). The `IN` operator returns `true` if the expression is present in the RHS, `false` if the expression is not in the RHS and the RHS has no `NULL` values, or `NULL` if the expression is not in the RHS and the RHS has `NULL` values. Supported collections on the RHS are tuples, lists, maps and subqueries that return a single column (see [the subqueries page]({% link docs/sql/expressions/subqueries.md %})). For maps, the `IN` operator checks for containment in the keys, not in the values.
 
 ```sql
 SELECT 'Math' IN ('CS', 'Math');
@@ -17223,10 +17242,6 @@ NULL
 ## `NOT IN`
 
 `NOT IN` can be used to check if an element is not present in the set. `x NOT IN y` is equivalent to `NOT (x IN y)`.
-
-## Use with Subqueries
-
-The `IN` operator can also be used with a subquery that returns a single column. See the [subqueries page for more information]({% link docs/sql/expressions/subqueries.md %}).
 
 ---
 duckdb/docs/sql/expressions/logical_operators.md
@@ -18182,14 +18197,14 @@ The following clauses guarantee that the original row order is preserved:
 * `WHERE`
 * Window functions with an empty `OVER` clause
 
-> Tip `row_number() OVER ()` allows turning the original row order into an explicit column that can be referenced in the operations that don't preserve row order by default.
+> Tip `row_number() OVER ()` allows turning the original row order into an explicit column that can be referenced in the operations that don't preserve row order by default. On materialized tables, the `rowid` pseudo-column can be used to the same effect.
 
 The following operations **do not** guarantee that the row order is preserved:
 
 * `FROM` with multiple tables and/or subqueries
 * `JOIN`
-* `SAMPLE`
 * `UNION`
+* `USING SAMPLE`
 * `GROUP BY` (in particular, the output order is undefined and the order in which rows are fed into [order-sensitive aggregate functions](https://duckdb.org/docs/sql/functions/aggregates.html#order-by-clause-in-aggregate-functions) is undefined unless explicitly specified in the aggregate function)
 * `ORDER BY` (specifically, `ORDER BY` may not use a [stable algorithm](https://en.m.wikipedia.org/wiki/Stable_algorithm))
 
@@ -19765,6 +19780,10 @@ The type integer is the common choice, as it offers the best balance between ran
 
 The data type `DECIMAL(WIDTH, SCALE)` (also available under the alias `NUMERIC(WIDTH, SCALE)`) represents an exact fixed-point decimal value. When creating a value of type `DECIMAL`, the `WIDTH` and `SCALE` can be specified to define which size of decimal values can be held in the field. The `WIDTH` field determines how many digits can be held, and the `scale` determines the amount of digits after the decimal point. For example, the type `DECIMAL(3, 2)` can fit the value `1.23`, but cannot fit the value `12.3` or the value `1.234`. The default `WIDTH` and `SCALE` is `DECIMAL(18, 3)`, if none are specified.
 
+Addition, subtraction, and multiplication of two fixed-point decimals returns another fixed-point decimal with the required `WIDTH` and `SCALE` to contain the exact result, or throws an error if the required `WIDTH` would exceed the maximal supported `WIDTH`, which is currently 38.
+
+Division of fixed-point decimals does not typically produce numbers with finite decimal expansion. Therefore, DuckDB uses approximate [floating-point arithmetic](#floating-point-types) for all divisions that involve fixed-point decimals and accordingly returns floating-point data types.
+
 Internally, decimals are represented as integers depending on their specified `WIDTH`.
 
 
@@ -20028,7 +20047,7 @@ Bracket notation may also be used. Note that this uses single quotes (`'`) since
 SELECT a['x space'] FROM (SELECT {'x space': 1, 'y': 2, 'z': 3} AS a);
 ```
 
-The struct_extract function is also equivalent. This returns 1:
+The `struct_extract` function is also equivalent. This returns 1:
 
 ```sql
 SELECT struct_extract({'x space': 1, 'y': 2, 'z': 3}, 'x space');
@@ -20344,11 +20363,11 @@ duckdb/docs/sql/data_types/timestamp.md
 ---
 layout: docu
 title: Timestamp Types
-blurb: A timestamp specifies a combination of a date (year, month, day) and a time (hour, minute, second, microsecond).
+blurb: A timestamp specifies a combination of a date (year, month, day) and a time (hour, minute, second, microsecond or nanosecond).
 ---
 
 Timestamps represent points in absolute time, usually called *instants*.
-DuckDB represents instants as the number of microseconds (Âµs) since `1970-01-01 00:00:00+00`.
+DuckDB represents instants as the number of microseconds (Âµs) (or nanoseconds, for `TIMESTAMP_NS`) since `1970-01-01 00:00:00+00`.
 
 ## Timestamp Types
 
@@ -20358,18 +20377,18 @@ DuckDB represents instants as the number of microseconds (Âµs) since `1970-01-
 | `TIMESTAMP` | `DATETIME` | timestamp with microsecond precision (ignores time zone) |
 | `TIMESTAMP_MS` | | timestamp with millisecond precision (ignores time zone) |
 | `TIMESTAMP_S` | | timestamp with second precision (ignores time zone) |
-| `TIMESTAMPTZ` | `TIMESTAMP WITH TIME ZONE` | timestamp (uses time zone) |
+| `TIMESTAMPTZ` | `TIMESTAMP WITH TIME ZONE` | timestamp with microsecond precision (uses time zone) |
 
-A timestamp specifies a combination of [`DATE`]({% link docs/sql/data_types/date.md %}) (year, month, day) and a [`TIME`]({% link docs/sql/data_types/time.md %}) (hour, minute, second, microsecond). Timestamps can be created using the `TIMESTAMP` keyword, where the data must be formatted according to the ISO 8601 format (`YYYY-MM-DD hh:mm:ss[.zzzzzz][+-TT[:tt]]`). Decimal places beyond the targeted sub-second precision are ignored.
+A timestamp specifies a combination of [`DATE`]({% link docs/sql/data_types/date.md %}) (year, month, day) and a [`TIME`]({% link docs/sql/data_types/time.md %}) (hour, minute, second, microsecond or nanosecond). Timestamps can be created using the `TIMESTAMP` keyword, where the data must be formatted according to the ISO 8601 format (`YYYY-MM-DD hh:mm:ss[.zzzzzz][+-TT[:tt]]` (three extra decimal places supported by `TIMESTAMP_NS`). Decimal places beyond the targeted sub-second precision are ignored.
 
-> Warning When defining timestamps using a `TIMESTAMP_NS` literal, the decimal places beyond _microseconds_ are ignored. Note that the `TIMESTAMP_NS` type is able to hold nanoseconds when created e.g., via the ingestion of Parquet files.
+> Since there is not currently a `TIMESTAMP_NS WITH TIME ZONE` data type, external columns with nano-second precision and "instant semantics", e.g., [parquet timestamp columns with `isAdjustedToUTC=true`](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#instant-semantics-timestamps-normalized-to-utc), lose precision when read using DuckDB.
 
 ```sql
 SELECT TIMESTAMP_NS '1992-09-20 11:30:00.123456789';
 ```
 
 ```text
-1992-09-20 11:30:00.123456
+1992-09-20 11:30:00.123456789
 ```
 
 ```sql
@@ -22353,7 +22372,7 @@ Zero or more copy options may be provided as a part of the copy operation. The `
 
 Any option that is a Boolean can be enabled or disabled in multiple ways. You can write `true`, `ON`, or `1` to enable the option, and `false`, `OFF`, or `0` to disable it. The `BOOLEAN` value can also be omitted, e.g., by only passing `(HEADER)`, in which case `true` is assumed.
 
-The below options are applicable to all formats written with `COPY`.
+With few exceptions, the below options are applicable to all formats written with `COPY`.
 
 | Name | Description | Type | Default |
 |:--|:-----|:-|:-|
@@ -25023,7 +25042,30 @@ SET VARIABLE my_string = 'Hello world';
 SET VARIABLE my_map = MAP {'k1': 10, 'k2': 20};
 ```
 
-If the variable is not set, the `getvariable` function returns `NULL`:
+Variables can also be assigned to results of queries:
+
+```sql
+-- write some CSV files
+COPY (SELECT 42 AS a) TO 'test1.csv';
+COPY (SELECT 84 AS a) TO 'test2.csv';
+
+-- add a list of CSV files to a table
+CREATE TABLE csv_files(file VARCHAR);
+INSERT INTO csv_files VALUES ('test1.csv'), ('test2.csv');
+
+-- initialize a variable with the list of csv files
+SET VARIABLE list_of_files = (SELECT LIST(file) FROM csv_files);
+
+-- read the CSV files
+SELECT * FROM read_csv(getvariable('list_of_files'), filename := True);
+```
+
+| a | filename |
+|-----:|------------:|
+| 42 | test.csv |
+| 84 | test2.csv |
+
+If a variable is not set, the `getvariable` function returns `NULL`:
 
 ```sql
 SELECT getvariable('undefined_var') AS result;
@@ -31742,9 +31784,26 @@ INSTALL iceberg;
 LOAD iceberg;
 ```
 
+## Updating the Extension
+
+The `iceberg` extension often receives updates between DuckDB releases. To make sure that you have the latest version, run:
+
+```sql
+UPDATE EXTENSIONS (iceberg);
+```
+
 ## Usage
 
 To test the examples, download the [`iceberg_data.zip`](/data/iceberg_data.zip) file and unzip it.
+
+### Common Parameters
+
+| Parameter | Type | Default | Description |
+|------------------------------|-----------|--------------------------------------------|------------------------------------------------------------|
+| `allow_moved_paths` | `BOOLEAN` | `false` | Allows scanning Iceberg tables that are moved |
+| `metadata_compression_codec` | `VARCHAR` | `''` | Treats metadata files as when set to `'gzip'` |
+| `version` | `VARCHAR` | `'?'` | Provides an explicit version string, hint file or guessing |
+| `version_name_format` | `VARCHAR` | `'v%s%s.metadata.json,%s%s.metadata.json'` | Controls how versions are converted to metadata file names |
 
 ### Querying Individual Tables
 
@@ -31770,7 +31829,10 @@ This extension can be paired with the [`httpfs` extension]({% link docs/extensio
 
 ```sql
 SELECT count(*)
-FROM iceberg_scan('s3://bucketname/lineitem_iceberg/metadata/02701-1e474dc7-4723-4f8d-a8b3-b5f0454eb7ce.metadata.json', allow_moved_paths = true);
+FROM iceberg_scan(
+'s3://bucketname/lineitem_iceberg/metadata/02701-1e474dc7-4723-4f8d-a8b3-b5f0454eb7ce.metadata.json',
+allow_moved_paths = true
+);
 ```
 
 ### Access Iceberg Metadata
@@ -31800,6 +31862,66 @@ FROM iceberg_snapshots('data/iceberg/lineitem_iceberg');
 |-----------------|---------------------|-------------------------|------------------------------------------------------------------------------------------------|
 | 1 | 3776207205136740581 | 2023-02-15 15:07:54.504 | lineitem_iceberg/metadata/snap-3776207205136740581-1-cf3d0be5-cf70-453d-ad8f-48fdc412e608.avro |
 | 2 | 7635660646343998149 | 2023-02-15 15:08:14.73 | lineitem_iceberg/metadata/snap-7635660646343998149-1-10eaca8a-1e1c-421e-ad6d-b232e5ee23d3.avro |
+
+### Selecting Metadata versions
+
+By default, the `iceberg` extension will look for a `version-hint.text` file to identify the proper metadata version to use. This can be overridden by explicitly supplying a version number via the `version` parameter to iceberg table functions. By default, this will look for both `v{version}.metadata.json` and `{version}.metadata.json` files, or `v{version}.gz.metadata.json` and `{version}.gz.metadata.json` when `metadata_compression_codec = 'gzip'` is specified. Other compression codecs are not supported.
+
+Additionally, if any `.text` or `.txt` file is provided as a version, it is opened and treated as a version-hint file. The `iceberg` extension will open this file and use the **entire contents** of the file as a provided version number.
+
+> The entire contents of the `version-hint.txt` file will be treated as a literal version name, with no encoding, escaping or trimming. This includes any whitespace, or unsafe characters which will be explicitly passed formatted into filenames in the logic described below.
+
+```sql
+SELECT *
+FROM iceberg_snapshots(
+'data/iceberg/lineitem_iceberg',
+version = '1',
+allow_moved_paths = true
+);
+```
+
+| count_star() |
+|-------------:|
+| 60175 |
+
+### Working with Alternative Metadata Naming Conventions
+
+The `iceberg` extension can handle different metadata naming conventions by specifying them as a comma-delimited list of format strings via the `version_name_format` parameter. Each format string must take two `%s` parameters. The first is the location of the version number in the metadata filename and the second is the location of the `metadata_compression_codec` extension. The behavior described above is provided by the default value of `"v%s%s.metadata.gz,%s%smetadata.gz`. In the event you had an alternatively named metadata file with such as `rev-2.metadata.json.gz`, the table could be read via the follow statement.
+
+```sql
+SELECT *
+FROM iceberg_snapshots(
+'data/iceberg/alternative_metadata_gz_naming',
+version = '2',
+version_name_format = 'rev-%s.metadata.json%s',
+metadata_compression_codec = 'gzip',
+allow_moved_paths = true
+);
+```
+
+| count_star() |
+|-------------:|
+| 60175 |
+
+### â€œGuessingâ€� Metadata Versions
+
+By default, either a table version number or a `version-hint.text` **must** be provided for the `iceberg` extension to read a table. This is typically provided by an external data catalog. In the event neither is present, the `iceberg` extension can attempt to guess the latest version by passing `?` as the table version. The â€œlatestâ€� version is assumed to be the filename that is lexicographically largest when sorting the filenames. Collations are not considered. This behavior is not enabled by default as it may potentially violate ACID constraints. It can be enabled by setting `unsafe_enable_version_guessing` to `true`. When this is set, `iceberg` functions will attempt to guess the latest version by default before failing.
+
+```sql
+SET unsafe_enable_version_guessing=true;
+SELECT count(*)
+FROM iceberg_scan('data/iceberg/lineitem_iceberg_no_hint', allow_moved_paths = true);
+-- Or explicitly as:
+-- FROM iceberg_scan(
+-- 'data/iceberg/lineitem_iceberg_no_hint',
+-- version = '?',
+-- allow_moved_paths = true
+-- );
+```
+
+| count_star() |
+|-------------:|
+| 51793 |
 
 ## Limitations
 
@@ -39921,7 +40043,13 @@ duckdb.sql("SELECT * FROM read_json_auto('example.json')")
 
 DuckDB is automatically able to query certain Python variables by referring to their variable name (as if it was a table).
 These types include the following: Pandas DataFrame, Polars DataFrame, Polars LazyFrame, NumPy arrays, [relations]({% link docs/api/python/relational_api.md %}), and Arrow objects.
-Accessing these is made possible by [replacement scans]({% link docs/api/c/replacement_scans.md %}).
+
+Only variables that are visible to Python code at the location of the `sql()` or `execute()` call can be used in this manner.
+Accessing these variables is made possible by [replacement scans]({% link docs/api/c/replacement_scans.md %}). To disable replacement scans entirely, use:
+
+```sql
+SET python_enable_replacements = false;
+```
 
 DuckDB supports querying multiple types of Apache Arrow objects including [tables](https://arrow.apache.org/docs/python/generated/pyarrow.Table.html), [datasets](https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Dataset.html), [RecordBatchReaders](https://arrow.apache.org/docs/python/generated/pyarrow.ipc.RecordBatchStreamReader.html), and [scanners](https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Scanner.html). See the Python [guides]({% link docs/guides/overview.md %}#python-client) for more examples.
 
@@ -59703,7 +59831,7 @@ Configuration options come with different default [scopes]({% link docs/sql/stat
 | `index_scan_percentage` | The index scan percentage sets a threshold for index scans. If fewer than MAX(index_scan_max_count, index_scan_percentage * total_row_count) rows match, we perform an index scan instead of a table scan. | `DOUBLE` | `0.001` |
 | `lock_configuration` | Whether or not the configuration can be altered | `BOOLEAN` | `false` |
 | `max_memory`, `memory_limit` | The maximum memory of the system (e.g., 1GB) | `VARCHAR` | 80% of RAM |
-| `max_temp_directory_size` | The maximum amount of data stored inside the 'temp_directory' (when set). If the `temp_directory` is set to an existing directory, this option defaults to the available disk space on that drive. Otherwise, it defaults to 0 (implying that the temporary directory is not used). | `VARCHAR` | `0 bytes` |
+| `max_temp_directory_size` | The maximum amount of data stored inside the 'temp_directory'. The default value of `0 bytes` is a placeholder to mean that the entire available disk space on that drive may be used. To actually limit the `temp_directory ` to `0 bytes`, set `temp_directory` to `NULL` or the empty string. | `VARCHAR` | `0 bytes` |
 | `max_vacuum_tasks` | The maximum vacuum tasks to schedule during a checkpoint | `UBIGINT` | `100` |
 | `old_implicit_casting` | Allow implicit casting to/from VARCHAR | `BOOLEAN` | `false` |
 | `password` | The password to use. Ignored for legacy compatibility. | `VARCHAR` | `NULL` |
@@ -59722,7 +59850,7 @@ Configuration options come with different default [scopes]({% link docs/sql/stat
 | `s3_use_ssl` | S3 use SSL | `BOOLEAN` | `true` |
 | `secret_directory` | Set the directory to which persistent secrets are stored | `VARCHAR` | `~/.duckdb/stored_secrets` |
 | `storage_compatibility_version` | Serialize on checkpoint with compatibility for a given duckdb version | `VARCHAR` | `v0.10.2` |
-| `temp_directory` | Set the directory to which to write temp files | `VARCHAR` | `âŸ¨database_nameâŸ©.tmp` or `.tmp` (in in-memory mode) |
+| `temp_directory` | Set the directory to which to write temp files. Set to `NULL` or empty string to disable. | `VARCHAR` | `âŸ¨database_nameâŸ©.tmp` or `.tmp` (in in-memory mode) |
 | `threads`, `worker_threads` | The number of total threads used by the system. | `BIGINT` | # CPU cores |
 | `username`, `user` | The username to use. Ignored for legacy compatibility. | `VARCHAR` | `NULL` |
 
@@ -60397,9 +60525,7 @@ The **Secrets manager** provides a unified user interface for secrets across all
 
 > Warning Persistent secrets are stored in unencrypted binary format on the disk.
 
-## Secrets
-
-### Types of Secrets
+## Types of Secrets
 
 Secrets are typed, their type identifies which service they are for. Currently, the following cloud services are available:
 
@@ -60413,16 +60539,16 @@ Secrets are typed, their type identifies which service they are for. Currently, 
 
 For each type, there are one or more â€œsecret providersâ€� that specify how the secret is created. Secrets can also have an optional scope, which is a file path prefix that the secret applies to. When fetching a secret for a path, the secret scopes are compared to the path, returning the matching secret for the path. In the case of multiple matching secrets, the longest prefix is chosen.
 
-### Creating a Secret
+## Creating a Secret
 
 Secrets can be created using the [`CREATE SECRET` SQL statement]({% link docs/sql/statements/create_secret.md %}).
 Secrets can be **temporary** or **persistent**. Temporary secrets are used by default â€“ and are stored in-memory for the life span of the DuckDB instance similar to how settings worked previously. Persistent secrets are stored in **unencrypted binary format** in the `~/.duckdb/stored_secrets` directory. On startup of DuckDB, persistent secrets are read from this directory and automatically loaded.
 
-#### Secret Providers
+### Secret Providers
 
 To create a secret, a **Secret Provider** needs to be used. A Secret Provider is a mechanism through which a secret is generated. To illustrate this, for the `S3`, `GCS`, `R2`, and `AZURE` secret types, DuckDB currently supports two providers: `CONFIG` and `CREDENTIAL_CHAIN`. The `CONFIG` provider requires the user to pass all configuration information into the `CREATE SECRET`, whereas the `CREDENTIAL_CHAIN` provider will automatically try to fetch credentials. When no Secret Provider is specified, the `CONFIG` provider is used. For more details on how to create secrets using different providers check out the respective pages on [httpfs]({% link docs/extensions/httpfs/overview.md %}#configuration-and-authentication-using-secrets) and [azure]({% link docs/extensions/azure.md %}#authentication-with-secret).
 
-#### Temporary Secrets
+### Temporary Secrets
 
 To create a temporary unscoped secret to access S3, we can now use the following:
 
@@ -60437,7 +60563,7 @@ REGION 'my_region'
 
 Note that we implicitly use the default `CONFIG` secret provider here.
 
-#### Persistent Secrets
+### Persistent Secrets
 
 In order to persist secrets between DuckDB database instances, we can now use the `CREATE PERSISTENT SECRET` command, e.g.:
 
@@ -60457,7 +60583,7 @@ SET secret_directory = 'path/to/my_secrets_dir';
 
 Note that setting the value of the `home_directory` configuration option has no effect on the location of the secrets.
 
-### Deleting Secrets
+## Deleting Secrets
 
 Secrets can be deleted using the [`DROP SECRET` statement]({% link docs/sql/statements/create_secret.md %}#syntax-for-drop-secret), e.g.:
 
@@ -60465,7 +60591,7 @@ Secrets can be deleted using the [`DROP SECRET` statement]({% link docs/sql/stat
 DROP PERSISTENT SECRET my_persistent_secret;
 ```
 
-### Creating Multiple Secrets for the Same Service Type
+## Creating Multiple Secrets for the Same Service Type
 
 If two secrets exist for a service type, the scope can be used to decide which one should be used. For example:
 
@@ -60493,7 +60619,7 @@ Now, if the user queries something from `s3://my-other-bucket/something`, secret
 FROM which_secret('s3://my-other-bucket/file.parquet', 's3');
 ```
 
-### Listing Secrets
+## Listing Secrets
 
 Secrets can be listed using the built-in table-producing function, e.g., by using the [`duckdb_secrets()` table function]({% link docs/sql/meta/duckdb_table_functions.md %}#duckdb_secrets):
 
