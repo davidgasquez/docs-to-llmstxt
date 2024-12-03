@@ -5370,7 +5370,6 @@ Clone the DuckDB repository and build it as follows:
 ```batch
 mkdir build
 cd build
-export CXXFLAGS="-Wno-missing-template-arg-list-after-template-kw"
 export LDFLAGS="-llog"
 cmake \
 -G "Ninja" \
@@ -18212,9 +18211,9 @@ The following operations **do not** guarantee that the row order is preserved:
 
 By default, the following components preserve insertion order:
 
-* [CSV reader]({% link docs/data/csv/overview.md %}#order-preservation)
-* [Parquet reader]({% link docs/data/parquet/overview.md %}#order-preservation)
-* [JSON reader]({% link docs/data/json/overview.md %}#order-preservation)
+* [CSV reader]({% link docs/data/csv/overview.md %}#order-preservation) (`read_csv` function)
+* [JSON reader]({% link docs/data/json/overview.md %}#order-preservation) (`read_json` function)
+* [Parquet reader]({% link docs/data/parquet/overview.md %}#order-preservation) (`read_parquet` function)
 
 Preservation of insertion order is controlled by the `preserve_insertion_order` [configuration option]({% link docs/configuration/overview.md %}).
 This setting is `true` by default, indicating that the order should be preserved.
@@ -44136,7 +44135,7 @@ Dot commands are available in the DuckDB CLI client. To use one of these command
 | `.system CMD ARGS...` | Run `CMD ARGS...` in a system shell |
 | `.tables ?TABLE?` | List names of tables [matching LIKE pattern]({% link docs/sql/functions/pattern_matching.md %}) `TABLE` |
 | `.testcase NAME` | Begin redirecting output to `NAME` |
-| `.timer on|off` | Turn SQL timer on or off |
+| `.timer on|off` | Turn SQL timer on or off. SQL statements separated by `;` but *not* separated via newline are measured together. |
 | `.width NUM1 NUM2 ...` | Set minimum column widths for columnar output |
 
 ## Using the `.help` Command
