@@ -638,8 +638,8 @@ The Appender is also available in the following client APIs:
 
 * [C]({% link docs/api/c/appender.md %})
 * [Go]({% link docs/api/go.md %}#appender)
+* [Java (JDBC)]({% link docs/api/java.md %}#appender)
 * [Julia]({% link docs/api/julia.md %}#appender-api)
-* [JDBC (Java)]({% link docs/api/java.md %}#appender)
 * [Rust]({% link docs/api/rust.md %}#appender)
 
 ---
@@ -4408,15 +4408,15 @@ Several components of DuckDB are maintained in separate repositories.
 ## Clients
 
 * [`duckdb-java`](https://github.com/duckdb/duckdb-java): Java (JDBC) client
-* [`duckdb-node`](https://github.com/duckdb/duckdb-node): Node.js client
-* [`duckdb-node-neo`](https://github.com/duckdb/duckdb-node-neo): Node.js client, second iteration (currently experimental)
+* [`duckdb-node`](https://github.com/duckdb/duckdb-node): Node.js client, first iteration
+* [`duckdb-node-neo`](https://github.com/duckdb/duckdb-node-neo): Node.js client, second iteration
 * [`duckdb-odbc`](https://github.com/duckdb/duckdb-odbc): ODBC client
 * [`duckdb-r`](https://github.com/duckdb/duckdb-r): R client
-* [`ruby-duckdb`](https://github.com/suketa/ruby-duckdb): Ruby client
 * [`duckdb-rs`](https://github.com/duckdb/duckdb-rs): Rust client
 * [`duckdb-swift`](https://github.com/duckdb/duckdb-swift): Swift client
 * [`duckplyr`](https://github.com/tidyverse/duckplyr): a drop-in replacement for dplyr in R
 * [`go-duckdb`](https://github.com/marcboeker/go-duckdb): Go client
+* [`ruby-duckdb`](https://github.com/suketa/ruby-duckdb): Ruby client
 
 ## Connectors
 
@@ -5566,7 +5566,7 @@ For most platforms, DuckDB can often be [built from source](#building-duckdb-fro
 
 ## Building DuckDB from Source
 
-DuckDB can be [built from source]({% link docs/dev/building/build_instructions.md %}) for several other platforms such as FreeBSD, Linux distributions using musl libc, and macOS 11.
+DuckDB can be [built from source]({% link docs/dev/building/build_instructions.md %}) for several other platforms such as Android, FreeBSD, macOS 11, and Linux distributions using musl libc.
 
 For details on free and commercial support, see the [support policy blog post](https://duckdblabs.com/news/2023/10/02/support-policy#platforms).
 
@@ -5805,10 +5805,17 @@ Foreign keys define a column, or set of columns, that refer to a primary key or 
 
 ```sql
 CREATE TABLE students (id INTEGER PRIMARY KEY, name VARCHAR);
-CREATE TABLE exams (exam_id INTEGER REFERENCES students(id), grade INTEGER);
+CREATE TABLE subjects (id INTEGER PRIMARY KEY, name VARCHAR);
+CREATE TABLE exams (
+exam_id INTEGER PRIMARY KEY,
+subject_id INTEGER REFERENCES subjects(id),
+student_id INTEGER REFERENCES students(id),
+grade INTEGER
+);
 INSERT INTO students VALUES (1, 'Student 1');
-INSERT INTO exams VALUES (1, 10);
-INSERT INTO exams VALUES (2, 10);
+INSERT INTO subjects VALUES (1, 'CS 101');
+INSERT INTO exams VALUES (1, 1, 1, 10);
+INSERT INTO exams VALUES (2, 1, 2, 10);
 ```
 
 ```console
@@ -8496,7 +8503,15 @@ FROM table_name
 WHERE id = 3;
 ```
 
-Select all rows that match the given case-insensitive `LIKE` expression:
+Select all rows that match the given **case-sensitive** `LIKE` expression:
+
+```sql
+SELECT *
+FROM table_name
+WHERE name LIKE '%mark%';
+```
+
+Select all rows that match the given **case-insensitive** expression formulated with the `ILIKE` operator:
 
 ```sql
 SELECT *
@@ -9497,6 +9512,8 @@ The table below shows the available general aggregate functions.
 | [`fsum(arg)`](#fsumarg) | Calculates the sum using a more accurate floating point summation (Kahan Sum). |
 | [`geomean(arg)`](#geomeanarg) | Calculates the geometric mean of all non-null values in `arg`. |
 | [`histogram(arg)`](#histogramarg) | Returns a `MAP` of key-value pairs representing buckets and counts. |
+| [`histogram(arg, boundaries)`](#histogramargboundaries) | Returns a `MAP` of key-value pairs representing the provided upper `boundaries` and counts of elements in the corresponding left-open and right-closed partition of the datatype. A boundary at the largest value of the datatype is automatically added when elements larger than all provided `boundaries` appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). Boundaries may be provided, e.g., via [`equi_width_bins`]({% link docs/sql/functions/utility.md %}#equi_width_binsminmaxbincountnice). |
+| [`histogram_exact(arg, elements)`](#histogram_exactargelements) | Returns a `MAP` of key-value pairs representing the requested elements and their counts. A catch-all element specific to the data-type is automatically added to count other elements when they appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). |
 | [`last(arg)`](#lastarg) | Returns the last value of a column. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
 | [`list(arg)`](#listarg) | Returns a `LIST` containing all the values of a column. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
 | [`max(arg)`](#maxarg) | Returns the maximum value present in `arg`. |
@@ -9693,6 +9710,22 @@ The table below shows the available general aggregate functions.
 
 | **Description** | Returns a `MAP` of key-value pairs representing buckets and counts. |
 | **Example** | `histogram(A)` |
+| **Alias(es)** | - |
+
+#### `histogram(arg, boundaries)`
+
+
+
+| **Description** | Returns a `MAP` of key-value pairs representing the provided upper `boundaries` and counts of elements in the corresponding left-open and right-closed partition of the datatype. A boundary at the largest value of the datatype is automatically added when elements larger than all provided `boundaries` appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). Boundaries may be provided, e.g., via [`equi_width_bins`]({% link docs/sql/functions/utility.md %}#equi_width_binsminmaxbincountnice). |
+| **Example** | `histogram(A, [0, 1, 10])` |
+| **Alias(es)** | - |
+
+#### `histogram_exact(arg, elements)`
+
+
+
+| **Description** | Returns a `MAP` of key-value pairs representing the requested elements and their counts. A catch-all element specific to the data-type is automatically added to count other elements when they appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). |
+| **Example** | `histogram_exact(A, [0, 1, 10])` |
 | **Alias(es)** | - |
 
 #### `last(arg)`
@@ -11538,7 +11571,7 @@ Dates can also be manipulated with the [timestamp functions]({% link docs/sql/fu
 
 | Name | Description |
 |:--|:-------|
-| [`current_date`](#current_date) | Current date (at start of current transaction). |
+| [`current_date`](#current_date) | Current date (at start of current transaction) in UTC. |
 | [`date_add(date, interval)`](#date_adddate-interval) | Add the interval to the date. |
 | [`date_diff(part, startdate, enddate)`](#date_diffpart-startdate-enddate) | The number of [partition]({% link docs/sql/functions/datepart.md %}) boundaries between the dates. |
 | [`date_part(part, date)`](#date_partpart-date) | Get the [subfield]({% link docs/sql/functions/datepart.md %}) (equivalent to `extract`). |
@@ -11560,13 +11593,13 @@ Dates can also be manipulated with the [timestamp functions]({% link docs/sql/fu
 | [`strftime(date, format)`](#strftimedate-format) | Converts a date to a string according to the [format string]({% link docs/sql/functions/dateformat.md %}). |
 | [`time_bucket(bucket_width, date[, offset])`](#time_bucketbucket_width-date-offset) | Truncate `date` by the specified interval `bucket_width`. Buckets are offset by `offset` interval. |
 | [`time_bucket(bucket_width, date[, origin])`](#time_bucketbucket_width-date-origin) | Truncate `date` by the specified interval `bucket_width`. Buckets are aligned relative to `origin` date. `origin` defaults to 2000-01-03 for buckets that don't include a month or year interval, and to 2000-01-01 for month and year buckets. |
-| [`today()`](#today) | Current date (start of current transaction). |
+| [`today()`](#today) | Current date (start of current transaction) in UTC. |
 
 #### `current_date`
 
 
 
-| **Description** | Current date (at start of current transaction). |
+| **Description** | Current date (at start of current transaction) in UTC. |
 | **Example** | `current_date` |
 | **Result** | `2022-10-08` |
 
@@ -11746,7 +11779,7 @@ Dates can also be manipulated with the [timestamp functions]({% link docs/sql/fu
 
 
 
-| **Description** | Current date (start of current transaction). |
+| **Description** | Current date (start of current transaction) in UTC. |
 | **Example** | `today()` |
 | **Result** | `2022-10-08` |
 
@@ -14935,7 +14968,7 @@ The table below shows the available scalar functions for `TIME` types.
 
 | Name | Description |
 |:--|:-------|
-| [`current_time`](#current_time) | Current time (start of current transaction). |
+| [`current_time`](#current_time) | Current time (start of current transaction) in UTC. |
 | [`date_diff(part, starttime, endtime)`](#date_diffpart-starttime-endtime) | The number of [partition]({% link docs/sql/functions/datepart.md %}) boundaries between the times. |
 | [`date_part(part, time)`](#date_partpart-time) | Get [subfield]({% link docs/sql/functions/datepart.md %}) (equivalent to `extract`). |
 | [`date_sub(part, starttime, endtime)`](#date_subpart-starttime-endtime) | The number of complete [partitions]({% link docs/sql/functions/datepart.md %}) between the times. |
@@ -14943,7 +14976,7 @@ The table below shows the available scalar functions for `TIME` types.
 | [`datepart(part, time)`](#datepartpart-time) | Alias of date_part. Get [subfield]({% link docs/sql/functions/datepart.md %}) (equivalent to `extract`). |
 | [`datesub(part, starttime, endtime)`](#datesubpart-starttime-endtime) | Alias of date_sub. The number of complete [partitions]({% link docs/sql/functions/datepart.md %}) between the times. |
 | [`extract(part FROM time)`](#extractpart-from-time) | Get subfield from a time. |
-| [`get_current_time()`](#get_current_time) | Current time (start of current transaction). |
+| [`get_current_time()`](#get_current_time) | Current time (start of current transaction) in UTC. |
 | [`make_time(bigint, bigint, double)`](#make_timebigint-bigint-double) | The time for the given parts. |
 
 The only [date parts]({% link docs/sql/functions/datepart.md %}) that are defined for times are `epoch`, `hours`, `minutes`, `seconds`, `milliseconds` and `microseconds`.
@@ -14952,7 +14985,7 @@ The only [date parts]({% link docs/sql/functions/datepart.md %}) that are define
 
 
 
-| **Description** | Current time (start of current transaction). Note that parentheses should be omitted. |
+| **Description** | Current time (start of current transaction) in UTC. Note that parentheses should be omitted. |
 | **Example** | `current_time` |
 | **Result** | `10:31:58.578` |
 | **Alias** | `get_current_time()` |
@@ -15017,7 +15050,7 @@ The only [date parts]({% link docs/sql/functions/datepart.md %}) that are define
 
 
 
-| **Description** | Current time (start of current transaction). |
+| **Description** | Current time (start of current transaction) in UTC. |
 | **Example** | `get_current_time()` |
 | **Result** | `10:31:58.578` |
 | **Alias** | `current_time` |
@@ -15442,7 +15475,7 @@ This section describes functions and operators for examining and manipulating [`
 See also the related [`TIMESTAMP` functions]({% link docs/sql/functions/timestamptz.md %}).
 
 Despite the name, these values do not store a time zone â€“ just an instant like `TIMESTAMP`.
-Instead, they request that the instant be binned and formatted using the current time zone, see the [blog post on DuckDB's timezone support](https://duckdb.org/2022/01/06/time-zones.html) for more information.
+Instead, they request that the instant be binned and formatted using the current time zone, see the [blog post on DuckDB's timezone support]({% post_url 2022-01-06-time-zones %}) for more information.
 
 Time zone support is provided by the built-in [ICU extension]({% link docs/extensions/icu.md %}).
 
@@ -16023,6 +16056,7 @@ The functions below are difficult to categorize into specific function types and
 | [`current_setting('setting_name')`](#current_settingsetting_name) | Return the current value of the configuration setting. |
 | [`currval('sequence_name')`](#currvalsequence_name) | Return the current value of the sequence. Note that `nextval` must be called at least once prior to calling `currval`. |
 | [`error(message)`](#errormessage) | Throws the given error `message`. |
+| [`equi_width_bins(min, max, bincount, nice := false)`](#equi_width_binsminmaxbincountnice) | Returns the upper boundaries of a partition of the interval `[min, max]` into `bin_count` equal-sized subintervals (for use with, e.g., [`histogram`]({% link docs/sql/functions/aggregates.md %}#histogramargboundaries)). If `nice = true`, then `min`, `max`, and `bincount` may be adjusted to produce more aesthetically pleasing results. |
 | [`force_checkpoint(database)`](#force_checkpointdatabase) | Synchronize WAL with file for (optional) database interrupting transactions. |
 | [`gen_random_uuid()`](#gen_random_uuid) | Alias of `uuid`. Return a random UUID similar to this: `eeccb8c5-9943-b2bb-bb5e-222f4e14b687`. |
 | [`getenv(var)`](#getenvvar) | Returns the value of the environment variable `var`. Only available in the [command line client]({% link docs/api/cli/overview.md %}). |
@@ -16030,6 +16064,7 @@ The functions below are difficult to categorize into specific function types and
 | [`icu_sort_key(string, collator)`](#icu_sort_keystring-collator) | Surrogate key used to sort special characters according to the specific locale. Collator parameter is optional. Valid only when ICU extension is installed. |
 | [`if(a, b, c)`](#ifa-b-c) | Ternary conditional operator. |
 | [`ifnull(expr, other)`](#ifnullexpr-other) | A two-argument version of coalesce. |
+| [`is_histogram_other_bin(arg)`](#is_histogram_other_binarg) | Returns `true` when `arg` is the "catch-all element" of its datatype for the purpose of the [`histogram_exact`]({% link docs/sql/functions/aggregates.md %}#histogram_exactargelements) function, which is equal to the "right-most boundary" of its datatype for the purpose of the [`histogram`]({% link docs/sql/functions/aggregates.md %}#histogramargboundaries) function. |
 | [`md5(string)`](#md5string) | Returns the MD5 hash of the `string` as a `VARCHAR`. |
 | [`md5_number(string)`](#md5_numberstring) | Returns the MD5 hash of the `string` as a `HUGEINT`. |
 | [`md5_number_lower(string)`](#md5_number_lowerstring) | Returns the lower 64-bit segment of the MD5 hash of the `string` as a `BIGINT`. |
@@ -16136,6 +16171,14 @@ The functions below are difficult to categorize into specific function types and
 | **Description** | Throws the given error `message`. |
 | **Example** | `error('access_mode')` |
 
+#### `equi_width_bins(min, max, bincount, nice := false)`
+
+
+
+| **Description** | Returns the upper boundaries of a partition of the interval `[min, max]` into `bin_count` equal-sized subintervals (for use with, e.g., [`histogram`]({% link docs/sql/functions/aggregates.md %}#histogramargboundaries)). If `nice = true`, then `min`, `max`, and `bincount` may be adjusted to produce more aesthetically pleasing results. |
+| **Example** | `equi_width_bins(0.1, 2.7, 4, true)` |
+| **Result** | `[0.5, 1.0, 1.5, 2.0, 2.5, 3.0]` |
+
 #### `force_checkpoint(database)`
 
 
@@ -16189,6 +16232,14 @@ The functions below are difficult to categorize into specific function types and
 | **Description** | A two-argument version of coalesce. |
 | **Example** | `ifnull(NULL, 'default_string')` |
 | **Result** | `default_string` |
+
+#### `is_histogram_other_bin(arg)`
+
+
+
+| **Description** | Returns `true` when `arg` is the "catch-all element" of its datatype for the purpose of the [`histogram_exact`]({% link docs/sql/functions/aggregates.md %}#histogram_exactargelements) function, which is equal to the "right-most boundary" of its datatype for the purpose of the [`histogram`]({% link docs/sql/functions/aggregates.md %}#histogramargboundaries) function. |
+| **Example** | `is_histogram_other_bin('')` |
+| **Result** | `true` |
 
 #### `md5(string)`
 
@@ -18434,6 +18485,16 @@ For instruction on reclaiming space, refer to the [â€œReclaiming spaceâ€�
 
 DuckDB does not support the [`to_date` PostgreSQL date formatting function](https://www.postgresql.org/docs/17/functions-formatting.html).
 Instead, please use the [`strptime` function]({% link docs/sql/functions/dateformat.md %}#strptime-examples).
+
+### current_date / current_time / current_timestamp
+
+DuckDB's `current_date` and `current_time` pseudo-columns return the current date (as `DATE`) and time (as `TIME`) in UTC, whereas PostgreSQL returns the current date (as `DATE`) in the configured local timezone and time as `TIMETZ`. For the current time in the configured timezone, still as regular `TIME`, DuckDB offers the function `current_localtime()`.
+
+Both DuckDB and PostgreSQL return `current_timestamp` as `TIMESTAMPTZ`. DuckDB additionally offers `current_localtimestamp()`, which returns the time in the configured timezone as `TIMESTAMP`.
+
+DuckDB does not currently offer `current_localdate()`; though this can be computed via `current_timestamp::DATE` or `current_localtimestamp()::DATE`.
+
+> See [the DuckDB blog entry on time zones]({% post_url 2022-01-06-time-zones %}) for more information on timestamps and timezones and DuckDB's handling thereof.
 
 ## Resolution of Type Names in the Schema
 
@@ -26141,7 +26202,7 @@ CSV files are often distributed in compressed format such as GZIP archives (`.cs
 
 
 
-| Schema | Load Time |
+| Schema | Load time |
 |---|--:|
 | Load from GZIP-compressed CSV files (`.csv.gz`) | 107.1 s |
 | Decompressing (using parallel `gunzip`) and loading from decompressed CSV files | 121.3 s |
@@ -28998,7 +29059,7 @@ the `USING` keyword.
 
 ## See Also
 
-For implementation details, see the [blog post â€œDuckDB's AsOf joins: Fuzzy Temporal Lookupsâ€�](/2023/09/15/asof-joins-fuzzy-temporal-lookups).
+For implementation details, see the [blog post â€œDuckDB's AsOf joins: Fuzzy Temporal Lookupsâ€�]({% post_url 2023-09-15-asof-joins-fuzzy-temporal-lookups %}).
 
 ---
 duckdb/docs/guides/sql_features/full_text_search.md
@@ -29300,9 +29361,9 @@ DuckDB has the following built-in table functions to obtain metadata about avail
 * [`duckdb_sequences()`]({% link docs/sql/meta/duckdb_table_functions.md %}#duckdb_sequences): sequences
 * [`duckdb_settings()`]({% link docs/sql/meta/duckdb_table_functions.md %}#duckdb_settings): settings
 * [`duckdb_tables()`]({% link docs/sql/meta/duckdb_table_functions.md %}#duckdb_tables): base tables
+* [`duckdb_temporary_files()`]({% link docs/sql/meta/duckdb_table_functions.md %}#duckdb_temporary_files): the temporary files DuckDB has written to disk, to offload data from memory
 * [`duckdb_types()`]({% link docs/sql/meta/duckdb_table_functions.md %}#duckdb_types): data types
 * [`duckdb_views()`]({% link docs/sql/meta/duckdb_table_functions.md %}#duckdb_views): views
-* [`duckdb_temporary_files()`]({% link docs/sql/meta/duckdb_table_functions.md %}#duckdb_temporary_files): the temporary files DuckDB has written to disk, to offload data from memory
 
 ---
 duckdb/docs/guides/meta/explain.md
@@ -30626,7 +30687,7 @@ SELECT * FROM read_parquet('input.parquet');
 
 The Parquet file will be processed in parallel. Filters will be automatically pushed down into the Parquet scan, and only the relevant columns will be read automatically.
 
-For more information see the blog post [â€œQuerying Parquet with Precision using DuckDBâ€�](/2021/06/25/querying-parquet).
+For more information see the blog post [â€œQuerying Parquet with Precision using DuckDBâ€�]({% post_url 2021-06-25-querying-parquet %}).
 
 ---
 duckdb/docs/guides/file_formats/read_file.md
@@ -31951,8 +32012,8 @@ LOAD icu;
 
 The `icu` extension introduces the following features:
 
-* [region-dependent collations]({% link docs/sql/expressions/collations.md %})
-* [time zones]({% link docs/sql/data_types/timezones.md %}), used for [timestamp data types]({% link docs/sql/data_types/timestamp.md %}) and [timestamp functions]({% link docs/sql/functions/timestamptz.md %})
+* [Region-dependent collations]({% link docs/sql/expressions/collations.md %})
+* [Time zones]({% link docs/sql/data_types/timezones.md %}), used for [timestamp data types]({% link docs/sql/data_types/timestamp.md %}) and [timestamp functions]({% link docs/sql/functions/timestamptz.md %})
 
 ---
 duckdb/docs/extensions/inet.md
@@ -36860,7 +36921,7 @@ The following options can be passed to the `WITH` clause when creating an R-tree
 
 The `rtree_index_dump(VARCHAR)` table function can be used to return all the nodes within an R-tree index which might come on handy when debugging, profiling or otherwise just inspecting the structure of the index. The function takes the name of the R-tree index as an argument and returns a table with the following columns:
 
-| Column Name | Type | Description |
+| Column name | Type | Description |
 |-------------|------|-------------|
 | `level` | `INTEGER` | The level of the node in the R-tree. The root node has level 0. |
 | `bounds` | `BOX_2DF` | The bounding box of the node. |
@@ -39066,7 +39127,7 @@ use duckdb::{params, Connection, Result};
 let conn = Connection::open_in_memory()?;
 ```
 
-You can `conn.close()` the `Connection` manually, or just leave it out of scope, we had implement the `Drop` trait which will automatically close the underlining db connection for you.
+The `Connection` will automatically close the underlining db connection for you when goes out of scope (via `Drop`). You can also explicitly close the `Connection` with `conn.close()`. This is not much difference between these in the typical case, but in case there is an error, you'll have the chance to handle it with the explicit close.
 
 ### Querying
 
@@ -44841,7 +44902,7 @@ Below is a list of components that can be configured.
 
 
 
-| Type | Command | Default Color |
+| Type | Command | Default color |
 |-------------------------|-------------|-----------------|
 | Keywords | `.keyword` | `green` |
 | Constants ad literals | `.constant` | `yellow` |
@@ -44854,7 +44915,7 @@ The components can be configured using either a supported color name (e.g., `.ke
 
 
 
-| Color | Terminal Code |
+| Color | Terminal code |
 |---------------|---------------|
 | red | `\033[31m` |
 | green | `\033[32m` |
@@ -58519,7 +58580,7 @@ Enums are stored as unsigned integer values internally. The exact native type de
 
 
 
-| Dictionary Size | NativeType |
+| Dictionary size | NativeType |
 |-----------------|------------|
 | <= 255 | uint8_t |
 | <= 65535 | uint16_t |
