@@ -834,7 +834,8 @@ FROM sniff_csv('my_file.csv', sample_size = 1000);
 | `Quote` | quote character | `"` |
 | `Escape` | escape | `\` |
 | `NewLineDelimiter` | new-line delimiter | `\r\n` |
-| `SkipRow` | number of rows skipped | 1 |
+| `Comment` | comment character | `#` |
+| `SkipRows` | number of rows skipped | 1 |
 | `HasHeader` | whether the CSV has a header | `true` |
 | `Columns` | column types encoded as a `LIST` of `STRUCT`s | `({'name': 'VARCHAR', 'age': 'BIGINT'})` |
 | `DateFormat` | date Format | `%d/%m/%Y` |
@@ -1757,8 +1758,8 @@ The following functions are used to create JSON.
 | `json_quote(any)` | Alias for `to_json`. |
 | `array_to_json(list)` | Alias for `to_json` that only accepts `LIST`. |
 | `row_to_json(list)` | Alias for `to_json` that only accepts `STRUCT`. |
-| `json_array([any, ...])` | Create a JSON array from `any` number of values. |
-| `json_object([key, value, ...])` | Create a JSON object from any number of `key`, `value` pairs. |
+| `json_array(any, ...)` | Create a JSON array from the values in the argument lists. |
+| `json_object(key, value, ...)` | Create a JSON object from `key`, `value` pairs in the argument list. Requires an even number of arguments. |
 | `json_merge_patch(json, json)` | Merge two JSON documents together. |
 
 Examples:
@@ -1796,19 +1797,19 @@ SELECT to_json(map(['duck'],[42]));
 ```
 
 ```sql
-SELECT json_array(42, 'duck', NULL);
+SELECT json_array('duck', 42, 'goose', 123);
 ```
 
 ```text
-[42,"duck",null]
+["duck",42,"goose",123]
 ```
 
 ```sql
-SELECT json_object('duck', 42);
+SELECT json_object('duck', 42, 'goose', 123);
 ```
 
 ```text
-{"duck":42}
+{"duck":42,"goose":123}
 ```
 
 ```sql
@@ -21286,11 +21287,17 @@ Explicit typecasting is performed by using a `CAST` expression. For example, `CA
 
 ## Implicit Casting
 
-In many situations, the system will add casts by itself. This is called *implicit* casting. This happens for example when a function is called with an argument that does not match the type of the function, but can be casted to the desired type.
+In many situations, the system will add casts by itself. This is called *implicit* casting and happens, for example, when a function is called with an argument that does not match the type of the function but can be casted to the required type.
+
+Implicit casts can only be added for a number of type combinations, and is generally only possible when the cast cannot fail. For example, an implicit cast can be added from `INTEGER` to `DOUBLE` â€“ but not from `DOUBLE` to `INTEGER`.
 
 Consider the function `sin(DOUBLE)`. This function takes as input argument a column of type `DOUBLE`, however, it can be called with an integer as well: `sin(1)`. The integer is converted into a double before being passed to the `sin` function.
 
-Implicit casts can only be added for a number of type combinations, and is generally only possible when the cast cannot fail. For example, an implicit cast can be added from `INTEGER` to `DOUBLE` â€“ but not from `DOUBLE` to `INTEGER`.
+### Combination casting
+
+When values of different types need to be combined to an unspecified joint parent type, the system will perform implicit casts to an automatically selected parent type. For example, `list_value(1::INT64, 1::UINT64)` creates a list of type `INT128[]`. The implicit casts performed in this situation are sometimes more lenient than regular implicit casts. For example, a `BOOL` value may be cast to `INT` (with `true` mapping to `1` and `false` to `0`) even though this is not possible for regular implicit casts.
+
+This *combination casting* occurs for comparisons (`==` / `<` / `>`), set operations (`UNION` / `EXCEPT` / `INTERSECT`), and nested type constructors (`list_value` / `[...]` / `MAP`).
 
 ## Casting Operations Matrix
 
