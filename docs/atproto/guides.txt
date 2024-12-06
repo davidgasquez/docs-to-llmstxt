@@ -1,3 +1,139 @@
+atproto/src/app/[locale]/guides/account-lifecycle/en.mdx
+---
+export const metadata = {
+  title: 'Account Lifecyle Events',
+  description:
+    'Account Lifecycle Best Practices',
+}
+
+# Account Lifecycle Best Practices
+
+This document complements the [Account Hosting](/specs/account) specification, which gives a high-level overview of account lifecycles. It summarizes the expected behaviors for a few common account lifecycle transitions, and what firehose events are expected in what order. Software is generally expected to be resilient to partial or incorrect event transmission.
+
+**New Account Creation:** when an account is registered on a PDS and a new identity (DID) is created.
+
+- the PDS will generate or confirm the existence of the account's identity (DID and handle). Once the DID is in a confirmed state that can be resolved by other services in the network, and points to the current PDS instance, the PDS emits an `#identity` event. It is good, but not required, to wait until the handle is resolvable by third parties before emitting the event (especially, but not only, if the PDS is providing a handle for the account). The account status may or may not be `active` when this event is emitted.
+- once the account creation has completed, and the PDS will respond with `active` to API requests for account status, an `#account` event can be emitted
+- when the account's repository is initialized with a `rev` and `commit`, a `#commit` message can be emitted. The initial repo may be "empty" (no records), or may contain records.
+- the specific order of events is not formally specified, but the recommended order is: `#identity`, `#account`, `#commit`
+- downstream services process and pass through these events
+
+**Account Migration:** is described in more detail below, but the relevant events and behaviors are:
+
+- the new PDS will not emit any events on initial account creation. The account state will be `deactivated` on the new PDS (which will reply as such to API requests)
+- when the identity is updated and confirmed by the new PDS, it should emit an `#identity` event
+- when the account is switched to `active` on the new PDS, it should emit an `#account` event and a `#commit` event; the order is not formally required, but doing `#account` first is recommended. Ideally the `#commit` event will be empty (no new records), but signed with any new signing key, and have a new/incremented `rev`.
+- when the account is deactivated on the old PDS, it should emit an `#account` event, indicating that the account is inactive and has status `deactivated`.
+- Relays should ignore `#account` and `#commit` events which are not coming from the currently declared PDS instance for the identity: these should not be passed through to the output firehose. Further, they should ignore `#commit` events when the local account status is not `active`. Overall, this means that account migration should result in three events coming from the relay: an `#identity` (from new PDS), an `#account` (from new PDS), and a `#commit` (from new PDS). The `#account` from the old PDS is usually ignored.
+- downstream services (eg, AppView) should update their identity cache, and increment the account's `rev` (when the `#commit` is received), but otherwise don't need to take any action.
+
+**Account Deletion:**
+
+- PDS emits an `#account` event, with `active` false and status `deleted`.
+- Relay updates local account status for the repo, and passes through the `#account` event. If the Relay is a full mirror, it immediately stop serving `getRepo`, `getRecord`, and similar API requests for the account, indicating the reason in the response error. The Relay may fully delete repo content locally according to local policy. The firehose backfill window does not need to be immediately purged of commit events for the repo, as long as the backfill window is time-limited.
+- the PDS should not emit `#commit` events for an account which is not "active'. If any further `#commit` messages are emitted for the repo (eg, by accident or out-of-order processing or delivery), all downstream services should ignore the event and not pass it through
+- downstream services (eg, AppView) should immediately stop serving/distributing content for the account. They may defer permanent data deletion according to local policy. Updating aggregations (eg, record counts) may also be deferred or processed in a background queue according to policy and implementation. Error status messages may indicate either that the content is "gone" (existed, but no longer available), or that content is "not found" (not revealing that content existed previously)
+
+Account takedowns work similarly to account deletion.
+
+**Account Deactivation:**
+
+- PDS emits an `#account` event, with `active` false and status `deactivated`.
+- similar to deletion, Relay processes the event, stops redistributing content, and passes through the event. The Relay should not fully purge content locally, though it may eventually delete local copies if the deactivation status persists for a long time (according to local policy).
+- similar to deletion, `#commit` events should not be emitted by the PDS, and should be ignored and not passed through if received by Relays
+- downstream services (eg, AppViews) should make content unavailable, but do not need to delete data locally. They should indicate account/content status as "unavailable"; best practice is to specifically indicate that this is due to account deactivation.
+
+Account suspension works similarly to deactivation.
+
+**Account Reactivation:**
+
+- PDS emits an `#account` event, with `active` status.
+- Relay verifies that the account reactivation is valid, eg that it came from the current PDS instance for the identity. It updates local account status, and passes through the event.
+- any downstream services (eg, AppViews) should update local account status for the account.
+- any service which does not have any current repo content for the account (eg, because it was previously deleted) may fetch a repo CAR export and process it as a background tasks. An “upstream” host (like a relay) may have a repo copy, or the service might connect directly to the account’s PDS host. They are not required to do so, and might instead wait for a `#commit` event.
+- if the account was previously deleted or inactive for a long time, it is a best practice for the PDS to emit an empty `#commit` event after reactivation to ensure downstream services are synchronized
+
+
+---
+atproto/src/app/[locale]/guides/account-migration/en.mdx
+---
+export const metadata = {
+  title: 'Account Migration',
+  description:
+    'Account Migration Details',
+}
+
+# Account Migration Details
+
+This document complements the [Account Hosting](/specs/account) specification, which gives a high-level overview of account lifecycles. It breaks down the individual migration steps, both for an "easy" migration (when both PDS instances participate), and for account recovery scenarios. Note that these specific mechanisms are not a formal part of the protocol, and may evolve over time.
+
+## Creating New Account
+
+To create a PDS account with an existing identity, it is necessary to prove control the identity.
+
+For an active account on another PDS, this is done by generating a service auth token (JWT) signed with the current atproto signing key indicated in the identity DID document. This can be requested from the previous PDS instance using the `com.atproto.server.getServiceAuth` endpoint (or an equivalent interface/API).
+
+For an independently-controlled identity (eg, `did:web`, or a `did:plc` with old PDS offline or uncooperative), this may involve updating the identity to include a self-controlled atproto signing key, and generating the service auth token offline.
+
+The service auth token is provided along with the existing DID when creating the account with `com.atproto.server.createAccount` (or an equivalent interface/API) on the new PDS.
+
+The new account will be in a `deactivated` state. It should be possible to directly login and authenticate, but not to participate in the network. From the perspective of other services in the network, the old PDS account is still current, and the new PDS account is not yet active or valid. Functionality like OAuth or proxied requests using service auth will not yet work with the new PDS.
+
+## Migrating Data
+
+Some categories of data that are typically migrated are:
+
+- public repository
+- public blobs (media files)
+- private preferences
+
+At any stage of migration, the authenticated `com.atproto.server.checkAccountStatus` endpoint can be called on either the old or new PDS instance to check statistics about currently indexed data.
+
+A copy of the repository can be fetched as a CAR file from the old PDS using the public `com.atproto.sync.getRepo` endpoint. If the old PDS is inaccessible, a mirror might be available from a public relay, or a local backup might be available. If not, the new account will still function with the same identity, but old content would be missing.
+
+A CAR file can be imported to the new PDS using the authenticated `com.atproto.repo.importRepo` endpoint.
+
+Blobs (media files) are download and re-uploaded one by one. They should not be uploaded to the new PDS until the repository has been imported and fully indexed, so that blobs can be linked to the records that refer to them, and won’t be garbage collected. A full list of relevant blobs (by CID) can be fetched either from the old PDS (`com.atproto.sync.listBlobs`), or the current list of "missing" blobs can be checked on the new PDS (`com.atproto.repo.listMissingBlobs`). If some blobs can not be found, the migration process can continue, and any recovered blobs can be uploaded later (if the blob CIDs match exactly).
+
+Private account preferences can be exported from the old PDS using the authenticated like `app.bsky.actor.getPreferences` endpoint, then imported using `app.bsky.actor.putPreferences`. These are Bluesky app-specific endpoints, and other apps (Lexicons) may define their own preference APIs. Note that this will only include private state stored in the PDS; some preferences and state may exist in external services (eg, centralized chat/DM implementations).
+
+## Updating Identity
+
+Once content has been migrated, the identity (DID and handle) can be updated to indicate that the new PDS is the current host for the account.
+
+"Recommended" DID document parameters can be fetched from the new PDS using the `com.atproto.identity.getRecommendedDidCredentials` endpoint. This will include the DID service hostname, local handle (as requested during account creation), a PDS-managed atproto signing key (public key), and (if relevant) PLC rotation keys (public keys).
+
+For users who are able to securely manage a private cryptographic keypair (eg, store in a password manager or digital wallet), it is recommended to include a self-controlled PLC rotation key (public key) in the PLC operation.
+
+For a self-controlled identity (eg, `did:web`, or `did:plc` with local rotation key), the identity update can be done directly by the user.
+
+For an account with a `did:plc` managed by the old PDS, a PLC "operation" is signed by the old PDS, then submitted via the new PDS. The motivation for having the new PDS submit the PLC operation instead of having the user do so directly is to give the new PDS a chance to validate the operation and do safety check to prevent the account from getting in a broken state.
+
+Because identity operations are sensitive, they require an additional security token as an additional "factor". The token can be requested via `com.atproto.identity.requestPlcOperationSignature` on the old PDS, and will be delivered by email to the verified account email by default.
+
+This token is included as part of a call to `com.atproto.identity.signPlcOperation` on the old PDS, along with the requested DID fields (new signing key, rotation keys, PDS location, etc). The old PDS will validate the request, sign using the PDS-managed PLC rotation key, and return the signed PLC operation. The operation will not have been submitted to any PLC directory at this point in time.
+
+The user is then recommended to submit the operation to the new PDS (using the `com.atproto.identity.submitPlcOperation` endpoint), which will validate that the changes are "safe" (aka, that they enable the the PDS to help manage the identity and atproto account), and then submit it to the PLC directory.
+
+With the identity successfully updated, the new PDS is now the "current" host for the account from the perspective of the entire network. This will be immediately apparent to new services which resolve the identity. Existing services that consume from the firehose will be alerted by the `#identity` event. Other services, which may have now-stale cached identity metadata for the account, will either refresh when the cache expires, or should refresh their cache when they encounter errors (such as invalid service auth signatures).
+
+However, the new account is not yet "active".
+
+## Finalizing Account Status
+
+At this point, the user is still able to authenticate to both PDS instances. The new PDS knows that it is current for the account, but still has the account marked as "deactivated". The old PDS may not realize that it is no longer current.
+
+It may be worth double-checking with `com.atproto.server.checkAccountStatus` on both PDS instances to confirm that all the expected content has been migrated.
+
+The user can activate their account on the new PDS with a call to `com.atproto.server.activateAccount`, and deactivate their account on the old PDS with `com.atproto.server.deactivateAccount`.
+
+At this point the migration is complete. New content can be published by writing to the repo, preferences can be updated, and inter-service auth and proxying should work as expected. It may be necessary to log out of any clients and log back in. In some cases, if services have aggressive identity caching and do not refresh on signature failure, service auth requests could fail for up to 24 hours.
+
+It will still be possible to login and authenticate with the old PDS. The user may wish to fully terminated their old account eventually. This can be automated with the `deleteAfter` parameter to the `com.atproto.server.deactivateAccount` request. Note that the old PDS may be able to assist with PLC identity recovery during a fixed 72hr window, but only if the account was not fully deleted during that window.
+
+
+
+---
 atproto/src/app/[locale]/guides/applications/en.mdx
 ---
 import Link from 'next/link'
