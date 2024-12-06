@@ -23064,6 +23064,230 @@ sidebar_link: false
 ---
 
 ---
+evidence/sites/docs/pages/deployment/github-pages/index.md
+---
+---
+sidebar_position: 4
+title: GitHub Pages
+description: Deploy Evidence to GitHub Pages from a GitHub repo. GitHub Pages can be private to your org, support custom domains, and using Actions for data refresh.
+og:
+    image: /img/deployment/deploy-github-pages.png
+---
+
+GitHub Pages is a static site hosting service that publishes a website from HTML, CSS, and JavaScript files from a repository on GitHub. It optionally runs a build process to create these files. GitHub Pages can deploy Evidence apps from a GitHub repository.
+
+<Alert status="warning">
+
+    **Base Path**
+
+    GitHub Pages serves sites at subpaths of github.io by default, e.g. `https://[username].github.io/your-app`, so you will need to adjust the [base path](/deployment/base-paths) for your app, unless using a custom domain.
+</Alert>
+
+## Prerequisites
+
+- A GitHub account
+- An Evidence project pushed to GitHub
+
+## Deploy Evidence to GitHub Pages
+
+1. Adjust the [base path](/deployment/base-paths) for your app to match the name of your GitHub repository. 
+    - If your repo is stored at `https://github.com/username/my-evidence-app`, your base path should be `/my-evidence-app`.
+1. Add secrets to your GitHub repo: Settings > Secrets and variables > Actions
+    - With your Evidence dev server running, go to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and copy each of the environment variables
+    - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+1. From your GitHub repository, click the **Settings** tab, and then click **Pages** in the Code and automation section.
+1. Under **Source**, select **GitHub Actions**
+1. Directly underneath, where it says "Use a suggested workflow, browse all workflows or create your own", click **Create your own**, and use the following workflow file, naming it `deploy.yml` or similar. 
+    ```yaml
+    name: Deploy to GitHub Pages
+
+    on:
+      push:
+        branches: 'main' # or whichever branch you want to deploy from
+
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+          - name: Install Node.js
+            uses: actions/setup-node@v4
+            with:
+              node-version: 20
+              cache: npm
+
+          - name: Install dependencies
+            run: npm install
+
+          - name: build
+            env:
+              BASE_PATH: '/${{ github.event.repository.name }}'
+              ## Add and uncomment any environment variables here
+              ## EVIDENCE_SOURCE__my_source__username: ${{ secrets.EVIDENCE_SOURCE__MY_SOURCE__USERNAME }}
+              ## EVIDENCE_SOURCE__my_source__private_key: ${{ secrets.EVIDENCE_SOURCE__MY_SOURCE__PRIVATE_KEY }}
+            run: |
+              npm run sources
+              npm run build
+
+          - name: Upload Artifacts
+            uses: actions/upload-pages-artifact@v3
+            with:
+              path: 'build/${{ github.event.repository.name }}'
+
+      deploy:
+        needs: build
+        runs-on: ubuntu-latest
+
+        permissions:
+          pages: write
+          id-token: write
+
+        environment:
+          name: github-pages
+          url: ${{ steps.deployment.outputs.page_url }}
+
+        steps:
+          - name: Deploy
+            id: deployment
+            uses: actions/deploy-pages@v4
+    ```
+1. Click **Commit changes**, either directly to your branch, or create a PR and merge it to your specified branch.
+1. The deploy workflow will run, you can see the progress in the **Actions** tab.
+
+Your app should be available at `https://[username].github.io/[your-app]`.
+
+## Domains, Authentication and Scheduling
+
+{@partial "evidence-cloud.md"}
+
+### Authentication
+
+You can set up a private GitHub Pages site by setting the visibility of the repo to **Private**. This requires a GitHub Enterprise account.
+
+This will mean only GitHub users with access to the repo will be able to access the site.
+
+### Custom domains
+
+You can add a custom domain to your GitHub Pages site. If you do this, you _do not_ need to adjust the base path for your app, as it does not need to be served from a subpath.
+
+You can adjust the domain at:
+
+[your repo] > Settings Tab > Pages > Custom domain
+
+### Data refresh
+
+You can adjust the schedule for your deployment using the workflow file by adding a `schedule` trigger with a cron expression.
+
+```yaml
+on:
+  push:
+    branches: 'main'
+  schedule:
+    # This is every 10 minutes
+    - cron: '*/10 * * * *' 
+```
+
+---
+evidence/sites/docs/pages/deployment/hugging-face-spaces/index.md
+---
+---
+sidebar_position: 4
+title: Hugging Face Spaces
+description: Deploy Evidence to Hugging Face Spaces from a GitHub repository. Spaces can be private to your org, and can use Github Actions for data refresh.
+og:
+    image: /img/deployment/deploy-hugging-face-spaces.png
+---
+
+Hugging Face is an open-source platform for machine learning and artificial intelligence that provides tools and models for building, training, and deploying AI applications. [Hugging Face Spaces](https://huggingface.co/spaces) is a service that allows you to deploy machine learning models as web applications. Hugging Face Spaces can deploy Evidence apps from a Git repository.
+
+## Prerequisites
+
+- A Hugging Face account
+- An Evidence project pushed to a Git service like GitHub
+
+## Deploy Evidence to Hugging Face Spaces
+
+1. Navigate to the <a href="https://huggingface.co/spaces" target="_blank" class="markdown">Hugging Face Spaces</a>
+1. Select **Create new Space**
+    - Choose a name
+    - Space SDK: `Static`
+    - Static template: `Blank`
+    - Choose a visibility: `Public` or `Private` depending on your needs
+1. Create a new [Access Tokens](https://huggingface.co/settings/tokens)
+   - Token Type: `Fine-grained`
+   - Name: e.g. `Evidence`
+   - Repositories Permissions: Choose the space you just created, and select `Read access to contents of selected repos` and `Write access to contents/settings of selected repos`
+   - Select Create Token, and save it somewhere safe
+1. Add secrets to your GitHub repo: Settings > Secrets and variables > Actions
+   - Firstly add your Hugging Face Tokent as a secret named `HUGGINGFACE_TOKEN`
+    - With your Evidence dev server running, go to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and copy each of the environment variables
+    - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+1. Create the deploy workflow file: `.github/workflows/deploy.yml`, update the repo name and space name, and merge it into your main branch
+      ```yaml
+      name: Deploy to Hugging Face Space on Merge
+      on:
+      push:
+         branches:
+            - main
+      workflow_dispatch:
+
+      jobs:
+      build_and_deploy:
+         runs-on: ubuntu-latest
+         steps:
+            # Checkout the repository
+            - uses: actions/checkout@v4
+
+            # Install dependencies and build the project
+            - run: npm ci && npm run sources && npm run build
+            env:
+               EVIDENCE_SOURCE__taxi__project_id: ${{ secrets.EVIDENCE_SOURCE__TAXI__PROJECT_ID }}
+               EVIDENCE_SOURCE__taxi__client_email: ${{ secrets.EVIDENCE_SOURCE__TAXI__CLIENT_EMAIL }}
+               EVIDENCE_SOURCE__taxi__private_key: ${{ secrets.EVIDENCE_SOURCE__TAXI__PRIVATE_KEY }}
+
+            # Deploy to Hugging Face Space
+            - name: Install Hugging Face CLI
+            run: pip install huggingface-hub
+
+            - name: Authenticate with Hugging Face
+            run: huggingface-cli login --token "${{ secrets.HUGGINGFACE_TOKEN }}"
+
+            - name: Deploy to Hugging Face Space
+            run: |
+               # Update to use your repo
+               huggingface-cli upload [your-username]/[your-space-name] ./build --repo-type=space
+
+      ```
+
+Your app will be deployed to a URL like `https://[your-username]-[your-space-name].static.hf.space/`
+
+## Domains, Authentication and Scheduling
+
+{@partial "evidence-cloud.md"}
+
+### Authentication
+
+If you chose a private space, only members of your Hugging Face organization will be able to access the space.
+
+### Custom Domains
+
+Custom domains are not supported for Hugging Face Spaces.
+
+### Data refresh
+
+You can adjust the schedule for your deployment using the workflow file by adding a `schedule` trigger with a cron expression.
+
+```yaml
+on:
+  push:
+    branches: 'main'
+  schedule:
+    # This is every 10 minutes
+    - cron: '*/10 * * * *' 
+```
+
+---
 evidence/sites/docs/pages/deployment/overview/index.md
 ---
 ---
@@ -23076,15 +23300,28 @@ description: Evidence is a static site generator, so can be deployed to any stat
 
 # Deployment Overview
 
-In production, Evidence is a [static site generator](https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one/) by default. This means it doesn't run queries when someone visits your site, but pre-builds all possible pages as HTML beforehand.
+In production, Evidence generates [static sites](https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one/) by default. This means it doesn't run queries against your database when someone visits your site, but queries and pre-builds all pages as HTML beforehand.
 
-You can host your Evidence app using Evidence Cloud, cloud services like Netlify or Vercel, or your own infrastructure. Evidence does not currently support Github Pages, there is more information on [GitHub](https://github.com/evidence-dev/evidence/issues/603).
+Static sites are very versatile, and so you can host your Evidence app using Evidence Cloud, cloud services like AWS, Azure, Netlify or Vercel, or your own infrastructure.
 
 You can also configure Evidence as a [Single Page App (SPA)](/deployment/rendering-modes). In SPA mode Evidence will not pre-build all the pages in your application. This can be preferrable if your app has many pages (>1,000) causing long build times.
 
 ## Evidence Cloud
 
 The easiest way to deploy Evidence is on [Evidence Cloud](/deployment/evidence-cloud). Evidence Cloud is free for public apps, and has paid plans for private apps.
+
+## Self-host
+
+You can also self-host Evidence anywhere suitable for hosting static sites. See guides for:
+- [AWS Amplify](/deployment/aws-amplify)
+- [Azure Static Apps](/deployment/azure-static-apps)
+- [Cloudflare Pages](/deployment/cloudflare-pages)
+- [Firebase](/deployment/firebase)
+- [GitHub Pages](/deployment/github-pages)
+- [GitLab Pages](/deployment/gitlab-pages)
+<!-- - [Hugging Face Spaces](/deployment/hugging-face-spaces) -->
+- [Netlify](/deployment/netlify)
+- [Vercel](/deployment/vercel)
 
 ## Build Process
 
@@ -23137,50 +23374,197 @@ For details on how to use different data for different environments, see [Enviro
 
 
 ---
+evidence/sites/docs/pages/deployment/cloudflare-pages/index.md
+---
+---
+sidebar_position: 4
+title: Cloudflare Pages
+description: Deploy Evidence to Cloudflare Pages by linking to a Git repository. Pages supports auth via Cloudflare Access and custom domains.
+og:
+    image: /img/deployment/deploy-cloudflare-pages.png
+---
+
+Cloudflare is a popular CDN and DNS provider that also offers a static site hosting service called [Cloudflare Pages](https://pages.cloudflare.com/). Cloudflare Pages can deploy Evidence apps from a Git repository.
+
+## Prerequisites
+
+- A Cloudflare account
+- An Evidence project pushed to a Git service like GitHub or GitLab
+
+## Deploy Evidence to Cloudflare Pages
+
+1. Navigate to the <a href="https://dash.cloudflare.com/" target="_blank" class="markdown">Cloudflare dashboard</a>
+1. Select **Workers & Pages** from the left-hand menu, and select **Create**
+1. There are two tabs: **Workers** and **Pages** - choose **Pages**
+1. Select **Connect to Git**, and choose GitHub or GitLab
+1. Select Repository
+   - Authenticate with your Git provider
+   - Choose the repository to deploy from
+   - You may need to configure repository access permissions
+1. Set up builds and deployments
+   - Choose a production branch
+   - Set the build command: `npm run sources && npm run build`
+   - Set the build output directory: `/build`
+1. (Optionally select the root path containing your Evidence project if using a monorepo)
+1. Add environment variables
+   - Click **Add variable**
+   - With your Evidence dev server running, go to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and copy each of the environment variables
+   - Paste them into the Cloudflare Pages environment variables section
+1. Click **Save and Deploy**
+
+Your app will be deployed to a URL like `https://[repo-name].pages.dev`. It can take a few minutes for the site to be available after deployment.
+
+## Domains, Authentication and Scheduling
+
+{@partial "evidence-cloud.md"}
+
+### Authentication
+
+By default, your app will be public.
+
+Authentication can be configured with [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/identity/access/).
+
+Workers & Pages > [Your app] > Settings > General > Access Policy > Manage
+
+You will need to set up access groups and policies to control access to your app. A one time PIN code can be configured for user login.
+
+## Custom Domains
+
+Cloudflare Pages supports custom domains.
+
+Workers & Pages > [Your app] > Custom Domains > Set up a custom domain
+
+## Data refresh
+
+Cloudflare Pages does not have built in functionality for data refresh.
+
+
+---
+evidence/sites/docs/pages/deployment/gitlab-pages/index.md
+---
+---
+sidebar_position: 4
+title: GitLab Pages
+description: Deploy Evidence to GitLab Pages from a GitLab repo. GitLab Pages can be private to your org, support custom domains, and GitLab CI/CD for data refresh.
+og:
+    image: /img/deployment/deploy-gitlab-pages.png
+---
+
+[GitLab Pages](https://docs.gitlab.com/ee/user/project/pages/) is a service that allows you to host static websites and single-page apps. Evidence apps can be deployed to GitLab Pages by pushing your Evidence project to a GitLab repository and enabling Pages for the repository.
+
+## Prerequisites
+
+- A [GitLab](https://gitlab.com/) account
+- An Evidence project pushed to a GitLab repository
+
+## Deploy Evidence to GitLab Pages
+
+1. In <a href="https://gitlab.com/" target="_blank" class="markdown">GitLab</a>, navigate to your Evidence project repository.
+1. Add credentials as environment variables
+    - Navigate to **Settings > CI/CD > Variables**
+    - Click **Add Variable**, and use **Masked** visibility
+    - Navigate to your Evidence project and go to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and copy each of the environment variables keys and values
+    - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+1. Return to your GitLab project, and select **Deploy > Pages** in the left sidebar.
+1. Get started with GitLab Pages
+    - Build image: `node:22`
+    - The application files are in the `public` folder: `true` (we'll change this in Evidence later)
+    - Installation steps: `npm ci`
+    - Build steps: 
+        - `npm run sources`
+        - `npm run build`
+        - `cp -r build public`
+    - Add a commit message, and click **Commit**
+
+Your app will be available at `https://[your-repo]-[hexcode].gitlab.io/`. It will be only accessible to your account by default.
+
+
+## Domains, Authentication and Scheduling
+
+{@partial "evidence-cloud.md"}
+
+### Authentication
+
+GitLab pages are only accessible to your account by default. To make it public, you can change the visibility at:
+
+Settings > General > Visibility, project features and permissions > Pages
+
+### Custom domains
+
+You can add a custom domain by navigating to:
+
+Settings > Pages > Domains > New domain
+
+### Data refresh
+
+You can add a pipeline schedule to refresh your data by navigating to:
+
+Build > Pipeline schedule > Create a new pipeline schedule
+
+---
 evidence/sites/docs/pages/deployment/evidence-cloud/index.md
 ---
 ---
 sidebar_position: 2
 hide_table_of_contents: false
 title: Evidence Cloud
-description: Evidence Cloud is a hosting service that allows you to securely host Evidence apps. It's the easiest way to host an Evidence app, without having to worry about maintaining your own infrastructure.
+description: Evidence Cloud is the easiest way to deploy Evidence apps. It's maintained by the Evidence team, and allows you to securely host Evidence apps without having to worry about maintaining your own infrastructure.
+og:
+    image: /img/deployment/deploy-evidence-cloud.png
 ---
 
-## What is Evidence Cloud?
-
-Evidence Cloud is our hosting service that allows you to securely host Evidence apps.
-
-It's the easiest way to host an Evidence app, without having to worry about maintaining your own infrastructure.
-
-### Key Features
+Evidence Cloud is the easiest way to host Evidence apps. It's maintained by the Evidence team, and allows you to securely host Evidence apps without having to worry about maintaining your own infrastructure.
 
 - **Easy to set up:** Deploy in 5 minutes without configuring any infrastructure.
 - **Secure:** Manage access for users in your team.
 - **Organizational domain:** Host your app at `[organisation].evidence.app`.
 - **Scheduled refreshes:** Daily (or more frequent) data updates to your app.
 - **Re-build on push:** Merge to your target branch to rebuild your app.
+- **Custom domains:** Add a custom domain to your app.
+- **Cloud execution engine:** Offload heavy queries to our Cloud SQL engine for faster performance.
 
-## Sign Up
+## Prerequisites
 
-Evidence Cloud is now generally available. You can sign up below.
+- A GitHub account
+- An Evidence project pushed to GitHub (optional)
 
-<LinkButton url="https://evidence.app"> Sign Up </LinkButton>
+## Deploy Evidence to Evidence Cloud
 
-<br/>
-<br/>
-
-## How do I set up Evidence Cloud
-
-Setting up Evidence Cloud takes less than 5 minutes.
-
-1. Go to [evidence.app](https://evidence.app) and sign in with GitHub
+1. Go to <a href="https://evidence.app" target="_blank" class="markdown">Evidence Cloud</a> and login with GitHub
 1. Choose an option to get started:
-   1. **If you have an existing app:** click `Deploy Evidence Project`
-   1. **If you don't have a app yet**, select `Create New Project from Template`, then return to [evidence.app](https://evidence.app) after creating your template app in GitHub
-1. Enter your deployment details, including the GitHub repo you want to use, and the domain you want to deploy it to
-1. Add your credentials, either from your local app or from the template
+   1. **If you have an existing Evidence project:** click `Add Project`
+   1. **If you don't have a Evidence project yet:** select `Start from our templates`, and choose evidence-dev/template.
+1. Deploy your project
+   - Repository: Choose the GitHub repository containing your Evidence project
+   - Branch: Edit if required
+   - Domain: Choose the subdomain you want to deploy to
+   - (Optional) Root directory: Edit to point to your Evidence directory if you are using a monorepo
+   - Authentication: None, Email and Password (Paid plans only), or SSO (Paid plans only)
+1. Set your environment variables
+   - **If you are deploying an existing project**, click "Paste Environment Variables"
+        - Navigate to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and use the **Copy All** button to copy them to your clipboard, then paste them into the Environment Variables section. Click **Save**.
+        - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory, and enter them in KEY=VALUE format on separate lines.
+        - The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+   - **If you are deploying from a template**, click "Use Template Environment Variables"
 1. Click `Deploy your project`
 
+Your app will be deployed to https://[your-subdomain].evidence.app
+
+## Domains, Authentication and Scheduling
+
+### Authentication
+
+Evidence Cloud Team and Enterprise plans support private apps with auth. If you need to configure an SSO provider, reach out to our team on [Slack](https://slack.evidence.dev).
+
+### Custom Domains
+
+Evidence Cloud Enterprise plans support custom domains. Reach out to our team on [Slack](https://slack.evidence.dev) to set your domain up.
+
+### Data Refresh
+
+To adjust your deployment schedule, select your app in [Evidence Cloud](https://evidence.app), click **Schedule**, and adjust the schedule.
+
+Community Plan sites can be refreshed daily. More frequent refreshes are available on the Team and Enterprise plans.
 
 ## Frequently Asked Questions
 
@@ -23277,6 +23661,185 @@ As a default, a failed chart or query will not throw an error. To prevent failed
 </Details>
 
 ---
+evidence/sites/docs/pages/deployment/aws-amplify/index.md
+---
+---
+sidebar_position: 4
+title: AWS Amplify
+breadcrumb: "select 'AWS Amplify' as breadcrumb"
+description: Deploy Evidence to AWS Amplify by linking to a Git repository. Amplify supports global passwords for authentication and custom domains.
+og:
+    image: /img/deployment/deploy-aws-amplify.png
+---
+
+[AWS Amplify](https://aws.amazon.com/amplify/) is an AWS service that allows you to create full stack web and mobile apps. Amplify can deploy Evidence apps by linking to a Git repository.
+
+## Prerequisites
+
+- An AWS account
+- An Evidence project pushed to a Git service like GitHub, GitLab, or Bitbucket.
+
+## Deploy Evidence to AWS Amplify
+
+1. Login to the <a href="https://console.aws.amazon.com/" target="_blank" class="markdown">AWS Console</a>
+2. Navigate to AWS Amplify, and select **Deploy an app** / **Create new app**
+3. **Choose source code provider**
+    - Select your source code provider (GitHub, Bitbucket, CodeCommit, GitLab). 
+    - Click **Next**.
+    - Install and authorize the Amplify app on your repository via your Git provider.
+4. **Add repository and branch**
+    - Use the search box to find the repository containing your Evidence project.
+    - Select the branch you want to deploy, 
+    - (Optionally select the folder containing your Evidence project if using a monorepo). 
+    - Click **Next**.
+5. **App settings**
+    - Edit the frontend build command: 
+        ```code
+        npm run sources && npm run build
+        ```
+    - Edit the build output directory: `build`
+    - Open the **Advanced settings** section
+        - Build image: `Custom build image`
+        - Reference: `public.ecr.aws/docker/library/node:20-bookworm`
+        - Click to add new **Environment variables**
+        - Copy your environment variables from the Evidence settings page: <a href="http://localhost:3000/settings/#deploy" target="_blank" class="markdown">http://localhost:3000/settings/#deploy</a>
+        - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+    - Click **Next**
+6. **Review**
+    - Review your settings and click **Save and deploy**
+
+Your app will be deployed to https://[branch-name]-[app-id].amplifyapp.com
+
+## Domains, Authentication and Scheduling
+
+{@partial "evidence-cloud.md"}
+
+### Authentication
+
+Your deployed app will be public by default. 
+
+#### Global password
+
+It is possible to set a global site password using AWS Amplify from the console:
+
+Hosting > Access control > Manage access.
+
+#### Cognito
+
+It is also possible to set up auth via [Cognito](https://docs.amplify.aws/react/build-a-backend/auth/).
+
+### Custom domains
+
+Your app will be deployed to https://[branch-name]-[app-id].amplifyapp.com
+
+You can set a custom domain using AWS Amplify from the console:
+
+Hosting > Custom domains > Add domain.
+
+### Data refresh
+
+You can manually refresh your data using AWS Amplify from the console:
+
+[your-app] > Deployments > Redeploy this version.
+
+
+---
+evidence/sites/docs/pages/deployment/azure-static-apps/index.md
+---
+---
+sidebar_position: 4
+title: Azure Static Apps
+description: Deploy Evidence to Azure Static Apps by linking a Git repository. Static Apps support global passwords, Entra ID, custom domains, and GitHub Actions for refresh.
+og:
+    image: /img/deployment/deploy-azure-static-apps.png
+---
+
+[Azure Static Apps](https://learn.microsoft.com/en-us/azure/static-web-apps/) is a Microsoft Azure service that allows you to deploy static websites and web apps to Azure. Azure Static Apps can deploy Evidence apps by linking to a Git repository.
+
+## Prerequisites
+
+- A Microsoft Azure account
+- An Evidence project pushed to a Git service like GitHub or Azure DevOps
+
+## Deploy Evidence to Azure Static Apps
+
+1. In the <a href="https://portal.azure.com/" target="_blank" class="markdown">Azure Portal</a>, select **Create a Resource** and choose **Static Web App**
+1. Basics
+   - Choose a subscription, and resource group for the app
+   - Choose a name for the app
+   - Choose a plan type: Free, Standard or Dedicated
+   - Choose a source code provider: GitHub, Azure DevOps or Other
+   - Authenticate with your Git provider
+   - Choose a repository, and branch to deploy from
+   - Build presets: `Custom`
+   - Output location `/build`
+1. Deployment configuration
+   - Choose either a deployment token, or (recommended) GitHub to deploy your code
+1. Advanced and Tags: No changes needed
+1. Review and create: Click Create
+1. This will create add a new workflow file in your repository, e.g. `.github/workflows/azure-static-web-apps-thankful-hill-01fbff51e.yml`
+1. Add secrets to your GitHub repo: Settings > Secrets and variables > Actions
+    - With your Evidence dev server running, go to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and copy each of the environment variables into the GitHub secrets
+    - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+1. In your git repo, edit this file's "Build and Deploy" step, adding `app_build_command: "npm run sources && npm run build"`, and environment variables to reference the secrets
+      ```yaml
+            - name: Build And Deploy
+            id: builddeploy
+            uses: Azure/static-web-apps-deploy@v1
+            with:
+               ...
+               # Add this line
+               app_build_command: "npm run sources && npm run build" 
+               ###### End of Repository/Build Configurations ######
+            env: 
+               # Add and uncomment your environment variables here
+               # Note that GitHub capitalizes the names of secrets, but Evidence requires the casing to match your source and option names
+               # EVIDENCE_SOURCE__my_source__username: ${{ secrets.EVIDENCE_SOURCE__MY_SOURCE__USERNAME }}
+               # EVIDENCE_SOURCE__my_source__private_key: ${{ secrets.EVIDENCE_SOURCE__MY_SOURCE__PRIVATE_KEY }}
+      ```
+1. Commit and push this change, and your app will deploy.
+
+Your app will be available at `https://[random-word-12345].azurestaticapps.net`
+
+## Domains, Authentication and Scheduling
+
+{@partial "evidence-cloud.md"}
+
+### Authentication
+
+You can add a global site password to your app: 
+
+[your-app] > Settings > Configuration > Password protection > Protect both staging and production environments
+
+You can also configure other authentication providers, such as Microsoft Entra ID, or GitHub. See the [official docs](https://learn.microsoft.com/en-us/azure/static-web-apps/authentication-authorization#set-up-sign-in) for more information.
+
+### Custom Domains
+
+You can add a custom domain to your Azure Static App as follows:
+
+[your-app] > Settings > Custom domains > Add > Custom domain on other DNS
+
+### Data Refresh
+
+To add a deployment schedule, modify the workflow file in your repository, adding a `schedule` trigger.
+
+```yaml
+on:
+  push:
+    branches: 'main'
+  schedule:
+    - cron: '0 0 * * *' # This is midnight every day
+```
+
+Also delete the `if` line from the `build_and_deploy_job` step:
+
+```yaml
+build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed') # delete this line
+```
+
+
+---
 evidence/sites/docs/pages/deployment/environments/index.md
 ---
 ---
@@ -23321,56 +23884,184 @@ If you are using separate schemas, you will need to add the optional `schema` pa
 
 
 ---
+evidence/sites/docs/pages/deployment/firebase/index.md
+---
+---
+sidebar_position: 4
+title: Firebase
+description: Deploy Evidence to Firebase Hosting by linking to a Git repository. Hosting supports custom domains and GitHub Actions for data refresh.
+og:
+    image: /img/deployment/deploy-firebase.png
+---
+
+[Firebase Hosting](https://firebase.google.com/products/hosting) is a GCP service that allows you to host static websites and single-page apps. Firebase Hosting can deploy Evidence apps by linking to a Git repository.
+
+## Prerequisites
+
+- A GCP account
+- An Evidence project pushed to Git service like GitHub, GitLab, or Bitbucket.
+
+## Deploy Evidence to Firebase
+
+<Alert status=warning>
+
+**Firebase CLI**
+
+    The Firebase CLI is somewhat buggy, so you sometimes need to try the commands multiple times for them to succeed.
+    
+</Alert>
+
+1. From the <a href="https://console.firebase.google.com/" target="_blank" class="markdown">Firebase console</a>, click **Create a project**.
+    - Enter a project name, accept the terms of service, and click **Continue**.
+    - Choose whether to enable Google Analytics (not required), and click **Create project**.
+1. In the terminal, install the Firebase CLI:
+    ```bash
+    npm install -g firebase-tools
+    ```
+1. Log in to Firebase, and authenticate via the browser:
+    ```bash
+    firebase login
+    ```
+1. Initialize Firebase Hosting in your project:
+    ```bash
+    firebase init hosting
+    ```
+    - Select `Use an existing project`
+    - Select a default Firebase project for this directory: Select project you created
+    - What do you want to use as your public directory? `build`
+    - Configure as a single-page app (rewrite all URLs to /index.html)? `No`
+    - (If asked) File build/index.html already exists. Overwrite? `No`
+    - Set up automatic builds and deploys with GitHub? `Yes`
+    - Select a GitHub repository to connect to this project: Type your repo name
+    - Set up the workflow to run a build script before every deploy? `Yes`
+    - What script should be run before every deploy? `npm ci && npm run sources && npm run build`
+    - Set up automatic deployment to your site's live channel when a PR is merged? `Yes`
+    - What is the name of the GitHub branch associated with your site's live channel? `main`
+1. Add secrets to your GitHub repo: Settings > Secrets and variables > Actions
+   - With your Evidence dev server running, go to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and copy each of the environment variables
+   - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+   - Add each of them as secrets to your GitHub repo
+1. Build your app locally (if you haven't already):
+    ```bash
+    npm i && npm run sources && npm run build
+    ```
+1. Deploy your app for the first time
+    ```bash
+    firebase deploy --only hosting
+    ```
+1. Edit `firebase-hosting-merge.yml` and `firebase-hosting-pull-request.yml` to add your environment variables as GitHub secrets (note that GitHub capitalizes the names of secrets)
+    ```yaml
+    - run: npm ci && npm run sources && npm run build
+      env:
+        EVIDENCE_SOURCE__my_source__username: ${{ secrets.EVIDENCE_SOURCE__MY_SOURCE__USERNAME }}
+        EVIDENCE_SOURCE__my_source__private_key: ${{ secrets.EVIDENCE_SOURCE__MY_SOURCE__PRIVATE_KEY }}
+    ```
+1. Commit and push these newly created files: `firebase.json`, `.firebaserc`,`firebase-hosting-merge.yml`, `firebase-hosting-pull-request.yml`.
+1. Update your GitHub workflow settings to allow Workflows to Read and write permissions. This is required for the Pull Request preview GitHub Action to work. [your repo] > Settings > Actions > General > Workflow permissions
+
+Your app should now be live on Firebase Hosting at  `https://<project-id>.web.app`.
+
+## Domains, Authentication and Scheduling
+
+{@partial "evidence-cloud.md"}
+
+### Authentication
+
+Firebase Authentication is _not_ a suitable authentication for static apps on Firebase Hosting.
+
+### Custom domains
+
+You can set up a custom domain on Firebase Hosting. 
+
+[Firebase dashboard](https://console.firebase.google.com/u/0/) > [your project] > Hosting (in the left sidebar) > Domains > Add custom domain
+
+### Data refresh
+
+To adjust your deployment schedule, modify the workflow file in your repository, adding a `schedule` trigger.
+
+```yaml
+on:
+  schedule:
+    - cron: '0 0 * * *' # This is midnight every day
+```
+
+
+---
 evidence/sites/docs/pages/deployment/vercel/index.md
 ---
 ---
 sidebar_position: 4
 hide_table_of_contents: false
 title: Vercel
-description: Deploy a public app to Vercel for free or a password-protected app with the pro plan.
+description: Deploy Evidence to Vercel by linking to a Git repository. Vercel supports custom domains, global passwords, and GitHub Actions for data refresh.
+og:
+    image: /img/deployment/deploy-vercel.png
 ---
 
+[Vercel](https://vercel.com) is a cloud platform that allows you to simply deploy web applications. Vercel can deploy Evidence apps from a Git repository.
 
-<Alert status=danger>
+Vercel lets you host a public version of your app for free, or you can create and host a password-protected version with Vercel's $150/month pro plan.
 
-**Missing DuckDB Dependencies**
+## Prerequisites
 
-Note that because of missing dependencies, Vercel cannot be used with DuckDB sources. Consider [Evidence Cloud](/deployment/evidence-cloud) or [Netlify](/deployment/netlify) as an alternative if you are using DuckDB. 
+- An Evidence project pushed to a Git service like GitHub, GitLab, or Bitbucket.
+- A Vercel account.
 
-</Alert>
+## Deploy Evidence to Vercel
 
-Vercel lets you host a public version of your app for free, or you can create and host a password-protected version with Vercel's $150/month pro plan. [Netlify](/deployment/netlify) offers the same option for $15/month.
+1. From the <a href="https://vercel.com/dashboard" target="_blank" class="markdown">Vercel dashboard</a>, select **Add new... Project**
+1. Import the Git repository containing your Evidence project.
+1. Edit the build and output settings:
+   - **Build command**: `npm run sources && npm run build`
+   - **Output directory**: `build`
+1. (If using a monorepo) edit the root directory to point to your Evidence project
+1. Edit the environment variables:
+   - With your Evidence dev server running, use the **Copy All** button on the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a>
+   - Paste them into the Vercel environment variables section, (they will automatically populate all the fields)
+   - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+1. Click **Deploy**
 
-## Deploy to Vercel
+Your app will be deployed to https://[project-name].vercel.app
 
-1. Run your app in development mode
-1. Visit the [settings page](http://localhost:3000/settings)
-1. Open the deployment panel, and select 'Vercel', then follow the provided instructions
+## Domains, Authentication and Scheduling
 
-## Optional: Set a site-wide password for your app (Requires Paid Plan)
+{@partial "evidence-cloud.md"}
 
-Follow the directions provided by Vercel to set up a password for your site:
-https://vercel.com/blog/protecting-deployments
+### Authentication
 
-## Optional: Schedule updates using Deploy Hooks
+Your deployed app will be public by default. 
+
+#### Global password
+
+This requires a Vercel paid plan with [advanced deployment protection](https://vercel.com/docs/security/deployment-protection#advanced-deployment-protection), starting at $150/month.
+
+Vercel Dashboard > [your-project] > Settings > Deployment Protection > Password protection
+
+### Custom domains
+
+Your app will be deployed to https://[project-name].vercel.app
+
+You can set a custom domain using Vercel from the console:
+
+Vercel Dashboard > [your-project] > Settings > Domains
+
+### Data refresh
+
+Your project will be automatically built when you push to your repository, refreshing your data.
+
+#### Schedule updates using Deploy Hooks
 
 If you want your site to update on a specific schedule, you can use GitHub Actions (or another similar service) to schedule regular calls to a [Vercel deploy hook](https://vercel.com/docs/concepts/git/deploy-hooks).
 
 1. Create a [Vercel deploy hook](https://vercel.com/docs/concepts/git/deploy-hooks).
    This will give you a URL that GitHub will use to trigger builds
-
 2. Add `VERCEL_DEPLOY_HOOK` to your Github Repo's Secrets
-
-- In your GitHub repo, go to Settings > Secrets > Actions and click **New repository secret** and create a secret, `VERCEL_DEPLOY_HOOK`, with the URL from step 1.
-
+   - In your GitHub repo, go to Settings > Secrets > Actions and click **New repository secret** and create a secret, `VERCEL_DEPLOY_HOOK`, with the URL from step 1.
 3. Add a schedule file to your project
-
-- Create a new directory in your project called `.github`
-- Within that directory, create another called `workflows`
-- Add a new file in `.github/workflows` called `main.yml`
-
+   - Create a new directory in your project called `.github`
+   - Within that directory, create another called `workflows`
+   - Add a new file in `.github/workflows` called `main.yml`
 4. Add the following text to the `main.yml` file you just created. Be sure that the indentation in your `main.yml` matches the below.
-
 ```yaml
 name: Schedule Vercel Deploy
 on:
@@ -23387,7 +24078,6 @@ jobs:
           BUILD_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: curl -X POST -d {} $BUILD_HOOK
 ```
-
 5. See your GitHub Actions run in the **Actions** tab of your GitHub repo
 
 
@@ -23551,13 +24241,19 @@ Deploying apps with custom base paths is supported in Evidence Cloud's [Enterpri
 evidence/sites/docs/pages/deployment/netlify/index.md
 ---
 ---
-sidebar_position: 3
+sidebar_position: 4
 hide_table_of_contents: false
 title: Netlify
-description: Deploy your app to Netlify, which offers free hosting for public apps and password-protected hosting for paid plans.
+description: Deploy Evidence to Netlify by linking to a Git repository. Netlify supports custom domains, global passwords, and GitHub Actions for data refresh.
+og:
+    image: /img/deployment/deploy-netlify.png
 ---
 
+[Netlify](https://www.netlify.com) is a cloud platform for building and deploying web apps and frontend sites. Netlify can deploy Evidence apps from a Git repository.
+
 <Alert status=warning>
+
+**Netlify URL Lowercasing**
 
 All URLs on Netlify are converted to lowercase. This can cause issues if you're using `{params.my_param}` to filter data in your markdown. It's recommended to use lowercase any time you're using a URL parameter to filter data, like this:
 
@@ -23568,58 +24264,96 @@ WHERE LOWER(my_column) = LOWER('${params.my_param}')
 
 </Alert>
 
+
+
 Netlify lets you host a public version of your app for free, or you can create and host a password-protected version with Netlify's $15/month plan.
 
-## Deploy to Netlify
+## Prerequisites
 
-1. Run your app in development mode
-1. Visit the [settings page](http://localhost:3000/settings)
-1. Open the deployment panel, and select 'netlify', then follow the provided instructions
+- An Evidence project pushed to a Git service like GitHub, GitLab, or Bitbucket.
+- A Netlify account.
 
-## Optional: Set a site-wide password for your app (Requires Paid Plan)
+## Deploy Evidence to Netlify
+
+1. From the <a href="https://app.netlify.com/" target="_blank" class="markdown">Netlify dashboard</a>, select **Add new site > Import an existing project**
+1. Choose your Git provider (GitHub, GitLab, Bitbucket, Azure DevOps)
+1. Select the repository containing your Evidence project
+1. In the build settings
+    - **Build command**: `npm run sources && npm run build`
+    - **Publish directory**: `build`
+1. In the environment variables
+    - Click **New variable**
+    - With your Evidence dev server running, go to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and copy each of the environment variables
+    - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
+    - Paste them into the Netlify environment variables section
+1. (If using a monorepo) edit the base directory to point to your Evidence project
+1. Click **Deploy [your-site-name]**
+
+Your app will be available at `https://[your-site-name].netlify.app`.
+
+## Domains, Authentication and Scheduling
+
+{@partial "evidence-cloud.md"}
+
+### Authentication
+
+#### Global password
+
+Setting a global password requires a Netlify paid plan ($15/month).
 
 Follow the directions provided by Netlify to set up a password for your site:
-https://docs.netlify.com/visitor-access/password-protection/
 
-## Optional: Schedule updates using Build Hooks
+Netlify Dashboard >> [your-site] >> Site configuration >> Access & security >> Visitor access >> Configure site protection >> Basic password protection
+
+#### OAuth
+
+Netlify only supports OAuth via GitHub, GitLab, and Bitbucket.
+
+Netlify Dashboard >> [your-site] >> Site configuration >> Access & security >> OAuth
+
+### Custom domains
+
+Your app will be deployed to https://[your-site-name].netlify.app
+
+You can set a custom domain using Netlify from the console:
+
+Netlify Dashboard >> [your-site] >> Domain management >> Add a domain
+
+### Data refresh
+
+#### Schedule updates using Build Hooks
 
 If you want your site to update on a regular schedule, you can use GitHub Actions (or another similar service) to schedule regular calls to a [Netlify build hook](https://docs.netlify.com/configure-builds/build-hooks/).
 
-1. Create a [Netlify build hook](https://docs.netlify.com/configure-builds/build-hooks/) in **Site settings > Build & deploy > Continuous deployment > Build hooks**
+1. Create a [Netlify build hook](https://docs.netlify.com/configure-builds/build-hooks/) in **Site configuration > Build & deploy > Continuous deployment > Build hooks**
    ![netlify-add-build-hook](/img/netlify-add-build-hook.png)
    This will give you a URL that GitHub will use to trigger builds
-
 2. Add `NETLIFY_BUILD_HOOK` to your Github Repo's Secrets
-
-- In your GitHub repo, go to Settings > Secrets > Actions and click **New repository secret**<br/><br/>
-  ![netlify-github-new-secret](/img/netlify-github-new-secret.png)
-  ![netlify-github-secret](/img/netlify-github-secret.png)
-
+   - In your GitHub repo, go to Settings > Secrets > Actions and click **New repository secret**<br/><br/>
+     ![netlify-github-new-secret](/img/netlify-github-new-secret.png)
+   - Add the build hook URL as the secret value
+     ![netlify-github-secret](/img/netlify-github-secret.png)
 3. Add a schedule file to your project
-
-- Create a new directory in your project called `.github`
-- Within that directory, create another called `workflows`
-- Add a new file in `.github/workflows` called `main.yml`
-
+   - Create a new directory in your project called `.github`
+   - Within that directory, create another called `workflows`
+   - Add a new file in `.github/workflows` called `main.yml`
 4. Add the following text to the `main.yml` file you just created. Be sure that the spacing and indentation is exactly as presented here, as it will impact whether the action runs correctly
-
-```yaml
-name: Schedule Netlify Build
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 10 * * *' # Once a day around 6am ET (10am UTC)
-jobs:
-  build:
-    name: Request Netlify Webhook
-    runs-on: ubuntu-latest
-    steps:
-      - name: POST to Build Hook
-        env:
-          BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
-        run: curl -X POST -d {} $BUILD_HOOK
-```
-
+    ```yaml
+    name: Schedule Netlify Build
+    on:
+      workflow_dispatch:
+      schedule:
+        - cron: '0 10 * * *' # Once a day around 6am ET (10am UTC)
+    jobs:
+      build:
+        name: Request Netlify Webhook
+        runs-on: ubuntu-latest
+        steps:
+          - name: POST to Build Hook
+            env:
+              BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+            run: curl -X POST -d {} $BUILD_HOOK
+    ```
 5. See your GitHub Actions run in the **Actions** tab of your GitHub repo
 
 
