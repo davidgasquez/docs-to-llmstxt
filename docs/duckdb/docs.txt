@@ -19888,16 +19888,24 @@ In addition to ordinary numeric values, the floating-point types have several sp
 * `-Infinity`: negative infinity
 * `NaN`: not a number
 
-> On a machine whose floating-point arithmetic does not follow IEEE 754, these values will probably not work as expected.
+On machines with the required CPU/FPU support, DuckDB follows the IEEE 754 specification regarding these special values, with two exceptions:
 
-When writing these values as constants in a SQL command, you must put quotes around them, for example:
+* `NaN` compares equal to `NaN` and greater than any other floating point number.
+* Some floating point functions, like `sqrt` / `sin` / `asin` throw errors rather than return `NaN` for values outside their ranges of definition.
+
+To insert these values as literals in a SQL command, you must put quotes around them, you may abbreviate `Infinity` as `Inf`, and you may use any capitalization. For example:
 
 ```sql
-UPDATE table
-SET x = '-Infinity';
+SELECT
+sqrt(2) > '-inf',
+'nan' > sqrt(2)
 ```
 
-On input, these strings are recognized in a case-insensitive manner.
+
+
+| (sqrt(2) > '-inf') | ('nan' > sqrt(2)) |
+|-------------------:|------------------:|
+| true | true |
 
 ## Universally Unique Identifiers (`UUID`s)
 
@@ -25027,10 +25035,10 @@ Retrieve configuration value:
 SELECT current_setting('threads');
 ```
 
-Set the default catalog search path globally:
+Set the default sort order globally:
 
 ```sql
-SET GLOBAL search_path = 'db1,db2'
+SET GLOBAL sort_order = 'desc';
 ```
 
 Set the default collation for the session:
@@ -36057,7 +36065,7 @@ VARCHAR ST_QuadKey (col0 GEOMETRY, col1 INTEGER)
 #### Description
 
 Compute the [quadkey](https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system) for a given lon/lat point at a given level.
-Note that the the parameter order is **longitude**, **latitude**.
+Note that the parameter order is **longitude**, **latitude**.
 
 `level` has to be between 1 and 23, inclusive.
 
@@ -36903,7 +36911,7 @@ EXPLAIN SELECT count(*) FROM t1 WHERE ST_Within(geom, ST_MakeEnvelope(45, 45, 65
 
 Creating R-trees on top of an already populated table is much faster than first creating the index and then inserting the data. This is because the R-tree will have to periodically rebalance itself and perform a somewhat costly splitting operation when a node reaches max capacity after an insert, potentially causing additional splits to cascade up the tree. However, when the R-tree index is created on an already populated table, a special bottom up "bulk loading algorithm" (Sort-Tile-Recursive) is used, which divides all entries into an already balanced tree as the total number of required nodes can be computed from the beginning.
 
-Additionally, using the bulk loading algorithm tends to create a R-tree with a better structure (less overlap between bounding boxes), which usually leads to better query performance. If you find that the performance of querying the R-tree starts to deteriorate after a large number of of updates or deletions, dropping and re-creating the index might produce a higher quality R-tree.
+Additionally, using the bulk loading algorithm tends to create a R-tree with a better structure (less overlap between bounding boxes), which usually leads to better query performance. If you find that the performance of querying the R-tree starts to deteriorate after a large number of updates or deletions, dropping and re-creating the index might produce a higher quality R-tree.
 
 ### Memory Usage
 
@@ -39134,7 +39142,7 @@ use duckdb::{params, Connection, Result};
 let conn = Connection::open_in_memory()?;
 ```
 
-The `Connection` will automatically close the underlining db connection for you when goes out of scope (via `Drop`). You can also explicitly close the `Connection` with `conn.close()`. This is not much difference between these in the typical case, but in case there is an error, you'll have the chance to handle it with the explicit close.
+The `Connection` will automatically close the underlying db connection for you when it goes out of scope (via `Drop`). You can also explicitly close the `Connection` with `conn.close()`. This is not much difference between these in the typical case, but in case there is an error, you'll have the chance to handle it with the explicit close.
 
 ### Querying
 
