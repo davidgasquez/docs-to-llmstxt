@@ -867,8 +867,6 @@ The following dialects are considered for automatic dialect detection.
 
 
 
-
-
 | Parameters | Considered values |
 |------------|-----------------------|
 | `delim` | `,` `|` `;` `\t` |
@@ -1130,8 +1128,6 @@ The `read_csv` automatically attempts to figure out the correct configuration of
 SELECT * FROM read_csv('flights.csv');
 ```
 
-
-
 | FlightDate | UniqueCarrier | OriginCityName | DestCityName |
 |------------|---------------|----------------|-----------------|
 | 1988-01-01 | AA | New York, NY | Los Angeles, CA |
@@ -1147,8 +1143,6 @@ CREATE TABLE ontime AS
 SELECT * FROM read_csv('flights.csv');
 DESCRIBE ontime;
 ```
-
-
 
 | column_name | column_type | null | key | default | extra |
 |----------------|-------------|------|------|---------|-------|
@@ -1183,8 +1177,6 @@ destcityname VARCHAR
 COPY ontime FROM 'flights.csv';
 SELECT * FROM ontime;
 ```
-
-
 
 | flightdate | uniquecarrier | origincityname | destcityname |
 |------------|---------------|----------------|-----------------|
@@ -1335,8 +1327,6 @@ ignore_errors = true
 
 Outputs:
 
-
-
 | name | age |
 |-------|-----|
 | Pedro | 31 |
@@ -1349,8 +1339,6 @@ FROM read_csv('faulty.csv', columns = {'name': 'VARCHAR', 'age': 'INTEGER'});
 ```
 
 Outputs:
-
-
 
 | name |
 |--------------|
@@ -1370,8 +1358,6 @@ Note that any of the errors described in our Structural Error section will be st
 ### Reject Scans
 
 The CSV Reject Scans Table returns the following information:
-
-
 
 | Column name | Description | Type |
 |:--|:-----|:-|
@@ -1393,8 +1379,6 @@ The CSV Reject Scans Table returns the following information:
 
 The CSV Reject Errors Table returns the following information:
 
-
-
 | Column name | Description | Type |
 |:--|:-----|:-|
 | `scan_id` | The internal ID used in DuckDB to represent that scanner, used to join with reject scans tables | `UBIGINT` |
@@ -1409,8 +1393,6 @@ The CSV Reject Errors Table returns the following information:
 | `error_message` | The error message produced by DuckDB. | `VARCHAR` |
 
 ## Parameters
-
-
 
 The parameters listed below are used in the `read_csv` function to configure the CSV Rejects Table.
 
@@ -1749,8 +1731,6 @@ title: Creating JSON
 ## JSON Creation Functions
 
 The following functions are used to create JSON.
-
-
 
 | Function | Description |
 |:--|:----|
@@ -2375,8 +2355,6 @@ true
 
 There are three JSON aggregate functions.
 
-
-
 | Function | Description |
 |:---|:----|
 | `json_group_array(any)` | Return a JSON array with all values of `any` in the aggregation. |
@@ -2425,8 +2403,6 @@ SELECT json_group_structure(j) FROM example2;
 
 In many cases, it is inefficient to extract values from JSON one-by-one.
 Instead, we can â€œextractâ€� all values at once, transforming JSON to the nested types `LIST` and `STRUCT`.
-
-
 
 | Function | Description |
 |:---|:---|
@@ -2639,7 +2615,7 @@ Besides the `maximum_object_size`, `format`, `ignore_errors` and `compression`, 
 | `sample_size` | Option to define number of sample objects for automatic JSON type detection. Set to -1 to scan the entire input file | `UBIGINT` | `20480` |
 | `timestampformat` | Specifies the date format to use when parsing timestamps. See [Date Format]({% link docs/sql/functions/dateformat.md %}) | `VARCHAR` | `'iso'`|
 | `union_by_name` | Whether the schema's of multiple JSON files should be [unified]({% link docs/data/multiple_files/combining_schemas.md %}) | `BOOL` | `false` |
-| `map_inference_threshold` | Controls the threshold for number of columns whose schema will be auto-detected; if JSON schema auto-detection would infer a `STRUCT` type for a field that has _more_ than this threshold number of subfields, it infers a `MAP` type instead. Set to -1 to disable `MAP` inference. | `BIGINT` | `24`
+| `map_inference_threshold` | Controls the threshold for number of columns whose schema will be auto-detected; if JSON schema auto-detection would infer a `STRUCT` type for a field that has _more_ than this threshold number of subfields, it infers a `MAP` type instead. Set to -1 to disable `MAP` inference. | `BIGINT` | `24` |
 
 Example usage:
 
@@ -3149,8 +3125,6 @@ FlightDate|UniqueCarrier|OriginCityName|DestCityName
 
 Reading the two files at the same time will produce the following result set:
 
-
-
 | FlightDate | UniqueCarrier | OriginCityName | DestCityName |
 |------------|---------------|----------------|-----------------|
 | 1988-01-01 | AA | New York, NY | Los Angeles, CA |
@@ -3183,8 +3157,6 @@ Reading these when unifying column names **by position** results in an error â�
 ```sql
 SELECT * FROM read_csv(['flights3.csv', 'flights4.csv'], union_by_name = true);
 ```
-
-
 
 | FlightDate | OriginCityName | DestCityName | UniqueCarrier |
 |------------|----------------|-----------------|---------------|
@@ -3295,8 +3267,6 @@ FROM read_parquet(['file1.parquet', 'file2.parquet', 'file3.parquet']);
 
 Any file name input to the `read_parquet` function can either be an exact filename, or use a glob syntax to read multiple files that match a pattern.
 
-
-
 | Wildcard | Description |
 |------------|-----------------------------------------------------------|
 | `*` | matches any number of any characters (including none) |
@@ -3338,8 +3308,6 @@ SELECT *
 FROM read_csv(['flights1.csv', 'flights2.csv'], union_by_name = true, filename = true);
 ```
 
-
-
 | FlightDate | OriginCityName | DestCityName | UniqueCarrier | filename |
 |------------|----------------|-----------------|---------------|--------------|
 | 1988-01-01 | New York, NY | Los Angeles, CA | NULL | flights1.csv |
@@ -3357,8 +3325,6 @@ Search the current directory for all files.
 SELECT *
 FROM glob('*');
 ```
-
-
 
 | file |
 |---------------|
@@ -4349,8 +4315,6 @@ The planned dates of upcoming DuckDB releases are shown below.
 
 
 
-
-
 {% if site.data.upcoming_releases.size > 0 %}
 | Date | Version |
 |:-----|--------:|
@@ -4364,8 +4328,6 @@ _There are no upcoming releases announced at the moment. Please check back later
 
 
 ## Past Releases
-
-
 
 In the following, we list DuckDB's past releases along with their codename where applicable.
 Between versions 0.2.2 and 0.3.3, all releases (including patch versions) received a codename.
@@ -7648,8 +7610,6 @@ FROM addresses
 ORDER BY ALL;
 ```
 
-
-
 | address | city | zip |
 |------------------------|-----------|------------|
 | 111 Duck Duck Goose Ln | Duck Town | 11111 |
@@ -7664,8 +7624,6 @@ SELECT *
 FROM addresses
 ORDER BY ALL DESC;
 ```
-
-
 
 | address | city | zip |
 |------------------------|-----------|------------|
@@ -7874,8 +7832,6 @@ FROM ranked_functions
 WHERE
 function_rank < 3;
 ```
-
-
 
 | schema_name | function_name | function_rank |
 |:---|:---|:---|
@@ -9052,8 +9008,6 @@ Note that `duckdb_indexes` only provides metadata about secondary indexes, i.e.,
 
 The `duckdb_keywords()` function provides metadata about DuckDB's keywords and reserved words.
 
-
-
 | Column | Description | Type |
 |:-|:---|:-|
 | `keyword_name` | The keyword. | `VARCHAR` |
@@ -9073,8 +9027,6 @@ The `duckdb_memory()` function provides metadata about DuckDB's buffer manager.
 
 The `duckdb_optimizers()` function provides metadata about the optimization rules (e.g., `expression_rewriter`, `filter_pushdown`) available in the DuckDB instance.
 These can be selectively turned off using [`PRAGMA disabled_optimizers`]({% link docs/configuration/pragmas.md %}#selectively-disabling-optimizers).
-
-
 
 | Column | Description | Type |
 |:-|:---|:-|
@@ -9140,8 +9092,6 @@ Attributes like `temporary`, `start_value` etc. correspond to the various option
 
 The `duckdb_settings()` function provides metadata about the settings available in the DuckDB instance.
 
-
-
 | Column | Description | Type |
 |:-|:---|:-|
 | `name` | Name of the setting. | `VARCHAR` |
@@ -9177,8 +9127,6 @@ The [`information_schema.tables`]({% link docs/sql/meta/information_schema.md %}
 ## `duckdb_temporary_files`
 
 The `duckdb_temporary_files()` function provides metadata about the temporary files DuckDB has written to disk, to offload data from memory. This function mostly exists for debugging and testing purposes.
-
-
 
 | Column | Description | Type |
 |:-|:---|:-|
@@ -9484,6 +9432,15 @@ FROM tbl;
 |-----------|
 | 3, 2, 1 |
 
+### Handling `NULL` Values
+
+All general aggregate functions except for [`list`](#listarg) and [`first`](#firstarg) (and their aliases [`array_agg`](#array_aggarg) and [`arbitrary`](#arbitraryarg), respectively) ignore `NULL`s.
+To exclude `NULL`s from `list`, you can use a [`FILTER` clause]({% link docs/sql/query_syntax/filter.md %}).
+To ignore `NULL`s from `first`, you can use the [`any_value` aggregate](#any_valuearg).
+
+All general aggregate functions except [`count`](#countarg) return `NULL` on empty groups.
+In particular, [`list`](#listarg) does *not* return an empty list, [`sum`](#sumarg) does *not* return zero, and [`string_agg`](#string_aggarg-sep) does *not* return an empty string in this case.
+
 ## General Aggregate Functions
 
 The table below shows the available general aggregate functions.
@@ -9513,8 +9470,8 @@ The table below shows the available general aggregate functions.
 | [`fsum(arg)`](#fsumarg) | Calculates the sum using a more accurate floating point summation (Kahan Sum). |
 | [`geomean(arg)`](#geomeanarg) | Calculates the geometric mean of all non-null values in `arg`. |
 | [`histogram(arg)`](#histogramarg) | Returns a `MAP` of key-value pairs representing buckets and counts. |
-| [`histogram(arg, boundaries)`](#histogramargboundaries) | Returns a `MAP` of key-value pairs representing the provided upper `boundaries` and counts of elements in the corresponding left-open and right-closed partition of the datatype. A boundary at the largest value of the datatype is automatically added when elements larger than all provided `boundaries` appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). Boundaries may be provided, e.g., via [`equi_width_bins`]({% link docs/sql/functions/utility.md %}#equi_width_binsminmaxbincountnice). |
-| [`histogram_exact(arg, elements)`](#histogram_exactargelements) | Returns a `MAP` of key-value pairs representing the requested elements and their counts. A catch-all element specific to the data-type is automatically added to count other elements when they appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). |
+| [`histogram(arg, boundaries)`](#histogramarg-boundaries) | Returns a `MAP` of key-value pairs representing the provided upper `boundaries` and counts of elements in the corresponding left-open and right-closed partition of the datatype. A boundary at the largest value of the datatype is automatically added when elements larger than all provided `boundaries` appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). Boundaries may be provided, e.g., via [`equi_width_bins`]({% link docs/sql/functions/utility.md %}#equi_width_binsminmaxbincountnice). |
+| [`histogram_exact(arg, elements)`](#histogram_exactarg-elements) | Returns a `MAP` of key-value pairs representing the requested elements and their counts. A catch-all element specific to the data-type is automatically added to count other elements when they appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). |
 | [`last(arg)`](#lastarg) | Returns the last value of a column. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
 | [`list(arg)`](#listarg) | Returns a `LIST` containing all the values of a column. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
 | [`max(arg)`](#maxarg) | Returns the maximum value present in `arg`. |
@@ -9832,15 +9789,6 @@ The table below shows the available general aggregate functions.
 | **Description** | Calculates the sum of all non-null values in `arg`. |
 | **Example** | `sum(A)` |
 | **Alias(es)** | - |
-
-### Handling `NULL` Values
-
-All general aggregate functions except for [`list`](#listarg) and [`first`](#firstarg) (and their aliases [`array_agg`](#array_aggarg) and [`arbitrary`](#arbitraryarg), respectively) ignore `NULL`s.
-To exclude `NULL`s from `list`, you can use a [`FILTER` clause]({% link docs/sql/query_syntax/filter.md %}).
-To ignore `NULL`s from `first`, you can use the [`any_value` aggregate](#any_valuearg).
-
-All general aggregate functions except [`count`](#countarg) return `NULL` on empty groups and groups without non-`NULL` inputs.
-In particular, [`list`](#listarg) does *not* return an empty list, [`sum`](#sumarg) does *not* return zero, and [`string_agg`](#string_aggarg-sep) does *not* return an empty string in this case.
 
 ## Approximate Aggregates
 
@@ -10222,8 +10170,6 @@ Bitstrings must be of equal length when performing the bitwise operands AND, OR 
 ## Bitstring Operators
 
 The table below shows the available mathematical operators for `BIT` type.
-
-
 
 
 
@@ -11329,8 +11275,6 @@ SELECT format('I''d rather be {1} than {0}.', 'right', 'happy'); -- I'd rather b
 
 #### Format Specifiers
 
-
-
 | Specifier | Description | Example |
 |:-|:------|:---|
 | `{:d}` | integer | `123456` |
@@ -11449,8 +11393,6 @@ I'd rather be happy than right.
 ```
 
 #### Format Specifiers
-
-
 
 | Specifier | Description | Example |
 |:-|:------|:---|
@@ -11882,8 +11824,6 @@ FROM read_csv('test.csv', dateformat = '%m/%d/%Y');
 ## Format Specifiers
 
 Below is a full list of all available format specifiers.
-
-
 
 | Specifier | Description | Example |
 |:-|:------|:---|
@@ -13835,8 +13775,6 @@ The table below shows the available mathematical operators for [numeric types]({
 
 
 
-
-
 | Operator | Description | Example | Result |
 |-|-----|--|-|
 | `+` | addition | `2 + 3` | `5` |
@@ -14577,8 +14515,6 @@ SELECT NOT 'best.txt' GLOB '*.txt'; -- false
 
 Three tildes (`~~~`) may also be used in place of the `GLOB` keyword.
 
-
-
 | GLOB-style | Symbolic-style |
 |:---|:---|
 | `GLOB` | `~~~` |
@@ -14760,8 +14696,6 @@ SELECT regexp_matches('abc', 'A', 'i'); -- true
 
 The regex functions support the following `options`.
 
-
-
 | Option | Description |
 |:---|:---|
 | `'c'` | case-sensitive matching |
@@ -14784,8 +14718,6 @@ SELECT regexp_matches(E'hello\nworld', 'hello.world', 's'); -- true
 ### Using `regexp_matches`
 
 The `regexp_matches` operator will be optimized to the `LIKE` operator when possible. To achieve best performance, the `'c'` option (case-sensitive matching) should be passed if applicable. Note that by default the [`RE2` library](#regular-expression-syntax) doesn't match the `.` character to newline.
-
-
 
 | Original | Optimized equivalent |
 |:---|:---|
@@ -14955,8 +14887,6 @@ This section describes functions and operators for examining and manipulating [`
 ## Time Operators
 
 The table below shows the available mathematical operators for `TIME` types.
-
-
 
 | Operator | Description | Example | Result |
 |:-|:---|:----|:--|
@@ -16057,7 +15987,7 @@ The functions below are difficult to categorize into specific function types and
 | [`current_setting('setting_name')`](#current_settingsetting_name) | Return the current value of the configuration setting. |
 | [`currval('sequence_name')`](#currvalsequence_name) | Return the current value of the sequence. Note that `nextval` must be called at least once prior to calling `currval`. |
 | [`error(message)`](#errormessage) | Throws the given error `message`. |
-| [`equi_width_bins(min, max, bincount, nice := false)`](#equi_width_binsminmaxbincountnice) | Returns the upper boundaries of a partition of the interval `[min, max]` into `bin_count` equal-sized subintervals (for use with, e.g., [`histogram`]({% link docs/sql/functions/aggregates.md %}#histogramargboundaries)). If `nice = true`, then `min`, `max`, and `bincount` may be adjusted to produce more aesthetically pleasing results. |
+| [`equi_width_bins(min, max, bincount, nice := false)`](#equi_width_binsmin-max-bincount-nice--false) | Returns the upper boundaries of a partition of the interval `[min, max]` into `bin_count` equal-sized subintervals (for use with, e.g., [`histogram`]({% link docs/sql/functions/aggregates.md %}#histogramargboundaries)). If `nice = true`, then `min`, `max`, and `bincount` may be adjusted to produce more aesthetically pleasing results. |
 | [`force_checkpoint(database)`](#force_checkpointdatabase) | Synchronize WAL with file for (optional) database interrupting transactions. |
 | [`gen_random_uuid()`](#gen_random_uuid) | Alias of `uuid`. Return a random UUID similar to this: `eeccb8c5-9943-b2bb-bb5e-222f4e14b687`. |
 | [`getenv(var)`](#getenvvar) | Returns the value of the environment variable `var`. Only available in the [command line client]({% link docs/api/cli/overview.md %}). |
@@ -16390,8 +16320,6 @@ The functions below are difficult to categorize into specific function types and
 
 A table function is used in place of a table in a `FROM` clause.
 
-
-
 | Name | Description |
 |:--|:-------|
 | [`glob(search_path)`](#globsearch_path) | Return filenames found at the location indicated by the *search_path* in a single column named `file`. The *search_path* may contain [glob pattern matching syntax]({% link docs/sql/functions/pattern_matching.md %}). |
@@ -16640,8 +16568,6 @@ FROM 'power-plant-generation-history.csv';
 
 After partitioning by plant and ordering by date, it will have this layout:
 
-
-
 | Plant | Date | MWh |
 |:---|:---|---:|
 | Boston | 2019-01-02 | 564337 |
@@ -16685,8 +16611,6 @@ ORDER BY 1, 2;
 ```
 
 The result will be the following:
-
-
 
 | Plant | Date | Row |
 |:---|:---|---:|
@@ -16757,8 +16681,6 @@ orders each plant's partition by `Date` (to put the energy measurements next to 
 and uses a `RANGE` frame of three days on either side of each day for the `avg`
 (to handle any missing days).
 This is the result:
-
-
 
 | Plant | Date | MWh 7-day Moving Average |
 |:---|:---|---:|
@@ -17201,8 +17123,6 @@ railroad: expressions/comparison.js
 The table below shows the standard comparison operators.
 Whenever either of the input arguments is `NULL`, the output of the comparison is `NULL`.
 
-
-
 | Operator | Description | Example | Result |
 |:---|:---|:---|:---|
 | `<` | less than | `2 < 3` | `true` |
@@ -17214,8 +17134,6 @@ Whenever either of the input arguments is `NULL`, the output of the comparison i
 
 The table below shows the standard distinction operators.
 These operators treat `NULL` values as equal.
-
-
 
 | Operator | Description | Example | Result |
 |:---|:---|:---|:-|
@@ -17229,8 +17147,6 @@ These operators treat `NULL` values as equal.
 Besides the standard comparison operators there are also the `BETWEEN` and `IS (NOT) NULL` operators. These behave much like operators, but have special syntax mandated by the SQL standard. They are shown in the table below.
 
 Note that `BETWEEN` and `NOT BETWEEN` are only equivalent to the examples below in the cases where both `a`, `x` and `y` are of the same type, as `BETWEEN` will cast all of its inputs to the same type.
-
-
 
 | Predicate | Description |
 |:---|:---|
@@ -17309,8 +17225,6 @@ The following logical operators are available: `AND`, `OR` and `NOT`. SQL uses a
 
 ### Binary Operators: `AND` and `OR`
 
-
-
 | `a` | `b` | `a AND b` | `a OR b` |
 |:---|:---|:---|:---|
 | `true` | `true` | `true` | `true` |
@@ -17321,8 +17235,6 @@ The following logical operators are available: `AND`, `OR` and `NOT`. SQL uses a
 | `NULL` | `NULL` | `NULL` | `NULL`|
 
 ### Unary Operator: `NOT`
-
-
 
 | `a` | `NOT a` |
 |:---|:---|
@@ -17457,8 +17369,6 @@ INSERT INTO numbers VALUES (1, 10), (2, 20), (3, NULL);
 SELECT min(COLUMNS(*)), count(COLUMNS(*)) FROM numbers;
 ```
 
-
-
 | id | number | id | number |
 |---:|-------:|---:|-------:|
 | 1 | 10 | 3 | 2 |
@@ -17472,8 +17382,6 @@ count(COLUMNS(* EXCLUDE (number)))
 FROM numbers;
 ```
 
-
-
 | id | min(number := (number + id)) | id |
 |---:|-----------------------------:|---:|
 | 1 | 11 | 3 |
@@ -17483,8 +17391,6 @@ FROM numbers;
 ```sql
 SELECT COLUMNS(*) + COLUMNS(*) FROM numbers;
 ```
-
-
 
 | id | number |
 |---:|-------:|
@@ -17506,8 +17412,6 @@ SELECT 2 AS x, 3 AS y, 4 AS z
 WHERE COLUMNS(*) > 1; -- equivalent to: x > 1 AND y > 1 AND z > 1
 ```
 
-
-
 | x | y | z |
 |--:|--:|--:|
 | 2 | 3 | 4 |
@@ -17519,8 +17423,6 @@ WHERE COLUMNS(*) > 1; -- equivalent to: x > 1 AND y > 1 AND z > 1
 ```sql
 SELECT COLUMNS('(id|numbers?)') FROM numbers;
 ```
-
-
 
 | id | number |
 |---:|-------:|
@@ -17538,8 +17440,6 @@ For example, to select the first three letters of colum names, run:
 ```sql
 SELECT COLUMNS('(\w{3}).*') AS '\1' FROM numbers;
 ```
-
-
 
 | id | num |
 |---:|-----:|
@@ -17561,8 +17461,6 @@ SELECT COLUMNS('(\w*):(\w*)') AS '\1\2' FROM tbl;
 ```sql
 SELECT COLUMNS(c -> c LIKE '%num%') FROM numbers;
 ```
-
-
 
 | number |
 |-------:|
@@ -17624,8 +17522,6 @@ For example:
 SELECT st.* FROM (SELECT {'x': 1, 'y': 2, 'z': 3} AS st);
 ```
 
-
-
 | x | y | z |
 |--:|--:|--:|
 | 1 | 2 | 3 |
@@ -17650,8 +17546,6 @@ Scalar subqueries are subqueries that return a single value. They can be used an
 Consider the following table:
 
 ### Grades
-
-
 
 | grade | course |
 |---:|:---|
@@ -18337,12 +18231,9 @@ SELECT 1 / 2 AS x;
 
 PostgreSQL returns:
 
-```text
-x
----
-0
-(1 row)
-```
+| x |
+| ---: |
+| 0 |
 
 DuckDB returns:
 
@@ -18455,14 +18346,11 @@ SELECT 1 == 1 AS t;
 
 DuckDB returns:
 
-```text
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ t â”‚
-â”‚ boolean â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ true â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
+
+
+| t |
+| ---: |
+| true |
 
 Postgres returns:
 
@@ -18512,7 +18400,6 @@ PostgreSQL returns an error on the last statement:
 ```console
 ERROR: type "mytype" does not exist
 LINE 1: CREATE TABLE myschema.mytable (v mytype);
-^
 ```
 
 DuckDB runs the statement and creates the table successfully, confirmed by the following query:
@@ -18521,14 +18408,11 @@ DuckDB runs the statement and creates the table successfully, confirmed by the f
 DESCRIBE myschema.mytable;
 ```
 
-```text
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ column_name â”‚ column_type â”‚ null â”‚ key â”‚ default â”‚ extra â”‚
-â”‚ varchar â”‚ varchar â”‚ varchar â”‚ varchar â”‚ varchar â”‚ varchar â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚ v â”‚ ENUM('as', 'df') â”‚ YES â”‚ NULL â”‚ NULL â”‚ NULL â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
+
+
+| column_name | column_type | null | key | default | extra |
+|-------------|------------------|------|------|---------|-------|
+| v | ENUM('as', 'df') | YES | NULL | NULL | NULL |
 
 ---
 duckdb/docs/sql/data_types/array.md
@@ -18666,8 +18550,6 @@ title: Bitstring Type
 blurb: The bitstring type are strings of 1s and 0s.
 ---
 
-
-
 | Name | Aliases | Description |
 |:---|:---|:---|
 | `BITSTRING` | `BIT` | variable-length strings of 1s and 0s |
@@ -18726,8 +18608,6 @@ title: Blob Type
 blurb: The blob (Binary Large OBject) type represents an arbitrary binary object stored in the database system.
 ---
 
-
-
 | Name | Aliases | Description |
 |:---|:---|:---|
 | `BLOB` | `BYTEA`, `BINARY`, `VARBINARY` | variable-length binary data |
@@ -18766,8 +18646,6 @@ layout: docu
 title: Boolean Type
 blurb: The BOOLEAN type represents a statement of truth (â€œtrueâ€� or â€œfalseâ€�).
 ---
-
-
 
 | Name | Aliases | Description |
 |:---|:---|:---|
@@ -18808,8 +18686,6 @@ The `AND`/`OR` conjunctions can be used to combine Boolean values.
 
 Below is the truth table for the `AND` conjunction (i.e., `x AND y`).
 
-
-
 | X | X AND true | X AND false | X AND NULL |
 |-------|-------|-------|-------|
 | true | true | false | NULL |
@@ -18817,8 +18693,6 @@ Below is the truth table for the `AND` conjunction (i.e., `x AND y`).
 | NULL | NULL | false | NULL |
 
 Below is the truth table for the `OR` conjunction (i.e., `x OR y`).
-
-
 
 | X | X OR true | X OR false | X OR NULL |
 |-------|------|-------|------|
@@ -18839,8 +18713,6 @@ title: Date Types
 blurb: A date specifies a combination of year, month and day.
 ---
 
-
-
 | Name | Aliases | Description |
 |:-------|:--------|:--------------------------------|
 | `DATE` | | calendar date (year, month day) |
@@ -18854,8 +18726,6 @@ SELECT DATE '1992-09-20';
 ## Special Values
 
 There are also three special date values that can be used on input:
-
-
 
 | Input string | Description |
 |:-------------|:----------------------------------|
@@ -18889,8 +18759,6 @@ layout: docu
 title: Enum Data Type
 blurb: The Enum type represents a dictionary data structure with all possible unique values of a column.
 ---
-
-
 
 | Name | Description |
 |:--|:-----|
@@ -18960,8 +18828,6 @@ Show the available values in the `birds` enum using the `enum_range` function:
 ```sql
 SELECT enum_range(NULL::birds) AS my_enum_range;
 ```
-
-
 
 | my_enum_range |
 |-----------------|
@@ -19122,8 +18988,6 @@ blurb: Intervals represent periods of time measured in months, days, microsecond
 ---
 
 `INTERVAL`s represent periods of time that can be added to or subtracted from `DATE`, `TIMESTAMP`, `TIMESTAMPTZ`, or `TIME` values.
-
-
 
 | Name | Description |
 |:---|:---|
@@ -19847,8 +19711,6 @@ Division of fixed-point decimals does not typically produce numbers with finite 
 
 Internally, decimals are represented as integers depending on their specified `WIDTH`.
 
-
-
 | Width | Internal | Size (bytes) |
 |:---|:---|---:|
 | 1-4 | `INT16` | 2 |
@@ -19861,8 +19723,6 @@ Performance can be impacted by using too large decimals when not required. In pa
 ## Floating-Point Types
 
 The data types `FLOAT` and `DOUBLE` precision are variable-precision numeric types. In practice, these types are usually implementations of IEEE Standard 754 for Binary Floating-Point Arithmetic (single and double precision, respectively), to the extent that the underlying processor, operating system, and compiler support it.
-
-
 
 | Name | Aliases | Description |
 |:--|:--|:--------|
@@ -20134,8 +19994,6 @@ SELECT a.*
 FROM (SELECT {'x': 1, 'y': 2, 'z': 3} AS a);
 ```
 
-
-
 | x | y | z |
 |:---|:---|:---|
 | 1 | 2 | 3 |
@@ -20318,8 +20176,6 @@ blurb: In DuckDB, strings can be stored in the VARCHAR field.
 In DuckDB, strings can be stored in the `VARCHAR` field.
 The field allows storage of Unicode characters. Internally, the data is encoded as UTF-8.
 
-
-
 | Name | Aliases | Description |
 |:---|:---|:---|
 | `VARCHAR` | `CHAR`, `BPCHAR`, `STRING`, `TEXT` | Variable-length character string. |
@@ -20381,8 +20237,6 @@ blurb: A time instance represents the time of a day (hour, minute, second, micro
 ---
 
 The `TIME` and `TIMETZ` types specify the hour, minute, second, microsecond of a day.
-
-
 
 | Name | Aliases | Description |
 | :------- | :----------------------- | :------------------------------ |
@@ -20512,8 +20366,6 @@ SELECT TIMESTAMP WITH TIME ZONE '1992-09-20 11:30:00.123456789';
 
 There are also three special date values that can be used on input:
 
-
-
 | Input string | Valid types | Description |
 |:-------------|:---------------------------|:-----------------------------------------------|
 | `epoch` | `TIMESTAMP`, `TIMESTAMPTZ` | 1970-01-01 00:00:00+00 (Unix system time zero) |
@@ -20526,8 +20378,6 @@ but `epoch` is simply a notational shorthand that will be converted to the time 
 ```sql
 SELECT '-infinity'::TIMESTAMP, 'epoch'::TIMESTAMP, 'infinity'::TIMESTAMP;
 ```
-
-
 
 | Negative | Epoch | Positive |
 |:----------|:--------------------|:---------|
@@ -20635,8 +20485,6 @@ SELECT name, abbrev
 FROM pg_timezone_names()
 ORDER BY name;
 ```
-
-
 
 | name | abbrev |
 |----------------------------------|----------------------------------|
@@ -21498,8 +21346,6 @@ So how do we disambiguate if we want to create a `UNION` with multiple members o
 
 `UNION` types can be cast between each other if the source type is a â€œsubsetâ€� of the target type. In other words, all the tags in the source `UNION` must be present in the target `UNION`, and all the types of the matching tags must be implicitly castable between source and target. In essence, this means that `UNION` types are covariant with respect to their members.
 
-
-
 | Ok | Source | Target | Comments |
 |----|------------------------|------------------------|----------------------------------------|
 | âœ… | `UNION(a A, b B)` | `UNION(a A, b B, c C)` | |
@@ -21881,8 +21727,6 @@ USE memory_db;
 
 
 ## Options
-
-
 
 | Name | Description | Type | Default value |
 |-----------------------------|-----------------------------------------------------------------------------------------------------------------------------|-----------|---------------|
@@ -22646,8 +22490,6 @@ CREATE INDEX i_index ON integers ((j + k));
 
 ### Parameters
 
-
-
 | Name | Description |
 |:-|:-----|
 | `UNIQUE` | Causes the system to check for duplicate values in the table when the index is created (if data already exist) and each time data is added. Attempts to insert or update data that would result in duplicate entries will generate an error. |
@@ -22675,8 +22517,6 @@ DROP INDEX title_idx;
 ```
 
 ### Parameters
-
-
 
 | Name | Description |
 |:---|:---|
@@ -24288,8 +24128,6 @@ SELECT 42
 RETURNING *;
 ```
 
-
-
 | i |
 |---:|
 | 42 |
@@ -24302,8 +24140,6 @@ INSERT INTO t2
 SELECT 2 AS i, 3 AS j
 RETURNING *, i * j AS i_times_j;
 ```
-
-
 
 | i | j | i_times_j |
 |--:|--:|----------:|
@@ -24320,8 +24156,6 @@ UNION ALL
 SELECT nextval('t3_key') AS i, 43 AS j
 RETURNING *;
 ```
-
-
 
 | i | j |
 |--:|---:|
@@ -24449,8 +24283,6 @@ SELECT *
 FROM cities;
 ```
 
-
-
 | country | name | year | population |
 |---------|---------------|-----:|-----------:|
 | NL | Amsterdam | 2000 | 1005 |
@@ -24478,8 +24310,6 @@ PIVOT cities
 ON year
 USING sum(population);
 ```
-
-
 
 | country | name | 2000 | 2010 | 2020 |
 |---------|---------------|-----:|-----:|-----:|
@@ -24518,8 +24348,6 @@ USING sum(population)
 GROUP BY country;
 ```
 
-
-
 | country | 2000 | 2010 | 2020 |
 |---------|-----:|-----:|-----:|
 | NL | 1005 | 1065 | 1158 |
@@ -24536,8 +24364,6 @@ ON year IN (2000, 2010)
 USING sum(population)
 GROUP BY country;
 ```
-
-
 
 | country | 2000 | 2010 |
 |---------|-----:|-----:|
@@ -24562,8 +24388,6 @@ ON country, name
 USING sum(population);
 ```
 
-
-
 | year | NL_Amsterdam | NL_New York City | NL_Seattle | US_Amsterdam | US_New York City | US_Seattle |
 |-----:|-------------:|------------------|------------|--------------|-----------------:|-----------:|
 | 2000 | 1005 | NULL | NULL | NULL | 8015 | 564 |
@@ -24582,8 +24406,6 @@ PIVOT cities
 ON country || '_' || name
 USING sum(population);
 ```
-
-
 
 | year | NL_Amsterdam | US_New York City | US_Seattle |
 |-----:|-------------:|-----------------:|-----------:|
@@ -24606,8 +24428,6 @@ USING sum(population) AS total, max(population) AS max
 GROUP BY country;
 ```
 
-
-
 | country | 2000_total | 2000_max | 2010_total | 2010_max | 2020_total | 2020_max |
 |---------|-----------:|---------:|-----------:|---------:|-----------:|---------:|
 | US | 8579 | 8015 | 8783 | 8175 | 9510 | 8772 |
@@ -24624,8 +24444,6 @@ ON year
 USING sum(population)
 GROUP BY country, name;
 ```
-
-
 
 | country | name | 2000 | 2010 | 2020 |
 |---------|---------------|-----:|-----:|-----:|
@@ -24676,8 +24494,6 @@ JOIN (PIVOT cities ON name USING sum(population) GROUP BY country) name_pivot
 USING (country);
 ```
 
-
-
 | country | 2000 | 2010 | 2020 | Amsterdam | New York City | Seattle |
 |---------|-----:|-----:|-----:|----------:|--------------:|--------:|
 | NL | 1005 | 1065 | 1158 | 3228 | NULL | NULL |
@@ -24725,8 +24541,6 @@ year IN (2000, 2010, 2020)
 GROUP BY country
 );
 ```
-
-
 
 | country | 2000 | 2010 | 2020 |
 |---------|-----:|-----:|-----:|
@@ -25337,8 +25151,6 @@ INSERT INTO monthly_sales VALUES
 FROM monthly_sales;
 ```
 
-
-
 | empid | dept | Jan | Feb | Mar | Apr | May | Jun |
 |------:|-------------|----:|----:|----:|----:|----:|----:|
 | 1 | electronics | 1 | 2 | 3 | 4 | 5 | 6 |
@@ -25359,8 +25171,6 @@ INTO
 NAME month
 VALUE sales;
 ```
-
-
 
 | empid | dept | month | sales |
 |------:|-------------|-------|------:|
@@ -25398,8 +25208,6 @@ INTO
 NAME month
 VALUE sales;
 ```
-
-
 
 | empid | dept | month | sales |
 |------:|-------------|-------|------:|
@@ -25440,8 +25248,6 @@ INTO
 NAME quarter
 VALUE month_1_sales, month_2_sales, month_3_sales;
 ```
-
-
 
 | empid | dept | quarter | month_1_sales | month_2_sales | month_3_sales |
 |------:|-------------|---------|--------------:|--------------:|--------------:|
@@ -25532,8 +25338,6 @@ FOR month IN (jan, feb, mar, apr, may, jun)
 );
 ```
 
-
-
 | empid | dept | month | sales |
 |------:|-------------|-------|------:|
 | 1 | electronics | Jan | 1 |
@@ -25590,8 +25394,6 @@ FOR quarter IN (
 )
 );
 ```
-
-
 
 | empid | dept | quarter | month_1_sales | month_2_sales | month_3_sales |
 |------:|-------------|---------|--------------:|--------------:|--------------:|
@@ -25661,8 +25463,6 @@ SELECT *
 FROM original;
 ```
 
-
-
 | key | value |
 |-----|------------------|
 | 1 | original value |
@@ -25691,8 +25491,6 @@ WHERE original.key = new.key
 SELECT *
 FROM original;
 ```
-
-
 
 | key | value |
 |-----|-------------|
@@ -26178,8 +25976,6 @@ DuckDB works best on Parquet files with row groups of 100K-1M rows each. The rea
 
 We run a simple aggregation query over Parquet files using different row group sizes, selected between 960 and 1,966,080. The results are as follows.
 
-
-
 | Row group size | Execution time |
 |---------------:|---------------:|
 | 960 | 8.77 s |
@@ -26214,8 +26010,6 @@ For tips on reading and writing Parquet files, see the [Parquet Tips page]({% li
 ## Loading CSV Files
 
 CSV files are often distributed in compressed format such as GZIP archives (`.csv.gz`). DuckDB can decompress these files on the fly. In fact, this is typically faster than decompressing the files first and loading them due to reduced IO.
-
-
 
 | Schema | Load time |
 |---|--:|
@@ -26455,8 +26249,6 @@ The more ordered the data within a column, the more useful the zonemap indexes w
 
 For an example, letâ€™s repeat the [microbenchmark for timestamps]({% link docs/guides/performance/schema.md %}#microbenchmark-using-timestamps) with a timestamp column that sorted using an ascending order vs. an unordered one.
 
-
-
 | Column type | Ordered | Storage size | Query time |
 |---|---|--:|--:|
 | `DATETIME` | yes | 1.3 GB | 0.6 s |
@@ -26625,8 +26417,6 @@ SELECT avg(CAST(creationDate[9:10] AS INTEGER)) FROM Comment;
 
 The results of the microbenchmark are as follows:
 
-
-
 | Column type | Storage size | Query time |
 | ----------- | -----------: | ---------: |
 | `DATETIME` | 3.3 GB | 0.9 s |
@@ -26649,8 +26439,6 @@ In the second experiment, we define all columns with the `VARCHAR` type.
 While the results of the queries are the same for all both experiments, their runtime vary significantly.
 The results below show that joining on `BIGINT` columns is approx. 1.8Ã— faster than performing the same join on `VARCHAR`-typed columns encoding the same value.
 
-
-
 | Join column payload type | Join column schema type | Example value | Query time |
 | ------------------------ | ----------------------- | ---------------------------------------- | ---------: |
 | `BIGINT` | `BIGINT` | `70368755640078` | 1.2 s |
@@ -26667,8 +26455,6 @@ DuckDB allows defining [constraints]({% link docs/sql/constraints.md %}) such as
 ### Microbenchmark: The Effect of Primary Keys
 
 We illustrate the effect of using primary keys with the [LDBC Comment table at scale factor 300](https://blobs.duckdb.org/data/ldbc-sf300-comments.tar.zst). This table has approx. 554 million entries. We first create the schema without a primary key, then load the data. In the second experiment, we create the schema with a primary key, then load the data. In both cases, we take the data from `.csv.gz` files, and measure the time required to perform the loading.
-
-
 
 | Operation | Execution time |
 | ------------------------ | -------------: |
@@ -27022,8 +26808,6 @@ FROM 's3://express-bucket-name--use1-az5--x-s3/my-file.parquet';
 ## Performance
 
 We ran two experiments on a `c7gd.12xlarge` instance using the [LDBC SF300 Comments `creationDate` Parquet file](https://blobs.duckdb.org/data/ldbc-sf300-comments-creationDate.parquet) file (also used in the [microbenchmarks of the performance guide]({% link docs/guides/performance/benchmarks.md %}#data-sets)).
-
-
 
 | Experiment | File size | Runtime |
 |:-----|--:|--:|
@@ -28927,8 +28711,6 @@ which can be cumbersome and slow to implement in standard SQL.
 Let's start with a concrete example.
 Suppose we have a table of stock [`prices`](/data/prices.csv) with timestamps:
 
-
-
 | ticker | when | price |
 | :----- | :--- | ----: |
 | APPL | 2001-01-01 00:00:00 | 1 |
@@ -28942,8 +28724,6 @@ Suppose we have a table of stock [`prices`](/data/prices.csv) with timestamps:
 | GOOG | 2001-01-01 00:02:00 | 3 |
 
 We have another table containing portfolio [`holdings`](/data/holdings.csv) at various points in time:
-
-
 
 | ticker | when | shares |
 | :----- | :--- | -----: |
@@ -28979,8 +28759,6 @@ AND h.when >= p.when;
 
 This attaches the value of the holding at that time to each row:
 
-
-
 | ticker | when | value |
 | :----- | :--- | ----: |
 | APPL | 2001-01-01 00:00:30 | 2.94 |
@@ -29009,8 +28787,6 @@ ORDER BY ALL;
 
 As you might expect, this will produce `NULL` prices and values instead of dropping left side rows
 when there is no ticker or the time is before the prices begin.
-
-
 
 | ticker | when | value |
 | :----- | :--- | ----: |
@@ -29233,8 +29009,6 @@ DESCRIBE tbl;
 SHOW tbl; -- equivalent to DESCRIBE tbl;
 ```
 
-
-
 | column_name | column_type | null | key | default | extra |
 |-------------|-------------|------|------|---------|-------|
 | i | INTEGER | NO | PRI | NULL | NULL |
@@ -29247,8 +29021,6 @@ In order to view the schema of the result of a query, prepend `DESCRIBE` to a qu
 ```sql
 DESCRIBE SELECT * FROM tbl;
 ```
-
-
 
 | column_name | column_type | null | key | default | extra |
 |-------------|-------------|------|------|---------|-------|
@@ -29450,121 +29222,7 @@ WHERE name LIKE 'Ma%';
 â”‚ â”€ â”€ â”€ â”€ â”€ â”€ â”€ â”€ â”€ â”€ â”€ â”‚
 â”‚ Filters: name>=Ma AND nameâ”‚
 â”‚ =Ma AND nameâ”‚
-â”‚ 
-
-| name |
-|------|
-| tbl |
-
-`SHOW` or `SHOW ALL TABLES` can be used to obtain a list of all tables within **all** attached databases and schemas.
-
-```sql
-CREATE TABLE tbl (i INTEGER);
-CREATE SCHEMA s1;
-CREATE TABLE s1.tbl (v VARCHAR);
-SHOW ALL TABLES;
-```
-
-
-
-| database | schema | table_name | column_names | column_types | temporary |
-|----------|--------|------------|--------------|--------------|-----------|
-| memory | main | tbl | [i] | [INTEGER] | false |
-| memory | s1 | tbl | [v] | [VARCHAR] | false |
-
-To view the schema of an individual table, use the [`DESCRIBE` command]({% link docs/guides/meta/describe.md %}).
-
-## See Also
-
-The SQL-standard [`information_schema`]({% link docs/sql/meta/information_schema.md %}) views are also defined. Moreover, DuckDB defines `sqlite_master` and many [PostgreSQL system catalog tables](https://www.postgresql.org/docs/16/catalogs.html) for compatibility with SQLite and PostgreSQL respectively.
-
----
-duckdb/docs/guides/meta/summarize.md
----
----
-layout: docu
-title: Summarize
----
-
-The `SUMMARIZE` command can be used to easily compute a number of aggregates over a table or a query.
-The `SUMMARIZE` command launches a query that computes a number of aggregates over all columns (`min`, `max`, `approx_unique`, `avg`, `std`, `q25`, `q50`, `q75`, `count`), and return these along the column name, column type, and the percentage of `NULL` values in the column.
-
-## Usage
-
-In order to summarize the contents of a table, use `SUMMARIZE` followed by the table name.
-
-```sql
-SUMMARIZE tbl;
-```
-
-In order to summarize a query, prepend `SUMMARIZE` to a query.
-
-```sql
-SUMMARIZE SELECT * FROM tbl;
-```
-
-## Example
-
-Below is an example of `SUMMARIZE` on the `lineitem` table of TPC-H `SF1` table, generated using the [`tpch` extension]({% link docs/extensions/tpch.md %}).
-
-```sql
-INSTALL tpch;
-LOAD tpch;
-CALL dbgen(sf = 1);
-```
-
-```sql
-SUMMARIZE lineitem;
-```
-
-| column_name | column_type | min | max | approx_unique | avg | std | q25 | q50 | q75 | count | null_percentage |
-|-----------------|---------------|-------------|---------------------|---------------|---------------------|----------------------|---------|---------|---------|---------|-----------------|
-| l_orderkey | INTEGER | 1 | 6000000 | 1508227 | 3000279.604204982 | 1732187.8734803519 | 1509447 | 2989869 | 4485232 | 6001215 | 0.0% |
-| l_partkey | INTEGER | 1 | 200000 | 202598 | 100017.98932999402 | 57735.69082650496 | 49913 | 99992 | 150039 | 6001215 | 0.0% |
-| l_suppkey | INTEGER | 1 | 10000 | 10061 | 5000.602606138924 | 2886.9619987306114 | 2501 | 4999 | 7500 | 6001215 | 0.0% |
-| l_linenumber | INTEGER | 1 | 7 | 7 | 3.0005757167506912 | 1.7324314036519328 | 2 | 3 | 4 | 6001215 | 0.0% |
-| l_quantity | DECIMAL(15,2) | 1.00 | 50.00 | 50 | 25.507967136654827 | 14.426262537016918 | 13 | 26 | 38 | 6001215 | 0.0% |
-| l_extendedprice | DECIMAL(15,2) | 901.00 | 104949.50 | 923139 | 38255.138484656854 | 23300.43871096221 | 18756 | 36724 | 55159 | 6001215 | 0.0% |
-| l_discount | DECIMAL(15,2) | 0.00 | 0.10 | 11 | 0.04999943011540163 | 0.03161985510812596 | 0 | 0 | 0 | 6001215 | 0.0% |
-| l_tax | DECIMAL(15,2) | 0.00 | 0.08 | 9 | 0.04001350893110812 | 0.025816551798842728 | 0 | 0 | 0 | 6001215 | 0.0% |
-| l_returnflag | VARCHAR | A | R | 3 | NULL | NULL | NULL | NULL | NULL | 6001215 | 0.0% |
-| l_linestatus | VARCHAR | F | O | 2 | NULL | NULL | NULL | NULL | NULL | 6001215 | 0.0% |
-| l_shipdate | DATE | 1992-01-02 | 1998-12-01 | 2516 | NULL | NULL | NULL | NULL | NULL | 6001215 | 0.0% |
-| l_commitdate | DATE | 1992-01-31 | 1998-10-31 | 2460 | NULL | NULL | NULL | NULL | NULL | 6001215 | 0.0% |
-| l_receiptdate | DATE | 1992-01-04 | 1998-12-31 | 2549 | NULL | NULL | NULL | NULL | NULL | 6001215 | 0.0% |
-| l_shipinstruct | VARCHAR | COLLECT COD | TAKE BACK RETURN | 4 | NULL | NULL | NULL | NULL | NULL | 6001215 | 0.0% |
-| l_shipmode | VARCHAR | AIR | TRUCK | 7 | NULL | NULL | NULL | NULL | NULL | 6001215 | 0.0% |
-| l_comment | VARCHAR | Tiresias | zzle? furiously iro | 3558599 | NULL | NULL | NULL | NULL | NULL | 6001215 | 0.0% |
-
-## Using `SUMMARIZE` in a Subquery
-
-`SUMMARIZE` can be used a subquery. This allows creating a table from the summary, for example:
-
-```sql
-CREATE TABLE tbl_summary AS SELECT * FROM (SUMMARIZE tbl);
-```
-
-## Summarizing Remote Tables
-
-It is possible to summarize remote tables via the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) using the `SUMMARIZE TABLE` statement. For example:
-
-```sql
-SUMMARIZE TABLE 'https://blobs.duckdb.org/data/Star_Trek-Season_1.csv';
-```
-
----
-duckdb/docs/guides/odbc/general.md
----
----
-layout: docu
-title: "ODBC 101: A Duck Themed Guide to ODBC"
----
-
-## What is ODBC?
-
-[ODBC](https://learn.microsoft.com/en-us/sql/odbc/microsoft-open-database-connectivity-odbc?view=sql-server-ver16) which stands for Open Database Connectivity, is a standard that allows different programs to talk to different databases including, of course, **DuckDB** ðŸ¦†. This makes it easier to build programs that work with many different databases, which saves time as developers don't have to write custom code to connect to each database. Instead, they can use the standardized ODBC interface, which reduces development time and costs, and programs are easier to maintain. However, ODBC can be slower than other methods of connecting to a database, such as using a native driver, as it adds an extra layer of abstraction between the application and the database. Furthermore, because DuckDB is column-based and ODBC is row-based, there can be some inefficiencies when using ODBC with DuckDB.
-
-> There are links throughout this page to the official [Microsoft ODBC documentation](https://learn.microsoft.com/en-us/sql/odbc/reference/odbc-programmer-s-reference?view=sql-server-ver16), which is a great resource for learning more about ODBC.
+â”‚  There are links throughout this page to the official [Microsoft ODBC documentation](https://learn.microsoft.com/en-us/sql/odbc/reference/odbc-programmer-s-reference?view=sql-server-ver16), which is a great resource for learning more about ODBC.
 
 ## General Concepts
 
@@ -29946,8 +29604,6 @@ USE mysql_db;
 
 The string used by `ATTACH` is a PostgreSQL-style connection string (_not_ a MySQL connection string!). It is a list of connection arguments provided in `{key}={value}` format. Below is a list of valid arguments. Any options not provided are replaced by their default values.
 
-
-
 | Setting | Default |
 |------------|--------------|
 | `database` | `NULL` |
@@ -30010,8 +29666,6 @@ SELECT * FROM postgres_scan('host=localhost port=5432 dbname=mydb', 'public', 'm
 ```
 
 The first parameter to the `postgres_scan` function is the [PostgreSQL connection string](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING), a list of connection arguments provided in `{key}={value}` format. Below is a list of valid arguments.
-
-
 
 | Name | Description | Default |
 |------------|--------------------------------------|----------------|
@@ -30863,8 +30517,6 @@ LOAD arrow;
 
 ## Functions
 
-
-
 | Function | Type | Description |
 |--|----|-------|
 | `to_arrow_ipc` | Table in-out function | Serializes a table into a stream of blobs containing Arrow IPC buffers |
@@ -30888,8 +30540,6 @@ For the behavior of the `autocomplete` extension, see the [documentation of the 
 
 ## Functions
 
-
-
 | Function | Description |
 |:----------------------------------|:-----------------------------------------------------|
 | `sql_auto_complete(query_string)` | Attempts autocompletion on the given `query_string`. |
@@ -30902,8 +30552,6 @@ FROM sql_auto_complete('SEL');
 ```
 
 Returns:
-
-
 
 | suggestion | suggestion_start |
 |-------------|------------------|
@@ -31488,8 +31136,6 @@ redirect_from:
 Different DuckDB clients ship a different set of extensions.
 We summarize the main distributions in the table below.
 
-
-
 | Name | CLI (duckdb.org) | CLI (Homebrew) | Python | R | Java | Node.js |
 |------|------|------|---|---|---|---|---|
 | [autocomplete]({% link docs/extensions/autocomplete.md %}) | yes | yes | | | | |
@@ -31728,8 +31374,6 @@ drop_fts_index(input_table)
 ```
 
 Drops a FTS index for the specified table.
-
-
 
 | Name | Type | Description |
 |:--|:--|:-----------|
@@ -32174,7 +31818,7 @@ GEN=ninja SKIP_EXTENSIONS="jemalloc" make
 ```
 
 The ARM64 (AArch64) DuckDB distribution on Linux does not ship with the `jemalloc` extension.
-To include it, build it as follows;
+To include it, build it as follows:
 
 ```bash
 GEN=ninja BUILD_JEMALLOC=1 make
@@ -32561,8 +32205,6 @@ To get a list of extensions, use `duckdb_extensions`:
 SELECT extension_name, installed, description
 FROM duckdb_extensions();
 ```
-
-
 
 | extension_name | installed | description |
 |-------------------|-----------|--------------------------------------------------------------|
@@ -33715,8 +33357,6 @@ CALL dbgen(sf = 0);
 
 The data generator function `dbgen` has the following parameters:
 
-
-
 | Name | Type | Description |
 |--|--|------------|
 | `catalog` | `VARCHAR` | Target catalog |
@@ -33894,8 +33534,6 @@ give the user information on which extensions were updated to/from which version
 UPDATE EXTENSIONS;
 ```
 
-
-
 | extension_name | repository | update_result | previous_version | current_version |
 |:---------------|:-------------|:----------------------|:-----------------|:----------------|
 | httpfs | core | NO_UPDATE_AVAILABLE | 70fd6a8a24 | 70fd6a8a24 |
@@ -33911,8 +33549,6 @@ The update statement can also be provided with a list of specific extensions to 
 ```sql
 UPDATE EXTENSIONS (httpfs, azure);
 ```
-
-
 
 | extension_name | repository | update_result | previous_version | current_version |
 |:---------------|:-------------|:----------------------|:-----------------|:----------------|
@@ -34121,8 +33757,6 @@ Extension binaries must be built for each platform. Pre-built binaries are distr
 For platforms where packages for certain extensions are not available, users can build them from source and [install the resulting binaries manually](#installing-an-extension-from-an-explicit-path).
 
 All official extensions are distributed for the following platforms.
-
-
 
 | Platform name | Operating system | Architecture | CPU types | Used by |
 |--------------------|------------------|-----------------|--------------------------------|----------------------------|
@@ -34618,7 +34252,6 @@ VARCHAR ST_AsSVG (col0 GEOMETRY, col1 BOOLEAN, col2 INTEGER)
 
 Convert the geometry into a SVG fragment or path
 
-Convert the geometry into a SVG fragment or path
 The SVG fragment is returned as a string. The fragment is a path element that can be used in an SVG document.
 The second Boolean argument specifies whether the path should be relative or absolute.
 The third argument specifies the maximum number of digits to use for the coordinates.
@@ -37257,8 +36890,6 @@ The `httpfs` filesystem is tested with [AWS S3](https://aws.amazon.com/s3/), [Mi
 
 The following table shows which parts of the S3 API are required for each `httpfs` feature.
 
-
-
 | Feature | Required S3 API features |
 |:---|:---|
 | Public file reads | HTTP Range requests |
@@ -37445,8 +37076,6 @@ FROM read_parquet('s3://bucket/*.parquet', filename = true);
 
 could for example result in:
 
-
-
 | column_a | column_b | filename |
 |:---|:---|:---|
 | 1 | examplevalue1 | s3://bucket/file1.parquet |
@@ -37492,8 +37121,6 @@ s3://my-bucket/partitioned/part_col_a=âŸ¨valâŸ©/part_col_b=âŸ¨valâŸ©
 ### Configuration
 
 Some additional configuration options exist for the S3 upload, though the default values should suffice for most use cases.
-
-
 
 | Name | Description |
 |:---|:---|
@@ -37578,8 +37205,6 @@ INNER JOIN 's3://bucket/file.csv?s3_access_key_id=accessKey&s3_secret_access_key
 Some additional configuration options exist for the S3 upload, though the default values should suffice for most use cases.
 
 Additionally, most of the configuration options can be set via environment variables:
-
-
 
 | DuckDB setting | Environment variable | Note |
 |:-----------------------|:------------------------|:-----------------------------------------|
@@ -37669,8 +37294,6 @@ Functions related to query execution:
 | `StatementPrepare` | Turn this statement into a prepared statement to be executed multiple times. | `(AdbcStatement*, AdbcError*)` | `AdbcStatementPrepare(&adbc_statement, &adbc_error)` |
 
 Functions related to binding, used for bulk insertion or in prepared statements.
-
-
 
 | Function name | Description | Arguments | Example |
 |:---|:-|:---|:----|
@@ -39350,8 +38973,6 @@ layout: docu
 title: Node.js API (Neo)
 ---
 
-# DuckDB Node.js API (Neo)
-
 An API for using [DuckDB](https://duckdb.org/) in [Node.js](https://nodejs.org/).
 
 This is a high-level API meant for applications.
@@ -39361,6 +38982,7 @@ available separately as [@duckdb/duckdb-bindings](https://www.npmjs.com/package/
 ## Features
 
 ### Main differences from [duckdb-node](https://www.npmjs.com/package/duckdb)
+
 - Native support for Promises; no need for separate [duckdb-async](https://www.npmjs.com/package/duckdb-async) wrapper.
 - DuckDB-specific API; not based on the [SQLite Node API](https://www.npmjs.com/package/sqlite3).
 - Lossless & efficent support for values of all [DuckDB data types](https://duckdb.org/docs/sql/data_types/overview).
@@ -39370,6 +38992,7 @@ available separately as [@duckdb/duckdb-bindings](https://www.npmjs.com/package/
 ### Roadmap
 
 Some features are not yet complete:
+
 - Appending and binding advanced data types. (Additional DuckDB C API support needed.)
 - Writing to data chunk vectors. (Needs special handling in Node.)
 - User-defined types & functions. (Support for this was added to the DuckDB C API in v1.1.0.)
@@ -39402,21 +39025,25 @@ import { DuckDBInstance } from '@duckdb/node-api';
 ```
 
 Create with an in-memory database:
+
 ```ts
 const instance = await DuckDBInstance.create(':memory:');
 ```
 
 Equivalent to the above:
+
 ```ts
 const instance = await DuckDBInstance.create();
 ```
 
 Read from and write to a database file, which is created if needed:
+
 ```ts
 const instance = await DuckDBInstance.create('my_duckdb.db');
 ```
 
 Set configuration options:
+
 ```ts
 const instance = await DuckDBInstance.create('my_duckdb.db', {
 threads: '4'
@@ -39447,17 +39074,20 @@ const result = await prepared.run();
 ### Inspect Result
 
 Get column names and types:
+
 ```ts
 const columnNames = result.columnNames();
 const columnTypes = result.columnTypes();
 ```
 
 Fetch all chunks:
+
 ```ts
 const chunks = await result.fetchAllChunks();
 ```
 
 Fetch one chunk at a time:
+
 ```ts
 const chunks = [];
 while (true) {
@@ -39471,18 +39101,21 @@ chunks.push(chunk);
 ```
 
 Read chunk data (column-major):
+
 ```ts
 // array of columns, each as an array of values
 const columns = chunk.getColumns();
 ```
 
 Read chunk data (row-major):
+
 ```ts
 // array of rows, each as an array of values
 const columns = chunk.getRows();
 ```
 
-Read chunk data (one value at a time)
+Read chunk data (one value at a time):
+
 ```ts
 const columns = [];
 const columnCount = chunk.columnCount;
@@ -39501,13 +39134,15 @@ columns.push(columnValues);
 ### Result Reader
 
 Run and read all data:
+
 ```ts
 const reader = await connection.runAndReadAll('from test_all_types()');
 const rows = reader.getRows();
 // OR: const columns = reader.getColumns();
 ```
 
-Run and read up to (at lesat) some number of rows:
+Run and read up to (at least) some number of rows:
+
 ```ts
 const reader = await connection.runAndReadUtil('from range(5000)', 1000);
 const rows = reader.getRows();
@@ -39515,6 +39150,7 @@ const rows = reader.getRows();
 ```
 
 Read rows incrementally:
+
 ```ts
 const reader = await connection.runAndRead('from range(5000)');
 reader.readUntil(2000);
@@ -44045,8 +43681,6 @@ For a list of dot commands available in the CLI shell, see the [Dot Commands pag
 
 
 
-
-
 | Argument | Description |
 |---|-------|
 | `-append` | Append the database to the end of the file |
@@ -44158,8 +43792,6 @@ redirect_from:
 Dot commands are available in the DuckDB CLI client. To use one of these commands, begin the line with a period (`.`) immediately followed by the name of the command you wish to execute. Additional arguments to the command are entered, space separated, after the command. If an argument must contain a space, either single or double quotes may be used to wrap that parameter. Dot commands must be entered on a single line, and no whitespace may occur before the period. No semicolon is required at the end of the line. To see available commands, use the `.help` command.
 
 ## Dot Commands
-
-
 
 
 
@@ -44406,8 +44038,6 @@ DuckDB's CLI uses a line-editing library based on [linenoise](https://github.com
 
 ## Moving
 
-
-
 | Key | Action |
 |-----------------|------------------------------------------------------------------------|
 | `Left` | Move back a character |
@@ -44427,8 +44057,6 @@ DuckDB's CLI uses a line-editing library based on [linenoise](https://github.com
 
 ## History
 
-
-
 | Key | Action |
 |------------|--------------------------------|
 | `Ctrl`+`P` | Move to previous history entry |
@@ -44441,8 +44069,6 @@ DuckDB's CLI uses a line-editing library based on [linenoise](https://github.com
 | `Alt`+`P` | Search the history |
 
 ## Changing Text
-
-
 
 | Key | Action |
 |-------------------|----------------------------------------------------------|
@@ -44465,8 +44091,6 @@ DuckDB's CLI uses a line-editing library based on [linenoise](https://github.com
 
 ## Completing
 
-
-
 | Key | Action |
 |---------------|--------------------------------------------------------|
 | `Tab` | Autocomplete. When autocompleting, cycle to next entry |
@@ -44474,8 +44098,6 @@ DuckDB's CLI uses a line-editing library based on [linenoise](https://github.com
 | `Esc`+`Esc` | When autocompleting, revert autocompletion |
 
 ## Miscellaneous
-
-
 
 | Key | Action |
 |------------|------------------------------------------------------------------------------------|
@@ -44508,8 +44130,6 @@ redirect_from:
 
 The `.mode` [dot command]({% link docs/api/cli/dot_commands.md %}) may be used to change the appearance of the tables returned in the terminal output. In addition to customizing the appearance, these modes have additional benefits. This can be useful for presenting DuckDB output elsewhere by redirecting the terminal [output to a file]({% link docs/api/cli/dot_commands.md %}#output-writing-results-to-a-file). Using the `insert` mode will build a series of SQL statements that can be used to insert the data at a later point.
 The `markdown` mode is particularly useful for building documentation and the `latex` mode is useful for writing academic papers.
-
-
 
 | Mode | Description |
 |--------------|---------------------------------------------|
@@ -44915,8 +44535,6 @@ Syntax highlighting can also be disabled entirely using the `.highlight off` com
 
 Below is a list of components that can be configured.
 
-
-
 | Type | Command | Default color |
 |-------------------------|-------------|-----------------|
 | Keywords | `.keyword` | `green` |
@@ -44927,8 +44545,6 @@ Below is a list of components that can be configured.
 | Continuation (Selected) | `.cont_sel` | `green` |
 
 The components can be configured using either a supported color name (e.g., `.keyword red`), or by directly providing a terminal code to use for rendering (e.g., `.keywordcode \033[31m`). Below is a list of supported color names and their corresponding terminal codes.
-
-
 
 | Color | Terminal code |
 |---------------|---------------|
@@ -59395,8 +59011,6 @@ GROUP BY ALL;
 
 This produces the result:
 
-
-
 | country | name | list("year") | list(population_sum) |
 |---------|---------------|--------------------|----------------------|
 | NL | Amsterdam | [2000, 2010, 2020] | [1005, 1065, 1158] |
@@ -59404,8 +59018,6 @@ This produces the result:
 | US | New York City | [2000, 2010, 2020] | [8015, 8175, 8772] |
 
 The `PhysicalPivot` operator converts those lists into column names and values to return this result:
-
-
 
 | country | name | 2000 | 2010 | 2020 |
 |---------|---------------|-----:|-----:|-----:|
@@ -59444,8 +59056,6 @@ FROM monthly_sales;
 
 Note the single quotes to build a list of text strings to populate `month`, and the double quotes to pull the column values for use in `sales`.
 This produces the same result as the initial example:
-
-
 
 | empid | dept | month | sales |
 |------:|-------------|-------|------:|
@@ -59539,8 +59149,6 @@ print(pattern.unpack(fh.read(pattern.size)))
 
 For changes in each given release, check out the [change log](https://github.com/duckdb/duckdb/releases) on GitHub.
 To see the commits that changed each storage version, see the [commit log](https://github.com/duckdb/duckdb/commits/main/src/storage/storage_info.cpp).
-
-
 
 | Storage version | DuckDB version(s) |
 |----------------:|---------------------------------|
@@ -60070,8 +59678,6 @@ CALL pragma_storage_info('table_name');
 ```
 
 This call returns the following information for the given table:
-
-
 
 | Name | Type | Description |
 |----------------|-----------|-------------------------------------------------------|
