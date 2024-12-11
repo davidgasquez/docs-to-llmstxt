@@ -2001,13 +2001,16 @@ These functions supports the same two location notations as [JSON Scalar functio
 | `json_extract_string(json, path)` | `json_extract_path_text` | `->>` | Extracts `VARCHAR` from `json` at the given `path`. If `path` is a `LIST`, the result will be a `LIST` of `VARCHAR`. |
 | `json_value(json, path)` | | | Extracts `JSON` from `json` at the given `path`. If the `json` at the supplied path is not a scalar value, it will return `NULL`. |
 
-Note that the equality comparison operator (`=`) has a higher precedence than the `->` JSON extract operator. Therefore, surround the uses of the `->` operator with parentheses when making equality comparisons. For example:
+Note that the arrow operator `->`, which is used for JSON extracts, has a low precedence as it is also used in [lambda functions]({% link docs/sql/functions/lambda.md %}).
+
+Therefore, you need to surround the `->` operator with parentheses when expressing operations such as equality comparisons (`=`).
+For example:
 
 ```sql
 SELECT ((JSON '{"field": 42}')->'field') = 42;
 ```
 
-> Warning DuckDB's JSON data type uses [0-based indexing](#indexing).
+> Warning DuckDB's JSON data type uses [0-based indexing]({% link docs/data/json/overview.md %}#indexing).
 
 Examples:
 
@@ -2113,7 +2116,7 @@ SELECT j->'species'->>['0','1'] FROM example;
 [duck, goose]
 ```
 
-Note that DuckDB's JSON data type uses [0-based indexing](#indexing).
+Note that DuckDB's JSON data type uses [0-based indexing]({% link docs/data/json/overview.md %}#indexing).
 
 If multiple values need to be extracted from the same JSON, it is more efficient to extract a list of paths:
 
@@ -2185,7 +2188,7 @@ SELECT json_extract('{"duck": [1, 2, 3]}', '$.duck[0]');
 1
 ```
 
-Note that DuckDB's JSON data type uses [0-based indexing](#indexing).
+Note that DuckDB's JSON data type uses [0-based indexing]({% link docs/data/json/overview.md %}#indexing).
 
 JSONPath is more expressive, and can also access from the back of lists:
 
@@ -2506,15 +2509,66 @@ title: Loading JSON
 
 The DuckDB JSON reader can automatically infer which configuration flags to use by analyzing the JSON file. This will work correctly in most situations, and should be the first option attempted. In rare situations where the JSON reader cannot figure out the correct configuration, it is possible to manually configure the JSON reader to correctly parse the JSON file.
 
-## JSON Read Functions
+## The `read_json` Function
+
+The `read_json` is the simplest method of loading JSON files: it automatically attempts to figure out the correct configuration of the JSON reader. It also automatically deduces types of columns.
+In the following example, we use the [`todos.json`](/data/json/todos.json) file,
+
+```sql
+SELECT *
+FROM read_json('todos.json')
+LIMIT 5;
+```
+
+| userId | id | title | completed |
+|-------:|---:|-----------------------------------------------------------------|-----------|
+| 1 | 1 | delectus aut autem | false |
+| 1 | 2 | quis ut nam facilis et officia qui | false |
+| 1 | 3 | fugiat veniam minus | false |
+| 1 | 4 | et porro tempora | true |
+| 1 | 5 | laboriosam mollitia et enim quasi adipisci quia provident illum | false |
+
+We can use `read_json` to create a persistent table as well:
+
+```sql
+CREATE TABLE todos AS
+SELECT *
+FROM read_json('todos.json');
+DESCRIBE todos;
+```
+
+
+
+| column_name | column_type | null | key | default | extra |
+|-------------|-------------|------|------|---------|-------|
+| userId | UBIGINT | YES | NULL | NULL | NULL |
+| id | UBIGINT | YES | NULL | NULL | NULL |
+| title | VARCHAR | YES | NULL | NULL | NULL |
+| completed | BOOLEAN | YES | NULL | NULL | NULL |
+
+If we specify the columns, we can bypass the automatic detection. Note that not all columns need to be specified:
+
+```sql
+SELECT *
+FROM read_json(
+'todos.json',
+columns = {userId: 'UBIGINT', completed: 'BOOLEAN'}
+);
+```
+
+Multiple files can be read at once by providing a glob or a list of files. Refer to the [multiple files section]({% link docs/data/multiple_files/overview.md %}) for more information.
+
+## Functions for Reading JSON Objects
 
 The following table functions are used to read JSON:
 
 | Function | Description |
 |:---|:---|
 | `read_json_objects(filename)` | Read a JSON object from `filename`, where `filename` can also be a list of files or a glob pattern. |
-| `read_ndjson_objects(filename)` | Alias for `read_json_objects` with parameter `format` set to `'newline_delimited'`. |
-| `read_json_objects_auto(filename)` | Alias for `read_json_objects` with parameter `format` set to `'auto'`. |
+| `read_ndjson_objects(filename)` | Alias for `read_json_objects` with the parameter `format` set to `'newline_delimited'`. |
+| `read_json_objects_auto(filename)` | Alias for `read_json_objects` with the parameter `format` set to `'auto'` . |
+
+### Parameters
 
 These functions have the following parameters:
 
@@ -2529,7 +2583,7 @@ These functions have the following parameters:
 | `maximum_object_size` | The maximum size of a JSON object (in bytes). | `UINTEGER` | `16777216` |
 
 The `format` parameter specifies how to read the JSON from a file.
-With `'unstructured'`, the top-level JSON is read, e.g.:
+With `'unstructured'`, the top-level JSON is read, e.g. for `birds.json`:
 
 ```json
 {
@@ -2540,18 +2594,46 @@ With `'unstructured'`, the top-level JSON is read, e.g.:
 }
 ```
 
-will result in two objects being read.
+```sql
+FROM read_json('birds.json', format = 'unstructured');
+```
 
-With `'newline_delimited'`, [NDJSON](http://ndjson.org) is read, where each JSON is separated by a newline (`\n`), e.g.:
+will result in two objects being read:
+
+```text
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ json â”‚
+â”‚ json â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ {\n "duck": 42\n} â”‚
+â”‚ {\n "goose": [1, 2, 3]\n} â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+With `'newline_delimited'`, [NDJSON](https://github.com/ndjson/ndjson-spec) is read, where each JSON is separated by a newline (`\n`), e.g., for `birds-nd.json`:
 
 ```json
 {"duck": 42}
 {"goose": [1, 2, 3]}
 ```
 
-will also result in two objects being read.
+```sql
+FROM read_json_objects('birds-nd.json', format = 'newline_delimited');
+```
 
-With `'array'`, each array element is read, e.g.:
+will also result in two objects being read:
+
+```text
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ json â”‚
+â”‚ json â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ {"duck": 42} â”‚
+â”‚ {"goose": [1, 2, 3]} â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+With `'array'`, each array element is read, e.g., for `birds-array.json`:
 
 ```json
 [
@@ -2564,44 +2646,34 @@ With `'array'`, each array element is read, e.g.:
 ]
 ```
 
-Again, will result in two objects being read.
-
-Example usage:
-
 ```sql
-SELECT * FROM read_json_objects('my_file1.json');
+FROM read_json_objects('birds-array.json', format = 'array');
 ```
+
+will again result in two objects being read:
 
 ```text
-{"duck":42,"goose":[1,2,3]}
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ json â”‚
+â”‚ json â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ {\n "duck": 42\n } â”‚
+â”‚ {\n "goose": [1, 2, 3]\n } â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
-```sql
-SELECT * FROM read_json_objects(['my_file1.json', 'my_file2.json']);
-```
-
-```text
-{"duck":42,"goose":[1,2,3]}
-{"duck":43,"goose":[4,5,6],"swan":3.3}
-```
-
-```sql
-SELECT * FROM read_ndjson_objects('*.json.gz');
-```
-
-```text
-{"duck":42,"goose":[1,2,3]}
-{"duck":43,"goose":[4,5,6],"swan":3.3}
-```
+## Functions for Reading JSON as a Table
 
 DuckDB also supports reading JSON as a table, using the following functions:
 
 | Function | Description |
-|:----|:-------|
+|:---------|:----------------|
 | `read_json(filename)` | Read JSON from `filename`, where `filename` can also be a list of files, or a glob pattern. |
-| `read_json_auto(filename)` | Alias for `read_json` with all auto-detection enabled. |
+| `read_json_auto(filename)` | Alias for `read_json`. |
 | `read_ndjson(filename)` | Alias for `read_json` with parameter `format` set to `'newline_delimited'`. |
-| `read_ndjson_auto(filename)` | Alias for `read_json_auto` with parameter `format` set to `'newline_delimited'`. |
+| `read_ndjson_auto(filename)` | Alias for `read_json` with parameter `format` set to `'newline_delimited'`. |
+
+### Parameters
 
 Besides the `maximum_object_size`, `format`, `ignore_errors` and `compression`, these functions have additional parameters:
 
@@ -2615,26 +2687,15 @@ Besides the `maximum_object_size`, `format`, `ignore_errors` and `compression`, 
 | `sample_size` | Option to define number of sample objects for automatic JSON type detection. Set to -1 to scan the entire input file | `UBIGINT` | `20480` |
 | `timestampformat` | Specifies the date format to use when parsing timestamps. See [Date Format]({% link docs/sql/functions/dateformat.md %}) | `VARCHAR` | `'iso'`|
 | `union_by_name` | Whether the schema's of multiple JSON files should be [unified]({% link docs/data/multiple_files/combining_schemas.md %}) | `BOOL` | `false` |
-| `map_inference_threshold` | Controls the threshold for number of columns whose schema will be auto-detected; if JSON schema auto-detection would infer a `STRUCT` type for a field that has _more_ than this threshold number of subfields, it infers a `MAP` type instead. Set to -1 to disable `MAP` inference. | `BIGINT` | `24` |
+| `map_inference_threshold` | Controls the threshold for number of columns whose schema will be auto-detected; if JSON schema auto-detection would infer a `STRUCT` type for a field that has _more_ than this threshold number of subfields, it infers a `MAP` type instead. Set to `-1` to disable `MAP` inference. | `BIGINT` | `24` |
+| `field_appearance_threshold` | The JSON reader divides the number of appearances of each JSON field by the auto-detection sample size. If the average over the fields of an object is less than this threshold, it will default to using a `MAP` type with value type of merged field types. | `0.1` |
 
-Example usage:
-
-```sql
-SELECT * FROM read_json('my_file1.json', columns = {duck: 'INTEGER'});
-```
-
-
-
-| duck |
-|:---|
-| 42 |
-
-DuckDB can convert JSON arrays directly to its internal `LIST` type, and missing keys become `NULL`:
+Note that DuckDB can convert JSON arrays directly to its internal `LIST` type, and missing keys become `NULL`:
 
 ```sql
 SELECT *
 FROM read_json(
-['my_file1.json', 'my_file2.json'],
+['birds1.json', 'birds2.json'],
 columns = {duck: 'INTEGER', goose: 'INTEGER[]', swan: 'DOUBLE'}
 );
 ```
@@ -2642,7 +2703,7 @@ columns = {duck: 'INTEGER', goose: 'INTEGER[]', swan: 'DOUBLE'}
 
 
 | duck | goose | swan |
-|:---|:---|:---|
+|-----:|-----------|-----:|
 | 42 | [1, 2, 3] | NULL |
 | 43 | [4, 5, 6] | 3.3 |
 
@@ -2652,13 +2713,6 @@ DuckDB can automatically detect the types like so:
 SELECT goose, duck FROM read_json('*.json.gz');
 SELECT goose, duck FROM '*.json.gz'; -- equivalent
 ```
-
-
-
-| goose | duck |
-|:---|:---|
-| [1, 2, 3] | 42 |
-| [4, 5, 6] | 43 |
 
 DuckDB can read (and auto-detect) a variety of formats, specified with the `format` parameter.
 Querying a JSON file that contains an `'array'`, e.g.:
@@ -2694,7 +2748,7 @@ Both can be read as the table:
 
 
 | duck | goose |
-|:---|:---|
+|-----:|------:|
 | 42 | 4.2 |
 | 43 | 4.3 |
 
@@ -2712,77 +2766,66 @@ Results in two columns:
 
 
 | duck | goose |
-|:---|:---|
+|-----:|:--------|
 | 42 | [1,2,3] |
-| 42 | [4,5,6] |
+| 43 | [4,5,6] |
 
 You can read the same file with `records` set to `'false'`, to get a single column, which is a `STRUCT` containing the data:
 
 
 
 | json |
-|:---|
+|:-----|
 | {'duck': 42, 'goose': [1,2,3]} |
 | {'duck': 43, 'goose': [4,5,6]} |
 
 For additional examples reading more complex data, please see the [â€œShredding Deeply Nested JSON, One Vector at a Timeâ€� blog post]({% post_url 2023-03-03-json %}).
 
-## `FORMAT JSON`
+## Loading with the `COPY` Statement Using `FORMAT JSON`
 
-When the `json` extension is installed, `FORMAT JSON` is supported for `COPY FROM`, `COPY TO`, `EXPORT DATABASE` and `IMPORT DATABASE`. See the [`COPY` statement]({% link docs/sql/statements/copy.md %}) and the [`IMPORT` / `EXPORT` clauses]({% link docs/sql/statements/export.md %}).
+When the `json` extension is installed, `FORMAT JSON` is supported for `COPY FROM`, `IMPORT DATABASE`, as well as `COPY TO`, and `EXPORT DATABASE`. See the [`COPY` statement]({% link docs/sql/statements/copy.md %}) and the [`IMPORT` / `EXPORT` clauses]({% link docs/sql/statements/export.md %}).
 
 By default, `COPY` expects newline-delimited JSON. If you prefer copying data to/from a JSON array, you can specify `ARRAY true`, e.g.,
 
 ```sql
-COPY (SELECT * FROM range(5)) TO 'my.json' (ARRAY true);
+COPY (SELECT * FROM range(5) r(i))
+TO 'numbers.json' (ARRAY true);
 ```
 
 will create the following file:
 
 ```json
 [
-{"range":0},
-{"range":1},
-{"range":2},
-{"range":3},
-{"range":4}
+{"i":0},
+{"i":1},
+{"i":2},
+{"i":3},
+{"i":4}
 ]
 ```
 
-This can be read like so:
+This can be read back to DuckDB as follows:
 
 ```sql
-CREATE TABLE test (range BIGINT);
-COPY test FROM 'my.json' (ARRAY true);
+CREATE TABLE numbers (i BIGINT);
+COPY numbers FROM 'numbers.json' (ARRAY true);
 ```
 
 The format can be detected automatically the format like so:
 
 ```sql
-COPY test FROM 'my.json' (AUTO_DETECT true);
+CREATE TABLE numbers (i BIGINT);
+COPY numbers FROM 'numbers.json' (AUTO_DETECT true);
 ```
 
-## `COPY` Statement
-
-The `COPY` statement can be used to load data from a JSON file into a table. For the `COPY` statement, we must first create a table with the correct schema to load the data into. We then specify the JSON file to load from plus any configuration options separately.
+We can also create a table from the auto-detected schema:
 
 ```sql
-CREATE TABLE todos (userId UBIGINT, id UBIGINT, title VARCHAR, completed BOOLEAN);
-COPY todos FROM 'todos.json';
-SELECT * FROM todos LIMIT 5;
+CREATE TABLE numbers AS
+FROM 'numbers.json';
 ```
 
-| userId | id | title | completed |
-|--------|----|-----------------------------------------------------------------|-----------|
-| 1 | 1 | delectus aut autem | false |
-| 1 | 2 | quis ut nam facilis et officia qui | false |
-| 1 | 3 | fugiat veniam minus | false |
-| 1 | 4 | et porro tempora | true |
-| 1 | 5 | laboriosam mollitia et enim quasi adipisci quia provident illum | false |
-
-For more details, see the [page on the `COPY` statement]({% link docs/sql/statements/copy.md %}).
-
-## Parameters
+### Parameters
 
 | Name | Description | Type | Default |
 |:--|:-----|:-|:-|
@@ -2801,55 +2844,6 @@ For more details, see the [page on the `COPY` statement]({% link docs/sql/statem
 | `sample_size` | Option to define number of sample objects for automatic JSON type detection. Set to -1 to scan the entire input file | `UBIGINT` | `20480` |
 | `timestampformat` | Specifies the date format to use when parsing timestamps. See [Date Format]({% link docs/sql/functions/dateformat.md %}) | `VARCHAR` | `'iso'`|
 | `union_by_name` | Whether the schema's of multiple JSON files should be [unified]({% link docs/data/multiple_files/combining_schemas.md %}). | `BOOL` | `false` |
-
-## The `read_json` Function
-
-The `read_json` is the simplest method of loading JSON files: it automatically attempts to figure out the correct configuration of the JSON reader. It also automatically deduces types of columns.
-
-```sql
-SELECT *
-FROM read_json('todos.json')
-LIMIT 5;
-```
-
-| userId | id | title | completed |
-|-------:|---:|-----------------------------------------------------------------|-----------|
-| 1 | 1 | delectus aut autem | false |
-| 1 | 2 | quis ut nam facilis et officia qui | false |
-| 1 | 3 | fugiat veniam minus | false |
-| 1 | 4 | et porro tempora | true |
-| 1 | 5 | laboriosam mollitia et enim quasi adipisci quia provident illum | false |
-
-The path can either be a relative path (relative to the current working directory) or an absolute path.
-
-We can use `read_json` to create a persistent table as well:
-
-```sql
-CREATE TABLE todos AS
-SELECT *
-FROM read_json('todos.json');
-DESCRIBE todos;
-```
-
-
-
-| column_name | column_type | null | key | default | extra |
-|-------------|-------------|------|-----|---------|-------|
-| userId | UBIGINT | YES | | | |
-| id | UBIGINT | YES | | | |
-| title | VARCHAR | YES | | | |
-| completed | BOOLEAN | YES | | | |
-
-If we specify the columns, we can bypass the automatic detection. Note that not all columns need to be specified:
-
-```sql
-SELECT *
-FROM read_json('todos.json',
-columns = {userId: 'UBIGINT',
-completed: 'BOOLEAN'});
-```
-
-Multiple files can be read at once by providing a glob or a list of files. Refer to the [multiple files section]({% link docs/data/multiple_files/overview.md %}) for more information.
 
 ---
 duckdb/docs/data/json/overview.md
@@ -2870,6 +2864,10 @@ If you would like to install or load it manually, please consult the [â€œIns
 
 JSON is an open standard file format and data interchange format that uses human-readable text to store and transmit data objects consisting of attributeâ€“value pairs and arrays (or other serializable values).
 While it is not a very efficient format for tabular data, it is very commonly used, especially as a data interchange format.
+
+> Bestpractice DuckDB implements multiple interfaces for JSON extraction: [JSONPath](https://goessner.net/articles/JsonPath/) and [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901). Both of them work with the arrow operator (`->`) and the `json_extract` function call. It's best to pick one syntax and use it in your entire application.
+
+
 
 ## Indexing
 
@@ -2975,7 +2973,7 @@ layout: docu
 title: SQL to/from JSON
 ---
 
-The `json` extension also provides functions to serialize and deserialize `SELECT` statements between SQL and JSON, as well as executing JSON serialized statements.
+DuckDB provides functions to serialize and deserialize `SELECT` statements between SQL and JSON, as well as executing JSON serialized statements.
 
 | Function | Type | Description |
 |:------|:-|:---------|
@@ -2999,7 +2997,7 @@ SELECT json_serialize_sql('SELECT 2');
 ```
 
 ```text
-'{"error":false,"statements":[{"node":{"type":"SELECT_NODE","modifiers":[],"cte_map":{"map":[]},"select_list":[{"class":"CONSTANT","type":"VALUE_CONSTANT","alias":"","value":{"type":{"id":"INTEGER","type_info":null},"is_null":false,"value":2}}],"from_table":{"type":"EMPTY","alias":"","sample":null},"where_clause":null,"group_expressions":[],"group_sets":[],"aggregate_handling":"STANDARD_HANDLING","having":null,"sample":null,"qualify":null}}]}'
+{"error":false,"statements":[{"node":{"type":"SELECT_NODE","modifiers":[],"cte_map":{"map":[]},"select_list":[{"class":"CONSTANT","type":"VALUE_CONSTANT","alias":"","value":{"type":{"id":"INTEGER","type_info":null},"is_null":false,"value":2}}],"from_table":{"type":"EMPTY","alias":"","sample":null},"where_clause":null,"group_expressions":[],"group_sets":[],"aggregate_handling":"STANDARD_HANDLING","having":null,"sample":null,"qualify":null}}]}
 ```
 
 Example with multiple statements and skip options:
@@ -3009,7 +3007,7 @@ SELECT json_serialize_sql('SELECT 1 + 2; SELECT a + b FROM tbl1', skip_empty := 
 ```
 
 ```text
-'{"error":false,"statements":[{"node":{"type":"SELECT_NODE","select_list":[{"class":"FUNCTION","type":"FUNCTION","function_name":"+","children":[{"class":"CONSTANT","type":"VALUE_CONSTANT","value":{"type":{"id":"INTEGER"},"is_null":false,"value":1}},{"class":"CONSTANT","type":"VALUE_CONSTANT","value":{"type":{"id":"INTEGER"},"is_null":false,"value":2}}],"order_bys":{"type":"ORDER_MODIFIER"},"distinct":false,"is_operator":true,"export_state":false}],"from_table":{"type":"EMPTY"},"aggregate_handling":"STANDARD_HANDLING"}},{"node":{"type":"SELECT_NODE","select_list":[{"class":"FUNCTION","type":"FUNCTION","function_name":"+","children":[{"class":"COLUMN_REF","type":"COLUMN_REF","column_names":["a"]},{"class":"COLUMN_REF","type":"COLUMN_REF","column_names":["b"]}],"order_bys":{"type":"ORDER_MODIFIER"},"distinct":false,"is_operator":true,"export_state":false}],"from_table":{"type":"BASE_TABLE","table_name":"tbl1"},"aggregate_handling":"STANDARD_HANDLING"}}]}'
+{"error":false,"statements":[{"node":{"type":"SELECT_NODE","select_list":[{"class":"FUNCTION","type":"FUNCTION","function_name":"+","children":[{"class":"CONSTANT","type":"VALUE_CONSTANT","value":{"type":{"id":"INTEGER"},"is_null":false,"value":1}},{"class":"CONSTANT","type":"VALUE_CONSTANT","value":{"type":{"id":"INTEGER"},"is_null":false,"value":2}}],"order_bys":{"type":"ORDER_MODIFIER"},"distinct":false,"is_operator":true,"export_state":false}],"from_table":{"type":"EMPTY"},"aggregate_handling":"STANDARD_HANDLING"}},{"node":{"type":"SELECT_NODE","select_list":[{"class":"FUNCTION","type":"FUNCTION","function_name":"+","children":[{"class":"COLUMN_REF","type":"COLUMN_REF","column_names":["a"]},{"class":"COLUMN_REF","type":"COLUMN_REF","column_names":["b"]}],"order_bys":{"type":"ORDER_MODIFIER"},"distinct":false,"is_operator":true,"export_state":false}],"from_table":{"type":"BASE_TABLE","table_name":"tbl1"},"aggregate_handling":"STANDARD_HANDLING"}}]}
 ```
 
 Example with a syntax error:
@@ -3019,7 +3017,7 @@ SELECT json_serialize_sql('TOTALLY NOT VALID SQL');
 ```
 
 ```text
-'{"error":true,"error_type":"parser","error_message":"syntax error at or near \"TOTALLY\"\nLINE 1: TOTALLY NOT VALID SQL\n ^"}'
+{"error":true,"error_type":"parser","error_message":"syntax error at or near \"TOTALLY\"","position":"0","error_subtype":"SYNTAX_ERROR"}
 ```
 
 Example with deserialize:
@@ -3029,17 +3027,17 @@ SELECT json_deserialize_sql(json_serialize_sql('SELECT 1 + 2'));
 ```
 
 ```text
-'SELECT (1 + 2)'
+SELECT (1 + 2)
 ```
 
-Example with deserialize and syntax sugar:
+Example with deserialize and syntax sugar, which is lost during the transformation:
 
 ```sql
 SELECT json_deserialize_sql(json_serialize_sql('FROM x SELECT 1 + 2'));
 ```
 
 ```text
-'SELECT (1 + 2) FROM x'
+SELECT (1 + 2) FROM x
 ```
 
 Example with execute:
@@ -3059,7 +3057,7 @@ SELECT * FROM json_execute_serialized_sql(json_serialize_sql('TOTALLY NOT VALID 
 ```
 
 ```console
-Error: Parser Error: Error parsing json: parser: syntax error at or near "TOTALLY"
+Parser Error: Error parsing json: parser: syntax error at or near "TOTALLY"
 ```
 
 ---
@@ -3070,7 +3068,23 @@ layout: docu
 title: Writing JSON
 ---
 
-The contents of tables or the result of queries can be written directly to a JSON file using the `COPY` statement. See the [`COPY` statement]({% link docs/sql/statements/copy.md %}#copy-to) for more information.
+The contents of tables or the result of queries can be written directly to a JSON file using the `COPY` statement.
+For example:
+
+```sql
+CREATE TABLE cities AS
+FROM (VALUES ('Amsterdam', 1), ('London', 2)) cities(name, id);
+COPY cities TO 'cities.json';
+```
+
+This will result in `cities.json` with the following content:
+
+```json
+{"name":"Amsterdam","id":1}
+{"name":"London","id":2}
+```
+
+See the [`COPY` statement]({% link docs/sql/statements/copy.md %}#copy-to) for more information.
 
 ---
 duckdb/docs/data/multiple_files/combining_schemas.md
@@ -5322,7 +5336,77 @@ Once the build finishes successfully, you can find the `duckdb.exe` binary in th
 
 ## Android
 
-DuckDB runs on Android. To build the command line client in the [Termux application](https://termux.dev/), install the following packages:
+DuckDB has experimental support for Android. Please use the latest `main` branch of DuckDB instead of the stable versions.
+
+### Building the DuckDB Library Using the Android NDK
+
+We provide build instructions for setups using macOS and Android Studio. For other setups, please adjust the steps accordingly.
+
+1. Open [Android Studio](https://developer.android.com/studio).
+Select the **Tools** menu and pick **SDK Manager**.
+Select the SDK Tools tab and tick the **NDK (Side by side)** option.
+Click **OK** to install.
+
+1. Set the Android NDK's location. For example:
+
+```batch
+ANDROID_NDK=~/Library/Android/sdk/ndk/28.0.12433566/
+```
+
+1. Set the [Android ABI](https://developer.android.com/ndk/guides/abis). For example:
+
+```batch
+ANDROID_ABI=arm64-v8a
+```
+
+Or:
+
+```batch
+ANDROID_ABI=x86_64
+```
+
+1. If you would like to use the [Ninja build system](#prerequisites), make sure it is installed and available on the `PATH`.
+
+1. Set the list of DuckDB extensions to build. These will be statically linked in the binary. For example:
+
+```batch
+DUCKDB_EXTENSIONS="icu;json;parquet"
+```
+
+1. Navigate to DuckDB's directory and run the build as follows:
+
+```batch
+PLATFORM_NAME="android_${ANDROID_ABI}"
+BUILDDIR=./build/${PLATFORM_NAME}
+mkdir -p ${BUILDDIR}
+cd ${BUILDDIR}
+cmake \
+-G "Ninja" \
+-DEXTENSION_STATIC_BUILD=1 \
+-DDUCKDB_EXTRA_LINK_FLAGS="-llog" \
+-DBUILD_EXTENSIONS=${DUCKDB_EXTENSIONS} \
+-DENABLE_EXTENSION_AUTOLOADING=1 \
+-DENABLE_EXTENSION_AUTOINSTALL=1 \
+-DCMAKE_VERBOSE_MAKEFILE=on \
+-DANDROID_PLATFORM=${ANDROID_PLATFORM} \
+-DLOCAL_EXTENSION_REPO="" \
+-DOVERRIDE_GIT_DESCRIBE="" \
+-DDUCKDB_EXPLICIT_PLATFORM=${PLATFORM_NAME} \
+-DBUILD_UNITTESTS=0 \
+-DBUILD_SHELL=1 \
+-DANDROID_ABI=${ANDROID_ABI} \
+-DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
+-DCMAKE_BUILD_TYPE=Release ../..
+cmake \
+--build . \
+--config Release
+```
+
+1. For the `arm64-v8a` ABI, the build will produce the `build/android_arm64-v8a/duckdb` and `build/android_arm64-v8a/src/libduckdb.so` binaries.
+
+### Building the CLI in Termux
+
+To build the [command line client]({% link docs/api/cli/overview.md %}) in the [Termux application](https://termux.dev/), install the following packages:
 
 ```batch
 pkg install -y git ninja clang cmake python3
@@ -21821,7 +21905,7 @@ CREATE TABLE new_db.tbl (i INTEGER);
 ```
 
 ```console
-Error: Binder Error: Ambiguous reference to catalog or schema "new_db" -
+Binder Error: Ambiguous reference to catalog or schema "new_db" -
 use a fully qualified path like "memory.new_db"
 ```
 
@@ -22800,7 +22884,7 @@ SELECT my_macro(32, 52);
 ```
 
 ```console
-Error: Binder Error: Macro function 'my_macro(a)' requires a single positional argument, but 2 positional arguments were provided.
+Binder Error: Macro function 'my_macro(a)' requires a single positional argument, but 2 positional arguments were provided.
 ```
 
 ### Using Subquery Macros
@@ -23200,7 +23284,7 @@ INSERT INTO t1 VALUES (2, -1);
 ```
 
 ```console
-Error: Constraint Error: CHECK constraint failed: t1
+Constraint Error: CHECK constraint failed: t1
 ```
 
 ```sql
@@ -23208,7 +23292,7 @@ INSERT INTO t1 VALUES (3, 101);
 ```
 
 ```console
-Error: Constraint Error: CHECK constraint failed: t1
+Constraint Error: CHECK constraint failed: t1
 ```
 
 ```sql
@@ -23218,7 +23302,7 @@ INSERT INTO t2 VALUES (2, 5, 3);
 ```
 
 ```console
-Error: Constraint Error: CHECK constraint failed: t2
+Constraint Error: CHECK constraint failed: t2
 ```
 
 `CHECK` constraints can also be added as part of the `CONSTRAINTS` clause:
@@ -23235,7 +23319,7 @@ INSERT INTO t3 VALUES (2, 5, 3);
 ```
 
 ```console
-Error: Constraint Error: CHECK constraint failed: t3
+Constraint Error: CHECK constraint failed: t3
 ```
 
 ## Foreign Key Constraints
@@ -23260,7 +23344,7 @@ INSERT INTO t2 VALUES (2, 2);
 ```
 
 ```console
-Error: Constraint Error: Violates foreign key constraint because key "id: 2" does not exist in the referenced table
+Constraint Error: Violates foreign key constraint because key "id: 2" does not exist in the referenced table
 ```
 
 Foreign keys can be defined on composite primary keys:
@@ -23282,7 +23366,7 @@ INSERT INTO t4 VALUES (2, 1, 'b');
 ```
 
 ```console
-Error: Constraint Error: Violates foreign key constraint because key "id: 1, j: b" does not exist in the referenced table
+Constraint Error: Violates foreign key constraint because key "id: 1, j: b" does not exist in the referenced table
 ```
 
 Foreign keys can also be defined on unique columns:
@@ -24093,7 +24177,7 @@ ON CONFLICT DO UPDATE SET j = j + EXCLUDED.j;
 This returns the following message.
 
 ```console
-Error: Invalid Input Error: ON CONFLICT DO UPDATE can not update the same row twice in the same command.
+Invalid Input Error: ON CONFLICT DO UPDATE can not update the same row twice in the same command.
 Ensure that no rows proposed for insertion within the same command have duplicate constrained values
 ```
 
@@ -25931,6 +26015,10 @@ as well as spurious errors cased by the underlying file system.
 
 We recommend using the latest stable version of operating systems: macOS, Windows, and Linux are all well-tested and DuckDB can run on them with high performance. Among Linux distributions, we recommended using Ubuntu Linux LTS due to its stability and the fact that most of DuckDBâ€™s Linux test suite jobs run on Ubuntu workers.
 
+## Memory Allocator
+
+If you have a many-core CPU running on a system where DuckDB ships with [`jemalloc`]({% link docs/extensions/jemalloc.md %}) as the default memory allocator, consider [enabling the allocator's background threads]({% link docs/extensions/jemalloc.md %}#background-threads).
+
 ---
 duckdb/docs/guides/performance/file_formats.md
 ---
@@ -26168,7 +26256,7 @@ Using multiple connections can parallelize some operations, although it is typic
 When importing or exporting data sets (from/to the Parquet or CSV formats), which are much larger than the available memory, an out of memory error may occur:
 
 ```console
-Error: Out of Memory Error: failed to allocate data of size ... (.../... used)
+Out of Memory Error: failed to allocate data of size ... (.../... used)
 ```
 
 In these cases, consider setting the [`preserve_insertion_order` configuration option]({% link docs/configuration/overview.md %}) to `false`:
@@ -26877,7 +26965,7 @@ FROM iceberg_scan('s3://âŸ¨bucketâŸ©/âŸ¨iceberg-table-folderâŸ©/meta
 Note that you need to link directly to the manifest file. Otherwise you'll get an error like this:
 
 ```console
-Error: IO Error: Cannot open file "s3://âŸ¨bucketâŸ©/âŸ¨iceberg-table-folderâŸ©/metadata/version-hint.text": No such file or directory
+IO Error: Cannot open file "s3://âŸ¨bucketâŸ©/âŸ¨iceberg-table-folderâŸ©/metadata/version-hint.text": No such file or directory
 ```
 
 ---
@@ -31836,13 +31924,21 @@ GEN=ninja BUILD_JEMALLOC=1 make
 
 On Windows, this extension is not available.
 
-## Configuration Flags
+## Configuration
 
-By default, jemalloc's background threads are disabled. To enable them, use the following configuration option:
+### Environment Variables
+
+The jemalloc allocator in DuckDB can be configured via the [`MALLOC_CONF` environment variable](https://jemalloc.net/jemalloc.3.html#environment).
+
+### Background Threads
+
+By default, jemalloc's [background threads](https://jemalloc.net/jemalloc.3.html#background_thread) are disabled. To enable them, use the following configuration option:
 
 ```sql
 SET allocator_background_threads = true;
 ```
+
+Background threads asynchronously purge outstanding allocations so that this doesn't have to be done synchronously by the foreground threads. This improves allocation performance, and should be noticeable in allocation-heavy workloads, especially on many-core CPUs.
 
 ---
 duckdb/docs/extensions/mysql.md
@@ -32868,7 +32964,7 @@ When querying SQLite, DuckDB must deduce a specific column type mapping. DuckDB 
 As DuckDB enforces the corresponding columns to contain only correctly typed values, we cannot load the string â€œhelloâ€� into a column of type `BIGINT`. As such, an error is thrown when reading from the â€œnumbersâ€� table above:
 
 ```console
-Error: Mismatch Type Error: Invalid type in column "i": column was declared as integer, found "hello" of type "text" instead.
+Mismatch Type Error: Invalid type in column "i": column was declared as integer, found "hello" of type "text" instead.
 ```
 
 This error can be avoided by setting the `sqlite_all_varchar` option:
