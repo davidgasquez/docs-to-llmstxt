@@ -4985,7 +4985,7 @@ Heatmap currently only works with string columns. If you would like to use a dat
 </DocTab>
 
 
-### Custom Color Palette
+### Custom Color Scale
 
 
 <DocTab>
@@ -4996,7 +4996,10 @@ Heatmap currently only works with string columns. If you would like to use a dat
             y=category 
             value=order_count 
             valueFmt=usd 
-            colorPalette={['white', 'green']}
+            colorScale={[
+                ['rgb(254,234,159)', 'rgb(254,234,159)'],
+                ['rgb(218,66,41)', 'rgb(218,66,41)']
+            ]}
         />
     </div>
 
@@ -5007,7 +5010,10 @@ Heatmap currently only works with string columns. If you would like to use a dat
     y=category 
     value=order_count 
     valueFmt=usd 
-    colorPalette={['white', 'green']}
+    colorScale={[
+        ['rgb(254,234,159)', 'rgb(254,234,159)'],
+        ['rgb(218,66,41)', 'rgb(218,66,41)']
+    ]}
 />
 ```
 </DocTab>
@@ -5029,7 +5035,6 @@ order by state asc, item asc
             y=state 
             value=orders 
             xLabelRotation=-45
-            colorPalette={['white', 'maroon']} 
             title="Item Sales"
             subtitle="By State"
             rightPadding=40
@@ -5045,7 +5050,7 @@ order by state asc, item asc
     y=state 
     value=orders 
     xLabelRotation=-45
-    colorPalette={['white', 'maroon']} 
+    colorScale={['white', 'maroon']} 
     title="Item Sales"
     subtitle="By State"
     rightPadding=40
@@ -5122,7 +5127,7 @@ order by state asc, item asc
     options="string"
 />
 <PropListing
-    name=colorPalette
+    name=colorScale
     description="Array of colors to form the gradient for the heatmap."
     options="array of color codes - e.g., {`{['navy', 'white', '#c9c9c9']}`}"
 />
@@ -7995,7 +8000,7 @@ limit 5
 
 ### Conditional Formatting
 
-#### Default (`scaleColor=green`)
+#### Default (`colorScale=positive`)
 
 <DocTab>
     <div slot='preview'>
@@ -8018,7 +8023,7 @@ limit 5
 </DocTab>
 
 
-#### `scaleColor=red`
+#### `colorScale=negative`
 
 <DocTab>
     <div slot='preview'>
@@ -8026,7 +8031,7 @@ limit 5
             <Column id=country />
             <Column id=country_id align=center/>
             <Column id=category align=center/>
-            <Column id=value_usd contentType=colorscale scaleColor=red/>
+            <Column id=value_usd contentType=colorscale colorScale=negative/>
         </DataTable>
     </div>
 
@@ -8035,12 +8040,12 @@ limit 5
     <Column id=country />
     <Column id=country_id align=center/>
     <Column id=category align=center/>
-    <Column id=value_usd contentType=colorscale scaleColor=red/>
+    <Column id=value_usd contentType=colorscale colorScale=negative/>
 </DataTable>
 ```
 </DocTab>
 
-#### `scaleColor=blue`
+#### `colorScale=info`
 
 <DocTab>
     <div slot='preview'>
@@ -8048,7 +8053,7 @@ limit 5
             <Column id=country />
             <Column id=country_id align=center/>
             <Column id=category align=center/>
-            <Column id=value_usd contentType=colorscale scaleColor=blue/>
+            <Column id=value_usd contentType=colorscale colorScale=info/>
         </DataTable>
     </div>
 
@@ -8057,7 +8062,7 @@ limit 5
     <Column id=country />
     <Column id=country_id align=center/>
     <Column id=category align=center/>
-    <Column id=value_usd contentType=colorscale scaleColor=blue/>
+    <Column id=value_usd contentType=colorscale colorScale=info/>
 </DataTable>
 ```
 </DocTab>
@@ -8065,7 +8070,7 @@ limit 5
 
 #### Custom Colors
 
-When you pass a custom color to `scaleColor`, Evidence will create a color palette for you, starting at white and ending at the color you provided. See examples further down the page to see how to specify a custom color palette with multiple colors.
+When you pass a custom color to `colorScale`, Evidence will create a color palette for you, starting at white (or black, depending on the selected theme) and ending at the color you provided. See examples further down the page to see how to specify a custom color palette with multiple colors.
 
 ```orders_by_category
 select order_month as month, category, sum(sales) as sales_usd0k, count(1) as num_orders_num0,
@@ -8079,9 +8084,9 @@ group by all
         <DataTable data={orders_by_category} rowNumbers=true>
           <Column id=month/>
           <Column id=category/>
-          <Column id=sales_usd0k contentType=colorscale scaleColor=#a85ab8 align=center/>
-          <Column id=num_orders_num0 contentType=colorscale scaleColor=#e3af05 align=center/>
-          <Column id=aov_usd2 contentType=colorscale scaleColor=#c43957 align=center/>
+          <Column id=sales_usd0k contentType=colorscale colorScale=#a85ab8 align=center/>
+          <Column id=num_orders_num0 contentType=colorscale colorScale=#e3af05 align=center/>
+          <Column id=aov_usd2 contentType=colorscale colorScale=#c43957 align=center/>
         </DataTable>
     </div>
 
@@ -8089,9 +8094,9 @@ group by all
 <DataTable data={orders_by_category} rowNumbers=true>
   <Column id=month/>
   <Column id=category/>
-  <Column id=sales_usd0k contentType=colorscale scaleColor=#a85ab8 align=center/>
-  <Column id=num_orders_num0 contentType=colorscale scaleColor=#e3af05 align=center/>
-  <Column id=aov_usd2 contentType=colorscale scaleColor=#c43957 align=center/>
+  <Column id=sales_usd0k contentType=colorscale colorScale=#a85ab8 align=center/>
+  <Column id=num_orders_num0 contentType=colorscale colorScale=#e3af05 align=center/>
+  <Column id=aov_usd2 contentType=colorscale colorScale=#c43957 align=center/>
 </DataTable>
 ```
 </DocTab>
@@ -8130,14 +8135,14 @@ union all
     <div slot='preview'>
         <DataTable data={numbers}>
           <Column id=name/>
-          <Column id=number contentType=colorscale scaleColor={['#6db678','white','#ce5050']}/>
+          <Column id=number contentType=colorscale colorScale={['#6db678','white','#ce5050']}/>
         </DataTable>
     </div>
 
 ```svelte
 <DataTable data={numbers}>
   <Column id=name/>
-  <Column id=number contentType=colorscale scaleColor={['#6db678','white','#ce5050']}/>
+  <Column id=number contentType=colorscale colorScale={['#6db678','white','#ce5050']}/>
 </DataTable>
 ```
 </DocTab>
@@ -8149,14 +8154,14 @@ union all
     <div slot='preview'>
         <DataTable data={numbers}>
           <Column id=name/>
-          <Column id=number contentType=colorscale scaleColor={['#6db678','#ebbb38','#ce5050']}/>
+          <Column id=number contentType=colorscale colorScale={['#6db678','#ebbb38','#ce5050']}/>
         </DataTable>
     </div>
 
 ```svelte
 <DataTable data={numbers}>
   <Column id=name/>
-  <Column id=number contentType=colorscale scaleColor={['#6db678','#ebbb38','#ce5050']}/>
+  <Column id=number contentType=colorscale colorScale={['#6db678','#ebbb38','#ce5050']}/>
 </DataTable>
 ```
 </DocTab>
@@ -8170,14 +8175,14 @@ Use `colorBreakpoints` or `colorMid`/`colorMin`/`colorMax` to control which valu
     <div slot='preview'>
         <DataTable data={negatives} rows=all>
           <Column id=name/>
-          <Column id=number contentType=colorscale scaleColor={['#ce5050','white','#6db678']} colorMid=0/>
+          <Column id=number contentType=colorscale colorScale={['#ce5050','white','#6db678']} colorMid=0/>
         </DataTable>
     </div>
 
 ```svelte
 <DataTable data={negatives} rows=all>
   <Column id=name/>
-  <Column id=number contentType=colorscale scaleColor={['#ce5050','white','#6db678']} colorMid=0/>
+  <Column id=number contentType=colorscale colorScale={['#ce5050','white','#6db678']} colorMid=0/>
 </DataTable>
 ```
 </DocTab>
@@ -8215,7 +8220,7 @@ union all
         <DataTable data={numbers_othercol}>
           <Column id=name/>
           <Column id=scale_defining_number fontColor={['green','red']}/>
-          <Column id=number contentType=colorscale scaleColor={['#6db678','white','#ce5050']} scaleColumn=scale_defining_number fmtCol=fmt/>
+          <Column id=number contentType=colorscale colorScale={['#6db678','white','#ce5050']} scaleColumn=scale_defining_number fmtCol=fmt/>
         </DataTable>
     </div>
 
@@ -8223,7 +8228,7 @@ union all
 <DataTable data={numbers_othercol}>
   <Column id=name/>
   <Column id=scale_defining_number fontColor={['green','red']}/>
-  <Column id=number contentType=colorscale scaleColor={['#6db678','white','#ce5050']} scaleColumn=scale_defining_number fmtCol=fmt/>
+  <Column id=number contentType=colorscale colorScale={['#6db678','white','#ce5050']} scaleColumn=scale_defining_number fmtCol=fmt/>
 </DataTable>
 ```
 </DocTab>
@@ -8695,7 +8700,7 @@ limit 25
 
 <DocTab>
     <div slot='preview'>
-        <DataTable data={orders} groupBy=category groupType=section subtotals=true totalRow=true totalRowColor=#fff0cc> 
+        <DataTable data={orders} groupBy=category groupType=section subtotals=true totalRow=true totalRowColor="rgba(255, 240, 204, 0.5)"> 
              <Column id=state totalAgg=countDistinct totalFmt='[=1]0 "state";0 "states"'/> 
             <Column id=category totalAgg=Total/> 
             <Column id=item  totalAgg=countDistinct totalFmt='0 "items"'/> 
@@ -8706,7 +8711,7 @@ limit 25
     </div>
 
 ```svelte
-<DataTable data={orders} groupBy=category groupType=section subtotals=true totalRow=true totalRowColor=#fff0cc> 
+<DataTable data={orders} groupBy=category groupType=section subtotals=true totalRow=true totalRowColor="rgba(255, 240, 204, 0.5)"> 
  	<Column id=state totalAgg=countDistinct totalFmt='[=1]0 "state";0 "states"'/> 
 	<Column id=category totalAgg=Total/> 
 	<Column id=item  totalAgg=countDistinct totalFmt='0 "items"'/> 
@@ -8753,7 +8758,7 @@ SELECT 'Brazil', 'South America', 1609, 0.032, 0.1375, 0.1007, 0.091, -4.5, 80.2
           <Column id=country totalAgg=countDistinct totalFmt='0 "countries"'/>
           <Column id=gdp_usd totalAgg=sum fmt='$#,##0"B"' totalFmt='$#,##0.0,"T"' colGroup="GDP"/>
           <Column id=gdp_growth totalAgg=weightedMean weightCol=gdp_usd fmt='pct1' colGroup="GDP" contentType=delta/>
-          <Column id=jobless_rate totalAgg=weightedMean weightCol=gdp_usd fmt='pct1' contentType=colorscale scaleColor=red colGroup="Labour Market"/>
+          <Column id=jobless_rate totalAgg=weightedMean weightCol=gdp_usd fmt='pct1' contentType=colorscale colorScale=negative colGroup="Labour Market"/>
           <Column id=population totalAgg=sum fmt='#,##0"M"' totalFmt='#,##0.0,"B"' colGroup="Labour Market"/>
           <Column id=interest_rate totalAgg=weightedMean weightCol=gdp_usd fmt='pct2' wrapTitle=false colGroup="Other"/>
           <Column id=inflation_rate totalAgg=weightedMean weightCol=gdp_usd fmt='pct2' colGroup="Other"/>
@@ -8768,7 +8773,7 @@ SELECT 'Brazil', 'South America', 1609, 0.032, 0.1375, 0.1007, 0.091, -4.5, 80.2
   <Column id=country totalAgg=countDistinct totalFmt='0 "countries"'/>
   <Column id=gdp_usd totalAgg=sum fmt='$#,##0"B"' totalFmt='$#,##0.0,"T"' colGroup="GDP"/>
   <Column id=gdp_growth totalAgg=weightedMean weightCol=gdp_usd fmt='pct1' colGroup="GDP" contentType=delta/>
-  <Column id=jobless_rate totalAgg=weightedMean weightCol=gdp_usd fmt='pct1' contentType=colorscale scaleColor=red colGroup="Labour Market"/>
+  <Column id=jobless_rate totalAgg=weightedMean weightCol=gdp_usd fmt='pct1' contentType=colorscale colorScale=negative colGroup="Labour Market"/>
   <Column id=population totalAgg=sum fmt='#,##0"M"' totalFmt='#,##0.0,"B"' colGroup="Labour Market"/>
   <Column id=interest_rate totalAgg=weightedMean weightCol=gdp_usd fmt='pct2' wrapTitle=false colGroup="Other"/>
   <Column id=inflation_rate totalAgg=weightedMean weightCol=gdp_usd fmt='pct2' colGroup="Other"/>
@@ -9425,8 +9430,7 @@ Background color for bar chart
 `contentType=colorscale`
 
 <PropListing
-    name=scaleColor
-    options={['green', 'blue', 'red', 'Hex color code', 'css color name']}
+    name=colorScale
     defaultValue="green"
 >
 
@@ -9465,7 +9469,7 @@ Set a maximum for the scale. Any values above that maximum will appear in the hi
     options="array of numbers"
 >
 
-Array of numbers to use as breakpoints for each color in your color scale. Should line up with the colors you provide in `scaleColor`
+Array of numbers to use as breakpoints for each color in your color scale. Should line up with the colors you provide in `colorScale`
 
 </PropListing>
 
@@ -10544,11 +10548,18 @@ select 0.366 as positive, -0.366 as negative
 
 ### Value Types
 
+#### Positive & Negative
+
+<Delta data={growth} column=positive fmt=pct1 />
+
+<Delta data={growth} column=negative fmt=pct1 />
+
 ```markdown
 <Delta data={sales} column=growth fmt=pct1 />
 ```
 
-#### Positive
+#### Neutral
+<Delta data={growth} column=positive fmt=pct1 neutralMin=0 neutralMax=0.4/>
 
 <DocTab>
     <div slot='preview'>
@@ -10587,11 +10598,17 @@ select 0.366 as positive, -0.366 as negative
 
 ### Chips
 
-```html
+#### Positive & Negative
+
+<Delta data={growth} column=positive fmt=pct1 chip=true />
+
+<Delta data={growth} column=negative fmt=pct1 chip=true />
+
+```markdown
 <Delta data={sales} column=growth fmt=pct1 chip=true />
 ```
 
-#### Positive
+#### Neutral
 
 <DocTab>
     <div slot='preview'>
@@ -12524,7 +12541,7 @@ queries:
 </DocTab>
 
 
-### Custom Color Palette
+### Custom Color Scale
 
 <DocTab>
     <div slot='preview'>
@@ -12532,7 +12549,10 @@ queries:
             data={orders_by_day_2021}
             date=day
             value=sales
-            colorPalette={['navy', 'lightyellow', 'purple']}
+            colorScale={[
+                ['rgb(254,234,159)', 'rgb(254,234,159)'],
+                ['rgb(218,66,41)', 'rgb(218,66,41)']
+            ]}
         />
     </div>
 
@@ -12541,7 +12561,10 @@ queries:
     data={orders_by_day_2021}
     date=day
     value=sales
-    colorPalette={['navy', 'lightyellow', 'purple']}
+    colorScale={[
+        ['rgb(254,234,159)', 'rgb(254,234,159)'],
+        ['rgb(218,66,41)', 'rgb(218,66,41)']
+    ]}
 />
 ```
 </DocTab>
@@ -12619,9 +12642,9 @@ queries:
 ### Formatting & Styling
 
 <PropListing 
-    name="colorPalette"
+    name="colorScale"
     description="Array of colors to form the gradient for the heatmap. Remember to wrap your array in curly braces."
-    options="array of color codes - e.g., {`colorPalette={['navy', 'white', '#c9c9c9']}`}"
+    options="array of color codes - e.g., {`colorScale={['navy', 'white', '#c9c9c9']}`}"
 />
 <PropListing 
     name="valueFmt"
@@ -12981,7 +13004,7 @@ queries:
 
 ### Color Scales
 
-`colorScale=blue`
+`colorScale=info`
 
 <DocTab>
     <div slot='preview'>
@@ -12989,7 +13012,7 @@ queries:
             data={state_population}
             state=state_name
             value=population
-            colorScale=blue
+            colorScale=info
         />
     </div>
 
@@ -12998,12 +13021,12 @@ queries:
     data={state_population}
     state=state_name
     value=population
-    colorScale=blue
+    colorScale=info
 />
 ````
 </DocTab>
 
-`colorScale=green`
+`colorScale=positive`
 
 <DocTab>
     <div slot='preview'>
@@ -13011,7 +13034,7 @@ queries:
             data={state_population}
             state=state_name
             value=population
-            colorScale=green
+            colorScale=positive
         />
     </div>
 
@@ -13020,12 +13043,12 @@ queries:
     data={state_population}
     state=state_name
     value=population
-    colorScale=green
+    colorScale=positive
 />
 ````
 </DocTab>
 
-`colorScale=red`
+`colorScale=negative`
 
 <DocTab>
     <div slot='preview'>
@@ -13033,7 +13056,7 @@ queries:
             data={state_population}
             state=state_name
             value=population
-            colorScale=red
+            colorScale=negative
         />
     </div>
 
@@ -13042,29 +13065,7 @@ queries:
     data={state_population}
     state=state_name
     value=population
-    colorScale=red
-/>
-````
-</DocTab>
-
-`colorScale=bluegreen`
-
-<DocTab>
-    <div slot='preview'>
-        <USMap
-            data={state_population}
-            state=state_name
-            value=population
-            colorScale=bluegreen
-        />
-    </div>
-
-````html
-<USMap
-    data={state_population}
-    state=state_name
-    value=population
-    colorScale=bluegreen
+    colorScale=negative
 />
 ````
 </DocTab>
@@ -13077,7 +13078,7 @@ queries:
             data={state_population}
             state=state_name
             value=population
-            colorPalette={['maroon','white','#1c0d80']}
+            colorScale={['maroon','white','#1c0d80']}
             legend=true
         />
     </div>
@@ -13087,7 +13088,7 @@ queries:
     data={state_population}
     state=state_name
     value=population
-    colorPalette={['maroon','white','#1c0d80']}
+    colorScale={['maroon','white','#1c0d80']}
     legend=true
 />
 ```
@@ -13129,7 +13130,7 @@ queries:
             data={state_population}
             state=state_name
             value=population
-            colorPalette={['maroon','white','#1c0d80']}
+            colorScale={['maroon','white','#1c0d80']}
             legend=true
             filter=true
         />
@@ -13140,7 +13141,7 @@ queries:
     data={state_population}
     state=state_name
     value=population
-    colorPalette={['maroon','white','#1c0d80']}
+    colorScale={['maroon','white','#1c0d80']}
     legend=true
     filter=true
 />
@@ -13223,8 +13224,7 @@ Column to be used as the value determining the colour of each state
 </PropListing>
 <PropListing
     name="colorScale"
-    options={['blue','green','red','bluegreen']}
-    defaultValue='blue'
+    defaultValue='info'
 >
 
 Colour scale to be used. To use a custom color palette, see the `colorPalette` prop
@@ -15374,9 +15374,9 @@ Evidence currently offers 4 types of annotations, which can be defined inline or
 <DocTab>
     <div slot='preview'>
         <LineChart data={orders_by_month} x=month y=sales yFmt=usd0>
-            <ReferenceLine y=7500 label="Reference Line" hideValue labelPosition="aboveStart" color=green/>
-            <ReferenceArea xMin='2020-03-14' xMax='2020-08-15' label="Reference Area" color=yellow/>
-            <ReferencePoint x="2019-07-01" y=6590 label="Reference Point" labelPosition=bottom color=red/>
+            <ReferenceLine y=7500 label="Reference Line" hideValue labelPosition="aboveStart" color=positive/>
+            <ReferenceArea xMin='2020-03-14' xMax='2020-08-15' label="Reference Area" color=warning/>
+            <ReferencePoint x="2019-07-01" y=6590 label="Reference Point" labelPosition=bottom color=negative/>
             <Callout x="2021-05-01" y=11012 labelPosition=bottom labelWidth=fit>
                 Callout
                 Data trending up here
@@ -15386,9 +15386,9 @@ Evidence currently offers 4 types of annotations, which can be defined inline or
 
 ```html
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0>
-    <ReferenceLine y=7500 label="Reference Line" hideValue labelPosition="aboveStart" color=green/>
-    <ReferenceArea xMin='2020-03-14' xMax='2020-08-15' label="Reference Area" color=yellow/>
-    <ReferencePoint x="2019-07-01" y=6590 label="Reference Point" labelPosition=bottom color=red/>
+    <ReferenceLine y=7500 label="Reference Line" hideValue labelPosition="aboveStart" color=positive/>
+    <ReferenceArea xMin='2020-03-14' xMax='2020-08-15' label="Reference Area" color=warning/>
+    <ReferencePoint x="2019-07-01" y=6590 label="Reference Point" labelPosition=bottom color=negative/>
     <Callout x="2021-05-01" y=11012 labelPosition=bottom labelWidth=fit>
         Callout
         Data trending up here
@@ -15529,7 +15529,7 @@ GROUP BY slope, intercept, r_squared
 <DocTab>
     <div slot='preview'>
         <ScatterPlot data={orders_by_state} x=sales y=num_orders xMin=0 yMin=0 xFmt=usd>
-            <ReferenceLine data={regression} x=x y=y x2=x2 y2=y2 label=label color=grey lineType=solid/>
+            <ReferenceLine data={regression} x=x y=y x2=x2 y2=y2 label=label color=base-content-muted lineType=solid/>
         </ScatterPlot>
     </div>
 
@@ -15540,7 +15540,7 @@ GROUP BY slope, intercept, r_squared
 
 ```html
 <ScatterPlot data={orders_by_state} x=sales y=num_orders xMin=0 yMin=0>
-    <ReferenceLine data={regression} x=x y=y x2=x2 y2=y2 label=label color=grey lineType=solid/>
+    <ReferenceLine data={regression} x=x y=y x2=x2 y2=y2 label=label color=base-content-muted lineType=solid/>
 </ScatterPlot>
 ```
 
@@ -15592,13 +15592,13 @@ GROUP BY slope, intercept, r_squared
 <DocTab>
     <div slot='preview'> 
         <LineChart data={orders_by_month} x=month y=sales yFmt=usd0 yAxisTitle="Sales per Month">
-            <ReferenceLine y=11000 color=red hideValue=true lineWidth=3 lineType=solid/>
+            <ReferenceLine y=11000 color=negative hideValue=true lineWidth=3 lineType=solid/>
         </LineChart>
     </div>
 
 ```html
 <LineChart data={orders_by_month} x=month y=sales_usd0k yAxisTitle="Sales per Month">
-    <ReferenceLine y=110000 color=red hideValue=true lineWidth=3 lineType=solid/>
+    <ReferenceLine y=110000 color=negative hideValue=true lineWidth=3 lineType=solid/>
 </LineChart>
 ```
 </DocTab>
@@ -15635,22 +15635,22 @@ GROUP BY slope, intercept, r_squared
 <DocTab>
     <div slot='preview'>
         <LineChart data={orders_by_month} x=month y=sales yFmt=usd0k yAxisTitle="Sales per Month">
-            <ReferenceLine y=1500 color=red label=red/>
-            <ReferenceLine y=3500 color=yellow label=yellow/>
-            <ReferenceLine y=5500 color=green label=green/>
-            <ReferenceLine y=7500 color=blue label=blue/>
-            <ReferenceLine y=9500 color=grey label=grey/>
+            <ReferenceLine y=1500 color=negative label=negative/>
+            <ReferenceLine y=3500 color=warning label=warning/>
+            <ReferenceLine y=5500 color=positive label=positive/>
+            <ReferenceLine y=7500 color=info label=info/>
+            <ReferenceLine y=9500 color=base-content-muted label=base-content-muted/>
             <ReferenceLine y=11500 color=#63178f label=custom/>
         </LineChart>
     </div>
 
 ```html
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0k yAxisTitle="Sales per Month">
-    <ReferenceLine y=1500 color=red label=red/>
-    <ReferenceLine y=3500 color=yellow label=yellow/>
-    <ReferenceLine y=5500 color=green label=green/>
-    <ReferenceLine y=7500 color=blue label=blue/>
-    <ReferenceLine y=9500 color=grey label=grey/>
+    <ReferenceLine y=1500 color=negative label=negative/>
+    <ReferenceLine y=3500 color=warning label=warning/>
+    <ReferenceLine y=5500 color=positive label=positive/>
+    <ReferenceLine y=7500 color=info label=info/>
+    <ReferenceLine y=9500 color=base-content-muted label=base-content-muted/>
     <ReferenceLine y=11500 color=#63178f label=custom/>
 </LineChart>
 ```
@@ -15910,13 +15910,13 @@ When a dataset is provided, `ReferenceArea` can generate multiple areas - one fo
 ### X-axis Defined Inline
 
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0 yAxisTitle="Sales per Month">
-    <ReferenceArea xMin='2020-03-14' xMax='2020-08-15' label=First color=yellow/>
+    <ReferenceArea xMin='2020-03-14' xMax='2020-08-15' label=First color=warning/>
     <ReferenceArea xMin='2021-03-14' xMax='2021-08-15' label=Second/>
 </LineChart>
 
 ```html
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0 yAxisTitle="Sales per Month">
-    <ReferenceArea xMin='2020-03-14' xMax='2020-08-15' label=First color=yellow/>
+    <ReferenceArea xMin='2020-03-14' xMax='2020-08-15' label=First color=warning/>
     <ReferenceArea xMin='2021-03-14' xMax='2021-08-15' label=Second/>
 </LineChart>
 ```
@@ -15924,16 +15924,16 @@ When a dataset is provided, `ReferenceArea` can generate multiple areas - one fo
 ### Y-axis Defined Inline
 
 <LineChart data={orders_by_month} x=month y=num_orders yAxisTitle="Orders per Month">
-    <ReferenceArea yMin=250 color=green label="Good"/>
-    <ReferenceArea yMin=100 yMax=250 color=yellow label="Okay"/>
-    <ReferenceArea yMin=0 yMax=100 color=red label="Bad"/>
+    <ReferenceArea yMin=250 color=positive label="Good"/>
+    <ReferenceArea yMin=100 yMax=250 color=warning label="Okay"/>
+    <ReferenceArea yMin=0 yMax=100 color=negative label="Bad"/>
 </LineChart>
 
 ```html
 <LineChart data={orders_by_month} x=month y=num_orders yAxisTitle="Orders per Month">
-    <ReferenceArea yMin=250 color=green label="Good"/>
-    <ReferenceArea yMin=100 yMax=250 color=yellow label="Okay"/>
-    <ReferenceArea yMin=0 yMax=100 color=red label="Bad"/>
+    <ReferenceArea yMin=250 color=positive label="Good"/>
+    <ReferenceArea yMin=100 yMax=250 color=warning label="Okay"/>
+    <ReferenceArea yMin=0 yMax=100 color=negative label="Bad"/>
 </LineChart>
 ```
 
@@ -15973,35 +15973,35 @@ On a continous x-axis (dates or numbers), the reference area will start and stop
 
 ```html
 <ScatterPlot data={countries} x=gdp_usd y=gdp_growth_pct1 tooltipTitle=country series=continent>
-    <ReferenceArea xMin=16000 xMax=24000 yMin=-0.03 yMax=0.055 label="Large and stagnant" color=grey border=true/>
+    <ReferenceArea xMin=16000 xMax=24000 yMin=-0.03 yMax=0.055 label="Large and stagnant" color=base-content-muted border=true/>
 </ScatterPlot>
 ```
 
 ### Labels
 
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=topLeft labelPosition=topLeft/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=top labelPosition=top/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=topRight labelPosition=topRight/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=left labelPosition=left/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=center labelPosition=center/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=right labelPosition=right/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottomLeft labelPosition=bottomLeft/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottom labelPosition=bottom/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottomRight labelPosition=bottomRight/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=topLeft labelPosition=topLeft areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=top labelPosition=top areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=topRight labelPosition=topRight areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=left labelPosition=left areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=center labelPosition=center areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=right labelPosition=right areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottomLeft labelPosition=bottomLeft areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottom labelPosition=bottom areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottomRight labelPosition=bottomRight areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
 </LineChart>
 
 ```html
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=topLeft labelPosition=topLeft/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=top labelPosition=top/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=topRight labelPosition=topRight/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=left labelPosition=left/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=center labelPosition=center/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=right labelPosition=right/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottomLeft labelPosition=bottomLeft/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottom labelPosition=bottom/>
-    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottomRight labelPosition=bottomRight/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=topLeft labelPosition=topLeft areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=top labelPosition=top areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=topRight labelPosition=topRight areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=left labelPosition=left areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=center labelPosition=center areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=right labelPosition=right areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottomLeft labelPosition=bottomLeft areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottom labelPosition=bottom areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
+    <ReferenceArea xMin='2019-07-01' xMax='2021-07-31' label=bottomRight labelPosition=bottomRight areaColor="hsla(206.25, 80%, 80%, 0.01)"/>
 </LineChart>
 ```
 
@@ -16011,21 +16011,21 @@ Reference areas appear behind chart gridlines, including reference area labels. 
 ### Colours
 
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0 >
-    <ReferenceArea xMax='2019-04-01' label=blue color=blue/>
-    <ReferenceArea xMin='2019-04-01' xMax='2019-11-01' label=red color=red/>
-    <ReferenceArea xMin='2019-11-01' xMax='2020-07-01' label=yellow color=yellow/>
-    <ReferenceArea xMin='2020-07-01' xMax='2021-02-01' label=green color=green/>
-    <ReferenceArea xMin='2021-02-01' xMax='2021-09-01' label=grey color=grey/>
+    <ReferenceArea xMax='2019-04-01' label=info color=info/>
+    <ReferenceArea xMin='2019-04-01' xMax='2019-11-01' label=negative color=negative/>
+    <ReferenceArea xMin='2019-11-01' xMax='2020-07-01' label=warning color=warning/>
+    <ReferenceArea xMin='2020-07-01' xMax='2021-02-01' label=positive color=positive/>
+    <ReferenceArea xMin='2021-02-01' xMax='2021-09-01' label=base-content-muted color=base-content-muted/>
     <ReferenceArea xMin='2021-09-01' label=custom color=#f2dbff labelColor=#4d1070/>
 </LineChart>
 
 ```html
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0 >
-    <ReferenceArea xMax='2019-04-01' label=blue color=blue/>
-    <ReferenceArea xMin='2019-04-01' xMax='2019-11-01' label=red color=red/>
-    <ReferenceArea xMin='2019-11-01' xMax='2020-07-01' label=yellow color=yellow/>
-    <ReferenceArea xMin='2020-07-01' xMax='2021-02-01' label=green color=green/>
-    <ReferenceArea xMin='2021-02-01' xMax='2021-09-01' label=grey color=grey/>
+    <ReferenceArea xMax='2019-04-01' label=info color=info/>
+    <ReferenceArea xMin='2019-04-01' xMax='2019-11-01' label=negative color=negative/>
+    <ReferenceArea xMin='2019-11-01' xMax='2020-07-01' label=warning color=warning/>
+    <ReferenceArea xMin='2020-07-01' xMax='2021-02-01' label=positive color=positive/>
+    <ReferenceArea xMin='2021-02-01' xMax='2021-09-01' label=base-content-muted color=base-content-muted/>
     <ReferenceArea xMin='2021-09-01' label=custom color=#f2dbff labelColor=#4d1070/>
 </LineChart>
 ```
@@ -16270,10 +16270,10 @@ where sales_diff < -2000
         y=6590
         label="2019-07-01 : Big drop"
         labelPosition=right
-        color=red
+        color=negative
         symbolSize=16
         symbolBorderWidth=1
-        symbolBorderColor=red
+        symbolBorderColor=negative
         symbolOpacity=0.25
     />
 </LineChart>
@@ -16285,10 +16285,10 @@ where sales_diff < -2000
         y=6590
         label="2019-07-01 : Big drop"
         labelPosition=right
-        color=red
+        color=negative
         symbolSize=16
         symbolBorderWidth=1
-        symbolBorderColor=red
+        symbolBorderColor=negative
         symbolOpacity=0.25
     />
 </LineChart>
@@ -16335,21 +16335,21 @@ where sales_diff < -2000
 ### Colours
 
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0>
-    <ReferencePoint x="2019-03-01" y=3000 color=blue label=blue />
-    <ReferencePoint x="2019-09-01" y=3000 color=red label=red />
-    <ReferencePoint x="2020-03-01" y=3000 color=yellow label=yellow />
-    <ReferencePoint x="2020-09-01" y=3000 color=green label=green />
-    <ReferencePoint x="2021-03-01" y=3000 color=grey label=grey />
+    <ReferencePoint x="2019-03-01" y=3000 color=info label=info />
+    <ReferencePoint x="2019-09-01" y=3000 color=negative label=negative />
+    <ReferencePoint x="2020-03-01" y=3000 color=warning label=warning />
+    <ReferencePoint x="2020-09-01" y=3000 color=positive label=positive />
+    <ReferencePoint x="2021-03-01" y=3000 color=base-content-muted label=base-content-muted />
     <ReferencePoint x="2021-09-01" y=3000 color=#63178f label=custom />
 </LineChart>
 
 ```html
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0>
-    <ReferencePoint x="2019-03-01" y=3000 color=blue label=blue />
-    <ReferencePoint x="2019-09-01" y=3000 color=red label=red />
-    <ReferencePoint x="2020-03-01" y=3000 color=yellow label=yellow />
-    <ReferencePoint x="2020-09-01" y=3000 color=green label=green />
-    <ReferencePoint x="2021-03-01" y=3000 color=grey label=grey />
+    <ReferencePoint x="2019-03-01" y=3000 color=info label=info />
+    <ReferencePoint x="2019-09-01" y=3000 color=negative label=negative />
+    <ReferencePoint x="2020-03-01" y=3000 color=warning label=warning />
+    <ReferencePoint x="2020-09-01" y=3000 color=positive label=positive />
+    <ReferencePoint x="2021-03-01" y=3000 color=base-content-muted label=base-content-muted />
     <ReferencePoint x="2021-09-01" y=3000 color=#63178f label=custom />
 </LineChart>
 ```
@@ -16572,10 +16572,10 @@ where sales_diff < -2000
         y=6590
         label="Sales really dropped here"
         labelPosition=right
-        color=red
+        color=negative
         symbolSize=16
         symbolBorderWidth=1
-        symbolBorderColor=red
+        symbolBorderColor=negative
         symbolOpacity=0.25
     />
 </LineChart>
@@ -16587,10 +16587,10 @@ where sales_diff < -2000
         y=6590
         label="Sales really dropped here"
         labelPosition=right
-        color=red
+        color=negative
         symbolSize=16
         symbolBorderWidth=1
-        symbolBorderColor=red
+        symbolBorderColor=negative
         symbolOpacity=0.25
     />
 </LineChart>
@@ -16639,21 +16639,21 @@ where sales_diff < -2000
 ### Colours
 
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0>
-    <Callout x="2019-03-01" y=3000 color=blue label=blue />
-    <Callout x="2019-09-01" y=3000 color=red label=red />
-    <Callout x="2020-03-01" y=3000 color=yellow label=yellow />
-    <Callout x="2020-09-01" y=3000 color=green label=green />
-    <Callout x="2021-03-01" y=3000 color=grey label=grey />
+    <Callout x="2019-03-01" y=3000 color=info label=info />
+    <Callout x="2019-09-01" y=3000 color=negative label=negative />
+    <Callout x="2020-03-01" y=3000 color=warning label=warning />
+    <Callout x="2020-09-01" y=3000 color=positive label=positive />
+    <Callout x="2021-03-01" y=3000 color=base-content-muted label=base-content-muted />
     <Callout x="2021-09-01" y=3000 color=#63178f label=custom />
 </LineChart>
 
 ```html
 <LineChart data={orders_by_month} x=month y=sales yFmt=usd0>
-    <Callout x="2019-03-01" y=3000 color=blue label=blue />
-    <Callout x="2019-09-01" y=3000 color=red label=red />
-    <Callout x="2020-03-01" y=3000 color=yellow label=yellow />
-    <Callout x="2020-09-01" y=3000 color=green label=green />
-    <Callout x="2021-03-01" y=3000 color=grey label=grey />
+    <Callout x="2019-03-01" y=3000 color=info label=info />
+    <Callout x="2019-09-01" y=3000 color=negative label=negative />
+    <Callout x="2020-03-01" y=3000 color=warning label=warning />
+    <Callout x="2020-09-01" y=3000 color=positive label=positive />
+    <Callout x="2021-03-01" y=3000 color=base-content-muted label=base-content-muted />
     <Callout x="2021-09-01" y=3000 color=#63178f label=custom />
 </LineChart>
 ```
@@ -17526,7 +17526,12 @@ group by state
             value=sales
             valueFmt=usd
             height=250
-            colorPalette={['yellow','orange','red','darkred']}
+            colorPalette={[
+                ['yellow', 'yellow'],
+                ['orange', 'orange'],
+                ['red', 'red'],
+                ['darkred', 'darkred'],
+            ]}
         />
     </div>
 
@@ -17539,7 +17544,12 @@ group by state
     value=sales
     valueFmt=usd
     height=250
-    colorPalette={['yellow','orange','red','darkred']}
+    colorPalette={[
+        ['yellow', 'yellow'],
+        ['orange', 'orange'],
+        ['red', 'red'],
+        ['darkred', 'darkred'],
+    ]}
 />
 ```
 </DocTab>
@@ -20420,6 +20430,549 @@ If you need help with connecting to your data, please feel free to [send us a me
 
 
 ---
+evidence/sites/docs/pages/core-concepts/themes/index.md
+---
+---
+sidebar_position: 10
+hide_table_of_contents: false
+title: Themes
+description: Customize the appearance of your Evidence application in light and dark mode using the theming system.
+sidebar_badge: New
+---
+
+Customize the appearance of your Evidence application in light and dark mode.
+
+# Appearance Modes
+
+Evidence supports three appearance modes: light, dark, and system. By default, new Evidence apps use the system mode and allow users to switch to light or dark via the appearance switcher.
+
+When the appearance is `system`, the user's preferred appearance from their operating system is used.
+
+The default appearance configuration is listed below, as well as in the [Evidence Template](https://github.com/evidence-dev/templates/blob/main/evidence.config.yaml).
+
+<div id="default-appearance-configuration" class="block relative -top-16 invisible"></div>
+<Details title='Default appearance configuration'>
+
+```yaml
+appearance:
+    default: system
+    switcher: true
+```
+
+</Details>
+
+## Options
+
+<PropListing
+    name="default"
+    description="The default appearance mode."
+    options={['dark', 'light', 'system']}
+    defaultValue="light"
+/>
+<PropListing
+    name="switcher"
+    description="Shows/hides the appearance switcher in the kebab menu in the top right which allows users to switch the appearance of your application between light and dark mode."
+    options={['true', 'false']}
+    defaultValue="false"
+/>
+
+## Migration
+
+To enable dark mode in an Evidence application created before themes was released, add the the following to your `evidence.config.yaml`:
+
+```yaml
+appearance:
+    default: system
+    switcher: true
+```
+
+
+
+# Theme
+
+The theme configuration defines the colors used by your app.
+
+The theme consists of 3 elements that define colors for different purposes:
+
+- [Color palettes](#color-palettes) configure colors for charts with different data series (e.g. [Bar Charts](/components/bar-chart/#props-colorPalette)).
+- [Color scales](#color-scales) configure color ranges for charts with continuous data (e.g. [Heatmaps](/components/heatmap/#props-colorScale)).
+- [Colors](#colors) configure colors of UI elements (e.g. background, text, inputs).
+
+You can pass any valid CSS color values to these properties (hexadecimal, RGB, HSL, named CSS colors, etc).
+
+The default theme configuration is listed below, as well as in the [Evidence Template](https://github.com/evidence-dev/templates/blob/main/evidence.config.yaml).
+
+<div id="default-theme-configuration" class="block relative -top-16 invisible"></div>
+<Details title='Default theme configuration'>
+
+```yaml
+theme:
+    colorPalettes:
+        default:
+            light:
+                - "#236aa4"
+                - "#45a1bf"
+                - "#a5cdee"
+                - "#8dacbf"
+                - "#85c7c6"
+                - "#d2c6ac"
+                - "#f4b548"
+                - "#8f3d56"
+                - "#71b9f4"
+                - "#46a485"
+            dark:
+                - "#236aa4"
+                - "#45a1bf"
+                - "#a5cdee"
+                - "#8dacbf"
+                - "#85c7c6"
+                - "#d2c6ac"
+                - "#f4b548"
+                - "#8f3d56"
+                - "#71b9f4"
+                - "#46a485"
+    colorScales:
+        default:
+            light:
+                - "#ADD8E6"
+                - "#00008B"
+            dark:
+                - "#ADD8E6"
+                - "#00008B"
+    colors:
+        primary:
+            light: "#2563eb"
+            dark: "#3b82f6"
+        accent:
+            light: "#c2410c"
+            dark: "#fdba74"
+        base:
+            light: "#ffffff"
+            dark: "#09090b"
+        info:
+            light: "#0284c7"
+            dark: "#38bdf8"
+        positive:
+            light: "#16a34a"
+            dark: "#4ade80"
+        warning:
+            light: "#f8c900"
+            dark: "#fbbf24"
+        negative:
+            light: "#dc2626"
+            dark: "#f87171"
+```
+
+</Details>
+
+## Color Palettes
+
+You can modify the default chart color palette, or create a custom palette for individual charts via their `colorPalette` prop.
+
+Color palettes can have any number of colors listed. If a chart has more series than there are colors in a color palette, the colors will be reused.
+
+### Default Color Palette
+
+The `default` color palette is used by all series-based charts (e.g. [Bar Charts](/components/bar-chart/#props-colorPalette), [Line Charts](/components/line-chart/#props-colorPalette)).
+
+You can configure the default color palette for light and dark mode individually (different colors for each):
+
+```yaml
+theme:
+    colorPalettes:
+        default:
+            light:
+                - "#1d4ed8"
+                - "#0f766e"
+                - "#a16207"
+                - "#c2410c"
+                - "#7e22ce"
+            dark:
+                - "#93c5fd"
+                - "#5eead4"
+                - "#fde047"
+                - "#fdba74"
+                - "#d8b4fe"
+```
+
+...or together (same colors for both):
+
+```yaml
+theme:
+    colorPalettes:
+        default:
+            - "#3b82f6"
+            - "#14b8a6"
+            - "#eab308"
+            - "#f97316"
+            - "#a855f7"
+```
+
+
+### Custom Color Palettes
+
+You can define your own custom color palettes in the same way, just replace `default` with your color palette's name:
+
+```yaml
+theme:
+    colorPalettes:
+        myCustomPalette:
+            light:
+                - "#e11d48"
+                - "#be185d"
+                - "#6d28d9"
+            dark:
+                - "#fb7185"
+                - "#f9a8d4"
+                - "#c4b5fd"
+```
+
+Then use it in the `colorPalette` prop
+
+```markdown
+<BarChart 
+    data={my_data}
+    colorPalette=myCustomPalette
+/>
+```
+
+### Props
+
+The `colorPalette` prop accepted by many components accepts a color palette in several different formats to reduce the friction of theming your app.
+
+1. **Use a color palette name from your theme.** Its configured light and dark values will be used.
+    ```markdown
+    <BarChart 
+        data={my_data}
+        colorPalette=myColorPalette
+    />
+    ```
+
+2. **Use a list of color names from your theme.** Their configured light and dark values will be used.
+    ```markdown
+    <BarChart
+        data={my_data}
+        colorPalette={[
+            'primary',
+            'accent',
+            'myCustomColor',
+        ]}
+    />
+    ```
+
+3. **Use a list of colors (e.g. hex codes).** They will be automatically converted to similar colors for dark mode.
+    ```markdown
+    <BarChart
+        data={my_data}
+        colorPalette={[
+            "#3b82f6",
+            "#14b8a6",
+            "#eab308",
+            "#f97316",
+            "#a855f7",
+        ]}
+    />
+    ```
+
+4. **Use a list of pairs of colors** to explicitly define light and dark mode values. The first column will be used when your application is in light mode, and the second when its in dark mode.
+    ```markdown
+    <BarChart
+        data={my_data}
+        colorPalette={[
+            ["#1d4ed8", "#93c5fd"],
+            ["#0f766e", "#5eead4"],
+            ["#a16207", "#fde047"],
+            ["#c2410c", "#fdba74"],
+            ["#7e22ce", "#d8b4fe"],
+        ]}
+    />
+    ```
+
+## Color Scales
+
+You can modify the default chart color palette, or create a custom palette for individual charts via their `colorScale` prop.
+
+Color scales can have any number of colors listed. The colors will be blended into a gradient for values to interpolate from.
+
+### Default Color Scale
+
+The `default` color scale is used by charts that represent continuous data<!-- (e.g. [Heatmaps](/components/heatmap/#props-colorScale), [Area Maps](/components/area-map/#props-colorScale), [Data Tables](/components/data-table/#props-colorScale) -->.
+
+You can configure the default color palette for light and dark mode individually (different colors for each):
+
+```yaml
+theme:
+    colorScales:
+        default:
+            light:
+                - "#0d9488"
+                - "#4f46e5"
+            dark:
+                - "#5eead4"
+                - "#a5b4fc"
+```
+
+...or together (same colors for both):
+
+```yaml
+theme:
+    colorScales:
+        default:
+            - "#eab308"
+            - "#22c55e"
+```
+
+### Custom Color Scales
+
+You can define your own custom color scales in the same way, just replace `default` with your color scale's name:
+
+```yaml
+theme:
+    colorScales:
+        myCustomScale:
+            light:
+                - "#f97316"
+                - "#ef4444"
+            dark:
+                - "#fdba74"
+                - "#fb7185"
+```
+
+Then use it in the `colorScale` prop
+
+```markdown
+<DataTable data={country_summary}>
+    <Column id=country />
+    <Column id=value_usd contentType=colorscale colorScale=myCustomScale />
+</DataTable>
+```
+
+### Props
+
+The `colorScale` prop accepted by many components accepts a color scale in several different formats to reduce the friction of theming your app.
+
+1. **Use a color scale name from your theme.** Its configured light and dark values will be used.
+    ```markdown
+    <BarChart 
+        data={my_data}
+        colorScale=myColorScale
+    />
+    ```
+
+2. **Use a list of color names from your theme.** Their configured light and dark values will be used.
+    ```markdown
+    <BarChart
+        data={my_data}
+        colorScale={[
+            'primary',
+            'accent',
+        ]}
+    />
+    ```
+
+3. **Use a list of colors (e.g. hex codes).** They will be automatically converted to similar colors for dark mode.
+    ```markdown
+    <BarChart
+        data={my_data}
+        colorScale={["#3b82f6", "#14b8a6"]}
+    />
+    ```
+
+4. **Use a list of pairs of colors** to explicitly define light and dark mode values. The first column will be used when your application is in light mode, and the second when its in dark mode.
+    ```markdown
+    <BarChart
+        data={my_data}
+        colorScale={[
+            ["#1d4ed8", "#93c5fd"],
+            ["#0f766e", "#5eead4"],
+        ]}
+    />
+    ```
+
+## Colors
+
+Evidence uses a fixed set of color "tokens" for all UI elements in the entire application. This allows you to create a customized look and feel with only a couple lines of configuration.
+
+```sql color_tokens
+    select '<span class="font-semibold text-primary">primary</span>' as 'color', 'Represents your project/brand' as 'purpose', 'Logo color, buttons, links, DimensionGrid' as 'where-its-used' union all
+	select '<span class="font-semibold text-accent">accent</span>', 'Focuses your attention', 'Map selected state (Chart selected state coming soon!)' union all
+	select '<span class="font-semibold text-base-content">base</span>', 'The base color of your application', 'Background and text colors' union all
+	select '<span class="font-semibold text-info">info</span>', 'Provide information', 'Alerts, annotations' union all
+	select '<span class="font-semibold text-positive">positive</span>', 'Indicate something is good', 'Alerts, annotations, Delta indicator' union all
+	select '<span class="font-semibold text-warning">warning</span>', 'Warn readers', 'Alerts, annotations' union all
+	select '<span class="font-semibold text-negative">negative</span>', 'Indicate something is bad', 'Alerts, annotations, Delta indicator'
+```
+
+<DataTable data={color_tokens}>
+	<Column id=color title=Color contentType=html />
+	<Column id=purpose title=Purpose />
+	<Column id=where-its-used title="Where its used" />
+</DataTable>
+
+You can modify existing color tokens, or create your own to use in charts and other UI elements.
+
+### Overriding Colors
+
+You can override a color for light and dark mode individually (different colors for each):
+
+```yaml
+theme:
+	colors:
+		primary:
+			light: "#dc2626"
+			dark: "#f87171"
+		accent:
+			light: "#7c3aed"
+			dark: "#a78bfa"
+```
+
+...or together (same colors for both):
+
+```yaml
+theme:
+	colors:
+		primary: "#ef4444"
+		accent: "#a855f7"
+```
+
+### Defining Your Own Colors
+
+You can define your own custom colors in the same way, just replace the color name with your custom color's name:
+
+```yaml
+theme:
+	colors:
+		myColor: "#10b981"
+		myOtherColor:
+			light: "#c026d3"
+			dark: "#f472b6"
+```
+
+Then use them in component props
+
+```markdown
+<Tabs color=myColor>
+	<Tab label="Tab 1" id="tab1">Tab 1 content</Tab>
+	<Tab label="Tab 2" id="tab2">Tab 2 content</Tab>
+</Tabs>
+```
+
+```markdown
+<BarChart
+	data={my_data}
+	fillColor=myOtherColor
+/>
+```
+
+### Props
+
+The color props accepted by many components (e.g. [`fillColor`](/components/bar-chart/#props-fillColor), [`labelColor`](/components/annotations/#props-labelColor)) accept a color in several different formats to reduce the friction of theming your app.
+
+
+1. **Use a color name from your theme.** Its configured light and dark values will be used.
+    ```markdown
+    <BarChart
+        data={my_data}
+        fillColor=primary
+    />
+    ```
+
+2. **Use a single color (e.g. hex code).** It will be automatically converted to a similar color for dark mode.
+    ```markdown
+    <BarChart
+        data={my_data}
+        fillColor="#3b82f6"
+    />
+    ```
+
+3. **Use a pair of colors** to explicitly define light and dark mode values. The first color will be used when your application is in light mode, and the second when its in dark mode.
+    ```markdown
+    <BarChart
+        data={my_data}
+        fillColor={["#1d4ed8", "#93c5fd"]}
+    />
+    ```
+
+
+## Advanced
+
+The [colors listed above](/core-concepts/themes/#colors) are the bare minimum you should configure to theme your application. If you need more control, there are other colors you can customize.
+
+```sql advanced_color_tokens
+    select '<span class="p-0.5 rounded-sm font-semibold bg-primary text-primary-content">primary-content</span>' as 'color', 'Text color used on top of a primary background' as 'where-its-used', 'A readable shade of primary' as default union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-accent text-accent-content">accent-content</span>', 'Text color used on top of an accent background', 'A readable shade of accent' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-base-100">base-100</span>', 'Page background color', 'Alias of `base`' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-base-200">base-200</span>', 'Secondary page background color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-base-300">base-300</span>', 'Tertiary page background color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold text-base-content-muted">base-content-muted</span>', 'Muted text color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold text-base-content">base-content</span>', 'Body text color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold text-base-heading">base-heading</span>', 'Header text color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-info text-info-content">info-content</span>', 'Text color used on top of an info background', 'A readable shade of info' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-positive text-positive-content">positive-content</span>', 'Text color used on top of a positive background', 'A readable shade of positive' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-warning text-warning-content">warning-content</span>', 'Text color used on top of a warning background', 'A readable shade of warning' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-negative text-negative-content">negative-content</span>', 'Text color used on top of a negative background', 'A readable shade of negative'
+```
+
+<DataTable data={advanced_color_tokens} rows=12>
+	<Column id=color title=Color contentType=html />
+	<Column id=where-its-used title="Where its used" />
+	<Column id=default title=Default />
+</DataTable>
+
+These colors are included in the [Tailwind](https://tailwindcss.com) configuration for your Evidence application, so you can use them in your own HTML elements or custom Svelte components.
+
+<DocTab defaultTab=code>
+	<div slot=preview>
+		<div class="bg-primary border border-primary p-4 text-primary-content">Hello!</div>
+	</div>
+
+```markdown
+<div class="bg-primary border border-primary p-4 text-primary-content">Hello!</div>
+```
+</DocTab>
+
+## Custom Styles
+
+Evidence uses [Tailwind CSS](https://tailwindcss.com) to style Evidence components and markdown, and you can use Tailwind to add your own styles.
+
+To style with Tailwind you add *classes* to HTML elements. You can use any HTML element in your markdown.
+
+For more information on using Tailwind, see the [Tailwind documentation](https://tailwindcss.com/docs).
+
+<Alert status="info">
+
+Tailwind removes styling from HTML elements by default, so should add your own styles to `<h1/>`, `<a/>` etc. 
+
+</Alert>
+
+### Using the Evidence Default Styles in Custom HTML
+
+Adding the `markdown` class to an element will style it the same as Evidence markdown, e.g.  `<h1 class='markdown'/>`. 
+
+### Examples
+
+#### Customize Fonts
+
+<DocTab>
+	<div slot=preview>
+		This is the default text style, which is used when you write text in a markdown file.
+
+		<p class="text-red-600 italic font-serif">This red italic serif text is defined inside a HTML p (paragraph) element.</p>
+
+		<p class="font-mono text-primary mt-3">This is primary colored text using a monospace font, and a custom top margin.</p>
+	</div>
+
+```markdown
+This is the default text style, which is used when you write text in a markdown file.
+
+<p class="text-red-600 italic font-serif">This red italic serif text is defined inside a HTML p (paragraph) element.</p>
+
+<p class="font-mono text-primary mt-3">This is primary colored text using a monospace font, and a custom top margin.</p>
+```
+</DocTab>
+
+
+---
 evidence/sites/docs/pages/core-concepts/queries/index.md
 ---
 ---
@@ -22528,6 +23081,25 @@ To display data in a table, use a [Data Table](/components/data-table) instead.
 > > And can be nested
 ```
 
+> This is a blockquote
+>
+> It can span multiple lines
+>
+> > And can be nested
+
+
+## Horizontal Rule
+
+```markdown
+Below is a horizontal rule
+
+---
+```
+
+Below is a horizontal rule
+
+---
+
 ## Frontmatter
 
 <Alert status=warning>
@@ -22634,6 +23206,213 @@ This is some content in the partial.
 Evidence supports re-using chunks of Evidence markdown using Partials.
 
 Partials are placed in the `./partials` folder, and can be referenced in your markdown with `&#123;@partial "path/to/partial.md"&#125;` (do not include the `/partial` folder in the path).
+
+
+---
+evidence/sites/docs/pages/reference/layouts/index.md
+---
+---
+sidebar_position: 4
+hide_table_of_contents: false
+title: Layouts
+description: Customize the layout of your app by overwriting or modifying the default layout.
+---
+
+Customize the layout of your app by overwriting or modifying the default layout.
+
+## Custom Layout 
+
+Evidence will use any `+layout.svelte` file in the `/pages` directory to override the default layout.
+
+<Alert status=info>
+<b>Creating a Custom Layout</b>
+
+The recommended approach is to copy and edit the default layout file
+
+```bash
+cp .evidence/template/src/pages/+layout.svelte pages
+```
+
+This file can also be found in the [Evidence GitHub repo](https://github.com/evidence-dev/evidence/blob/main/sites/example-project/src/pages/+layout.svelte).
+</Alert>
+
+You can customize the `EvidenceDefaultLayout` with the options below, or replace the contents of the file with an entirely new layout. If you include a `+layout.svelte` file in a directory, markdown files in that directory (and its subdirectories) will use this layout file instead of the default layout.
+
+You can also add your own HTML elements to the default page layout.
+
+## Examples
+
+### Hide sidebar on all pages
+
+```html
+<EvidenceDefaultLayout {data} hideSidebar=true >
+	<slot slot="content" />
+</EvidenceDefaultLayout>
+```
+
+### Add a custom logo
+
+With a logo file in  `./static/my-logo.png`.
+
+```html
+<EvidenceDefaultLayout {data} logo="/my-logo.png" >
+	<slot slot="content" />
+</EvidenceDefaultLayout>
+```
+
+## Options
+
+The `EvidenceDefaultLayout` component includes a number of features on every page that can be removed or customized via props
+
+### Page Settings
+
+
+<PropListing
+    name="title"
+    options="Any string"
+    defaultValue=""
+>
+
+App title that will replace the Evidence Logo.
+
+</PropListing>
+<PropListing
+    name="logo"
+    options="/logo.png"
+    defaultValue=""
+>
+
+Link to an image which will replace the Evidence logo. This will also override any app title in the header. If the image is in your project's static directory, the link should be relative to the static directory.
+
+</PropListing>
+<PropListing
+    name="homePageName"
+    options="Any string"
+    defaultValue=Home
+>
+
+Name of the home page in the sidebar.
+
+</PropListing>
+<PropListing
+    name="fullWidth"
+    options={['true', 'false']}
+    defaultValue=false
+>
+
+Sets the width of the app content to the full width of the screen.
+
+</PropListing>
+<PropListing
+    name="maxWidth"
+    options="Any number"
+    defaultValue=""
+>
+
+Sets the width of the app content in pixels. The default layout is about 1,280 px wide.
+
+</PropListing>
+
+<PropListing
+    name="builtWithEvidence"
+    options={['true', 'false']}
+    defaultValue=false
+>
+
+Display a subtle link to the Evidence website at the bottom of the sidebar.
+
+</PropListing>
+
+### Hide Elements
+
+<PropListing
+    name="neverShowQueries"
+    options={['true', 'false']}
+    defaultValue=false
+>
+
+Removes the option to show queries when the app is deployed. Has no effect in development.
+
+</PropListing>
+<PropListing
+    name="hideSidebar"
+    options={['true', 'false']}
+    defaultValue=false
+>
+
+Hides the sidebar navigation
+
+</PropListing>
+<PropListing
+    name="hideHeader"
+    options={['true', 'false']}
+    defaultValue=false
+>
+
+Hides the page header
+
+</PropListing>
+<PropListing
+    name="hideBreadcrumbs"
+    options={['true', 'false']}
+    defaultValue=false
+>
+
+Hides the breadcrumbs which appear at the top of the page
+
+</PropListing>
+<PropListing
+    name="hideTOC"
+    options={['true', 'false']}
+    defaultValue=false
+>
+
+Hides the table of contents (on-page links at top right of page)
+
+</PropListing>
+
+### Social Links & Search
+
+<PropListing
+    name="githubRepo"
+    defaultValue='https://github.com/evidence-dev/evidence'
+>
+
+Link to a Github Repo which will appear in the header using the Github Logo
+
+</PropListing>
+<PropListing
+    name="xProfile"
+    defaultValue='https://twitter.com/evidence_dev'
+>
+
+Link to an X (Twitter) profile which will appear in the header using the X Logo
+
+</PropListing>
+<PropListing
+    name="blueskyProfile"
+    defaultValue='https://bsky.app/profile/evidence.dev'
+>
+
+Link to a Bluesky profile which will appear in the header using the Bluesky Logo
+</PropListing>
+<PropListing
+    name="slackCommunity"
+    defaultValue='https://slack.evidence.dev'
+>
+
+Link to a slack community which will appear in the header using the slack Logo
+
+</PropListing>
+<PropListing
+    name="algolia"
+    options="{`{{appId: 'xxx', apiKey: 'xxx', indexName: 'xxx'}}`}"
+    defaultValue=""
+>
+
+Object containing Algolia docsearch credentials
+
+</PropListing>
 
 
 ---
@@ -22755,304 +23534,6 @@ Free content
 
 {/if}
 ```
-
----
-evidence/sites/docs/pages/reference/themes-and-layouts/index.md
----
----
-sidebar_position: 4
-hide_table_of_contents: false
-title: Themes and Layouts
-description: Evidence supports customizing the look and feel of your app using CSS, and by overwriting or modifying the default layout.
----
-
-Evidence supports customizing the look and feel of your app using CSS, and by overwriting or modifying the default layout.
-
-## Custom Layout 
-
-To customize your, add a `+layout.svelte` file to the root of your pages directory. You can customize the `EvidenceDefaultLayout` with the options below, or replace the contents of the file with an entirely new layout. 
-
-```html
-&lt;script&gt;
-	import '@evidence-dev/tailwind/fonts.css';
-	import '../app.css';
-	import { EvidenceDefaultLayout } from '@evidence-dev/core-components';
-	export let data;
-&lt;/script&gt;
-
-<EvidenceDefaultLayout {data}>
-	<slot slot="content" />
-</EvidenceDefaultLayout>
-
-```
-
-The `EvidenceDefaultLayout` component accepts the following properties for common customizations.
-
-<PropListing
-    name="title"
-    options="Any string"
-    defaultValue=""
->
-
-App title that will replace the Evidence Logo.
-
-</PropListing>
-<PropListing
-    name="logo"
-    options="/logo.png"
-    defaultValue=""
->
-
-Link to an image which will replace the Evidence logo. This will also override any app title in the header. If the image is in your project's static directory, the link should be relative to the static directory.
-
-</PropListing>
-<PropListing
-    name="homePageName"
-    options="Any string"
-    defaultValue=Home
->
-
-Name of the home page in the sidebar.
-
-</PropListing>
-<PropListing
-    name="neverShowQueries"
-    options={['true', 'false']}
-    defaultValue=false
->
-
-Removes the option to show queries when the app is deployed. Has no effect in development.
-
-</PropListing>
-<PropListing
-    name="maxWidth"
-    options="Any number"
-    defaultValue=""
->
-
-Sets the width of the app content in pixels. The default layout is about 1,280 px wide.
-
-</PropListing>
-<PropListing
-    name="fullWidth"
-    options={['true', 'false']}
-    defaultValue=false
->
-
-Sets the width of the app content to full
-
-</PropListing>
-<PropListing
-    name="hideSidebar"
-    options={['true', 'false']}
-    defaultValue=false
->
-
-Hides the sidebar navigation
-
-</PropListing>
-<PropListing
-    name="hideHeader"
-    options={['true', 'false']}
-    defaultValue=false
->
-
-Hides the page header
-
-</PropListing>
-<PropListing
-    name="hideBreadcrumbs"
-    options={['true', 'false']}
-    defaultValue=false
->
-
-Hides the breadcrumbs which appear at the top of the page
-
-</PropListing>
-<PropListing
-    name="hideTOC"
-    options={['true', 'false']}
-    defaultValue=false
->
-
-Hides the table of contents (on-page links at top right of page)
-
-</PropListing>
-<PropListing
-    name="builtWithEvidence"
-    options={['true', 'false']}
-    defaultValue=false
->
-
-Display a subtle link to the Evidence website at the bottom of the sidebar.
-
-</PropListing>
-<PropListing
-    name="algolia"
-    options="{`{{appId: 'xxx', apiKey: 'xxx', indexName: 'xxx'}}`}"
-    defaultValue=""
->
-
-Object containing Algolia docsearch credentials
-
-</PropListing>
-<PropListing
-    name="githubRepo"
-    defaultValue='https://github.com/evidence-dev/evidence'
->
-
-Link to a Github Repo which will appear in the header using the Github Logo
-
-</PropListing>
-<PropListing
-    name="xProfile"
-    defaultValue='https://twitter.com/evidence_dev'
->
-
-Link to an X (Twitter) profile which will appear in the header using the X Logo
-
-</PropListing>
-<PropListing
-    name="blueskyProfile"
-    defaultValue='https://bsky.app/profile/evidence.dev'
->
-
-Link to a Bluesky profile which will appear in the header using the Bluesky Logo
-</PropListing>
-<PropListing
-    name="slackCommunity"
-    defaultValue='https://slack.evidence.dev'
->
-
-Link to a slack community which will appear in the header using the slack Logo
-
-</PropListing>
-
-**Example custom option:**
-```html
-<EvidenceDefaultLayout {data} hideSidebar={true}>
-	<slot slot="content" />
-</EvidenceDefaultLayout>
-```
-
-## Custom Styles
-
-Evidence uses [Tailwind CSS](https://tailwindcss.com) to style Evidence components and markdown, and you can use Tailwind to add your own styles.
-
-To style with Tailwind you add *classes* to HTML elements. You can use any HTML element in your markdown.
-
-For more information on using Tailwind, see the [Tailwind documentation](https://tailwindcss.com/docs).
-
-<Alert status="info">
-
-Tailwind removes styling from HTML elements by default, so should add your own styles to `<h1/>`, `<a/>` etc. 
-
-</Alert>
-
-### Using the Evidence Default Styles in Custom HTML
-
-Adding the `markdown` class to an element will style it the same as Evidence markdown, e.g.  `<h1 class='markdown'/>`. 
-
-### Examples
-
-#### Customize Fonts
-
-```markdown
-This is the default text style, which is used when you write text in a markdown file.
-
-<p class="text-red-600 italic font-serif">This red italic serif text is defined inside a HTML p (paragraph) element.</p>
-
-<p class="font-mono text-blue-500 mt-3">This is blue text using a monospace font, and a custom top margin.</p>
-```
-
-## Base Styles
-
-Include an `app.css` file in your project root directory to customize the base styles of your app.
-
-_The recommended approach is to copy and edit the default css file from `[my-project]/.evidence/template/src/app.css`, also found in the [Evidence Github repo](https://github.com/evidence-dev/evidence/blob/main/sites/example-project/src/app.css)._
-
-### What can be customized with app.css?
-
-You can customize the default styles (font, size, color etc) of most HTML elements, by adjusting the default css for the app, e.g.
-
-- Headers
-- Body text
-- Images
-- Links
-- Page Background
-- etc
-
-You **cannot** currently easily customize the default styles of the following (as these are not defined in the core css styles):
-
-- Evidence Chart colors and themes (see custom chart color section below)
-- Evidence Components
-
-## Page Layout
-
-If you include a `+layout.svelte` file in a directory, any markdown files in that directory (and its subdirectories) will use this layout file instead of the default layout file.
-
-_The recommended approach is to copy and edit the default layout file from `[my-project]/.evidence/template/src/pages/+layout.svelte`, also found in the [Evidence Github repo](https://github.com/evidence-dev/evidence/blob/main/sites/example-project/src/pages/+layout.svelte)._
-
-### What can be customized with +layout.svelte?
-
-By default, Evidence includes a number of features on every page, which can be removed or customized e.g.
-
-- Sidebar
-- Header
-- Breadcrumbs
-- Table of Contents
-
-You can also add your own elements to the default page layout.
-
-## Chart Color Palette
-
-You can use a custom color palette in your charts by using the `colorPalette` option.
-
-For example, in a bar chart:
-
-```markdown
-<BarChart
-    data={orders}
-    x=date
-    y=sales
-    colorPalette={
-        [
-        '#cf0d06',
-        '#eb5752',
-        '#e88a87',
-        '#fcdad9',
-        ]
-    }
-/>
-```
-
-This can be done within each chart individually, or by using a script tag to create a variable that can be used within one page. For example:
-
-```markdown
-&lt;script&gt;
-    let myColors = [
-        '#cf0d06',
-        '#eb5752',
-        '#e88a87',
-        '#fcdad9',
-    ]
-&lt;/script&gt;
-
-<BarChart
-    data={orders}
-    x=date
-    y=sales
-    colorPalette={myColors}
-/>
-
-<LineChart
-    data={inventory}
-    x=date
-    y=inventory
-    colorPalette={myColors}
-/>
-```
-
 
 ---
 evidence/sites/docs/pages/deployment/index.md
@@ -23319,7 +23800,7 @@ You can also self-host Evidence anywhere suitable for hosting static sites. See 
 - [Firebase](/deployment/firebase)
 - [GitHub Pages](/deployment/github-pages)
 - [GitLab Pages](/deployment/gitlab-pages)
-<!-- - [Hugging Face Spaces](/deployment/hugging-face-spaces) -->
+- [Hugging Face Spaces](/deployment/hugging-face-spaces)
 - [Netlify](/deployment/netlify)
 - [Vercel](/deployment/vercel)
 
