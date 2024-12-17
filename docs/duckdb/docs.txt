@@ -10521,7 +10521,7 @@ This section describes functions and operators for examining and manipulating [`
 | [`length(string)`](#lengthstring) | Number of characters in `string`. |
 | [`like_escape(string, like_specifier, escape_character)`](#like_escapestring-like_specifier-escape_character) | Returns true if the `string` matches the `like_specifier` (see [Pattern Matching]({% link docs/sql/functions/pattern_matching.md %})) using case-sensitive matching. `escape_character` is used to search for wildcard characters in the `string`. |
 | [`lower(string)`](#lowerstring) | Convert `string` to lower case. |
-| [`lpad(string, count, character)`](#lpadstring-count-character) | Pads the `string` with the character from the left until it has count characters. |
+| [`lpad(string, count, character)`](#lpadstring-count-character) | Pads the `string` with the `character` on the left until it has `count` characters. Truncates the `string` on the right if it has more than `count` characters. |
 | [`ltrim(string, characters)`](#ltrimstring-characters) | Removes any occurrences of any of the `characters` from the left side of the `string`. |
 | [`ltrim(string)`](#ltrimstring) | Removes any spaces from the left side of the `string`. |
 | [`md5(string)`](#md5string) | Returns the MD5 hash of the `string` as a `VARCHAR`. |
@@ -10553,7 +10553,7 @@ This section describes functions and operators for examining and manipulating [`
 | [`reverse(string)`](#reversestring) | Reverses the `string`. |
 | [`right_grapheme(string, count)`](#right_graphemestring-count) | Extract the right-most `count` grapheme clusters. |
 | [`right(string, count)`](#rightstring-count) | Extract the right-most `count` characters. |
-| [`rpad(string, count, character)`](#rpadstring-count-character) | Pads the `string` with the character from the right until it has `count` characters. |
+| [`rpad(string, count, character)`](#rpadstring-count-character) | Pads the `string` with the `character` on the right until it has `count` characters. Truncates the `string` on the right if it has more than `count` characters. |
 | [`rtrim(string, characters)`](#rtrimstring-characters) | Removes any occurrences of any of the `characters` from the right side of the `string`. |
 | [`rtrim(string)`](#rtrimstring) | Removes any spaces from the right side of the `string`. |
 | [`sha256(value)`](#sha256value) | Returns a `VARCHAR` with the SHA-256 hash of the `value`. |
@@ -10842,7 +10842,7 @@ str[3:-4], -- substring from positio 3 up to and including the 4th position from
 
 
 
-| **Description** | Pads the `string` with the character from the left until it has count characters. |
+| **Description** | Pads the `string` with the `character` on the left until it has `count` characters. Truncates the `string` on the right if it has more than `count` characters. |
 | **Example** | `lpad('hello', 8, '>')` |
 | **Result** | `>>>hello` |
 
@@ -11099,7 +11099,7 @@ str[3:-4], -- substring from positio 3 up to and including the 4th position from
 
 
 
-| **Description** | Pads the `string` with the character from the right until it has `count` characters. |
+| **Description** | Pads the `string` with the `character` on the right until it has `count` characters. Truncates the `string` on the right if it has more than `count` characters. |
 | **Example** | `rpad('hello', 10, '<')` |
 | **Result** | `hello<<<<<` |
 
@@ -14691,7 +14691,7 @@ All functions accept an optional set of [options](#options-for-regular-expressio
 |:--|:-------|
 | [`regexp_extract(string, pattern[, group = 0][, options])`](#regexp_extractstring-pattern-group--0-options) | If `string` contains the regexp `pattern`, returns the capturing group specified by optional parameter `group`. The `group` must be a constant value. If no `group` is given, it defaults to 0. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
 | [`regexp_extract(string, pattern, name_list[, options])`](#regexp_extractstring-pattern-name_list-options) | If `string` contains the regexp `pattern`, returns the capturing groups as a struct with corresponding names from `name_list`. |
-| [`regexp_extract_all(string, regex[, group = 0][, options])`](#regexp_extract_allstring-regex-group--0-options) | Split the `string` along the `regex` and extract all occurrences of `group`. |
+| [`regexp_extract_all(string, regex[, group = 0][, options])`](#regexp_extract_allstring-regex-group--0-options) | Finds non-overlapping occurrences of `regex` in `string` and returns the corresponding values of `group`. |
 | [`regexp_full_match(string, regex[, options])`](#regexp_full_matchstring-regex-options) | Returns `true` if the entire `string` matches the `regex`. |
 | [`regexp_matches(string, pattern[, options])`](#regexp_matchesstring-pattern-options) | Returns `true` if `string` contains the regexp `pattern`, `false` otherwise. |
 | [`regexp_replace(string, pattern, replacement[, options])`](#regexp_replacestring-pattern-replacement-options) | If `string` contains the regexp `pattern`, replaces the matching part with `replacement`. |
@@ -14718,9 +14718,9 @@ All functions accept an optional set of [options](#options-for-regular-expressio
 
 
 
-| **Description** | Split the `string` along the `regex` and extract all occurrences of `group`. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
-| **Example** | `regexp_extract_all('hello_world', '([a-z ]+)_?', 1)` |
-| **Result** | `[hello, world]` |
+| **Description** | Finds non-overlapping occurrences of `regex` in `string` and returns the corresponding values of `group`. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
+| **Example** | `regexp_extract_all('Peter: 33, Paul:14', '(\w+):\s*(\d+)', 2)` |
+| **Result** | `[33, 14]` |
 
 #### `regexp_full_match(string, regex[, options])`
 
@@ -17256,7 +17256,7 @@ railroad: expressions/in.js
 
 ## `IN`
 
-The `IN` operator checks containment of the left expression inside the collection the right hand side (RHS). The `IN` operator returns `true` if the expression is present in the RHS, `false` if the expression is not in the RHS and the RHS has no `NULL` values, or `NULL` if the expression is not in the RHS and the RHS has `NULL` values. Supported collections on the RHS are tuples, lists, maps and subqueries that return a single column (see [the subqueries page]({% link docs/sql/expressions/subqueries.md %})). For maps, the `IN` operator checks for containment in the keys, not in the values.
+The `IN` operator checks containment of the left expression inside the collection the right hand side (RHS). The `IN` operator returns `true` if the expression is present in the RHS, `false` if the expression is not in the RHS and the RHS has no `NULL` values, or `NULL` if the expression is not in the RHS and the RHS has `NULL` values. Supported collections on the RHS are tuples, lists, maps and subqueries that return a single column (see the [subqueries page]({% link docs/sql/expressions/subqueries.md %})). For maps, the `IN` operator checks for containment in the keys, not in the values.
 
 ```sql
 SELECT 'Math' IN ('CS', 'Math');
@@ -18467,7 +18467,7 @@ Both DuckDB and PostgreSQL return `current_timestamp` as `TIMESTAMPTZ`. DuckDB a
 
 DuckDB does not currently offer `current_localdate()`; though this can be computed via `current_timestamp::DATE` or `current_localtimestamp()::DATE`.
 
-> See [the DuckDB blog entry on time zones]({% post_url 2022-01-06-time-zones %}) for more information on timestamps and timezones and DuckDB's handling thereof.
+> See the [DuckDB blog entry on time zones]({% post_url 2022-01-06-time-zones %}) for more information on timestamps and timezones and DuckDB's handling thereof.
 
 ## Resolution of Type Names in the Schema
 
@@ -19822,7 +19822,7 @@ For more complex mathematical operations, however, floating-point arithmetic is 
 In general, we advise that:
 
 * If you require exact storage of numbers with a known number of decimal digits and require exact additions, subtractions, and multiplications (such as for monetary amounts), use the [`DECIMAL` data type](#fixed-point-decimals) or its `NUMERIC` alias instead.
-* If you want to do fast or complicated calculations, the floating-point data types may be more appropriate. However, if you use the results for anything important, you should evaluate your implementation carefully for corner cases (ranges, infinities, underflows, invalid operations) that may be handled differently from what you expect and you should familiarize yourself with common floating-point pitfalls. The article [â€œWhat Every Computer Scientist Should Know About Floating-Point Arithmeticâ€� by David Goldberg](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html) and [the floating point series on Bruce Dawson's blog](https://randomascii.wordpress.com/2017/06/19/sometimes-floating-point-math-is-perfect/) provide excellent starting points.
+* If you want to do fast or complicated calculations, the floating-point data types may be more appropriate. However, if you use the results for anything important, you should evaluate your implementation carefully for corner cases (ranges, infinities, underflows, invalid operations) that may be handled differently from what you expect and you should familiarize yourself with common floating-point pitfalls. The article [â€œWhat Every Computer Scientist Should Know About Floating-Point Arithmeticâ€� by David Goldberg](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html) and the [floating point series on Bruce Dawson's blog](https://randomascii.wordpress.com/2017/06/19/sometimes-floating-point-math-is-perfect/) provide excellent starting points.
 
 On most platforms, the `FLOAT` type has a range of at least 1E-37 to 1E+37 with a precision of at least 6 decimal digits. The `DOUBLE` type typically has a range of around 1E-307 to 1E+308 with a precision of at least 15 digits. Positive numbers outside of these ranges (and negative numbers ourside the mirrored ranges) may cause errors on some platforms but will usually be converted to zero or infinity, respectively.
 
@@ -21440,7 +21440,7 @@ So how do we disambiguate if we want to create a `UNION` with multiple members o
 
 ## Comparison and Sorting
 
-Since `UNION` types are implemented on top of `STRUCT` types internally, they can be used with all the comparison operators as well as in both `WHERE` and `HAVING` clauses with [the same semantics as `STRUCT`s]({% link docs/sql/data_types/struct.md %}#comparison-operators). The â€œtagâ€� is always stored as the first struct entry, which ensures that the `UNION` types are compared and ordered by â€œtagâ€� first.
+Since `UNION` types are implemented on top of `STRUCT` types internally, they can be used with all the comparison operators as well as in both `WHERE` and `HAVING` clauses with the [same semantics as `STRUCT`s]({% link docs/sql/data_types/struct.md %}#comparison-operators). The â€œtagâ€� is always stored as the first struct entry, which ensures that the `UNION` types are compared and ordered by â€œtagâ€� first.
 
 ## Functions
 
@@ -24818,31 +24818,31 @@ The [`FROM` clause]({% link docs/sql/query_syntax/from.md %}) specifies the *sou
 
 
 
-[The `SAMPLE` clause]({% link docs/sql/query_syntax/sample.md %}) allows you to run the query on a sample from the base table. This can significantly speed up processing of queries, at the expense of accuracy in the result. Samples can also be used to quickly see a snapshot of the data when exploring a data set. The `SAMPLE` clause is applied right after anything in the `FROM` clause (i.e., after any joins, but before the where clause or any aggregates). See the [Samples]({% link docs/sql/samples.md %}) page for more information.
+The [`SAMPLE` clause]({% link docs/sql/query_syntax/sample.md %}) allows you to run the query on a sample from the base table. This can significantly speed up processing of queries, at the expense of accuracy in the result. Samples can also be used to quickly see a snapshot of the data when exploring a data set. The `SAMPLE` clause is applied right after anything in the `FROM` clause (i.e., after any joins, but before the where clause or any aggregates). See the [Samples]({% link docs/sql/samples.md %}) page for more information.
 
 ## `WHERE` Clause
 
 
 
-[The `WHERE` clause]({% link docs/sql/query_syntax/where.md %}) specifies any filters to apply to the data. This allows you to select only a subset of the data in which you are interested. Logically the `WHERE` clause is applied immediately after the `FROM` clause.
+The [`WHERE` clause]({% link docs/sql/query_syntax/where.md %}) specifies any filters to apply to the data. This allows you to select only a subset of the data in which you are interested. Logically the `WHERE` clause is applied immediately after the `FROM` clause.
 
 ## `GROUP BY` and `HAVING` Clauses
 
 
 
-[The `GROUP BY` clause]({% link docs/sql/query_syntax/groupby.md %}) specifies which grouping columns should be used to perform any aggregations in the `SELECT` clause. If the `GROUP BY` clause is specified, the query is always an aggregate query, even if no aggregations are present in the `SELECT` clause.
+The [`GROUP BY` clause]({% link docs/sql/query_syntax/groupby.md %}) specifies which grouping columns should be used to perform any aggregations in the `SELECT` clause. If the `GROUP BY` clause is specified, the query is always an aggregate query, even if no aggregations are present in the `SELECT` clause.
 
 ## `WINDOW` Clause
 
 
 
-[The `WINDOW` clause]({% link docs/sql/query_syntax/window.md %}) allows you to specify named windows that can be used within window functions. These are useful when you have multiple window functions, as they allow you to avoid repeating the same window clause.
+The [`WINDOW` clause]({% link docs/sql/query_syntax/window.md %}) allows you to specify named windows that can be used within window functions. These are useful when you have multiple window functions, as they allow you to avoid repeating the same window clause.
 
 ## `QUALIFY` Clause
 
 
 
-[The `QUALIFY` clause]({% link docs/sql/query_syntax/qualify.md %}) is used to filter the result of [`WINDOW` functions]({% link docs/sql/functions/window_functions.md %}).
+The [`QUALIFY` clause]({% link docs/sql/query_syntax/qualify.md %}) is used to filter the result of [`WINDOW` functions]({% link docs/sql/functions/window_functions.md %}).
 
 ## `ORDER BY`, `LIMIT` and `OFFSET` Clauses
 
@@ -28627,7 +28627,7 @@ output_df = transformed_rel.df()
 
 Relational operators can also be used to group rows, aggregate, find distinct combinations of values, join, union, and more. They are also able to directly insert results into a DuckDB table or write to a CSV.
 
-Please see [these additional examples](https://github.com/duckdb/duckdb/blob/main/examples/python/duckdb-python.py) and [the available relational methods on the `DuckDBPyRelation` class]({% link docs/api/python/reference/index.md %}#duckdb.DuckDBPyRelation).
+Please see [these additional examples](https://github.com/duckdb/duckdb/blob/main/examples/python/duckdb-python.py) and the [available relational methods on the `DuckDBPyRelation` class]({% link docs/api/python/reference/index.md %}#duckdb.DuckDBPyRelation).
 
 ---
 duckdb/docs/guides/python/sql_on_arrow.md
@@ -29949,7 +29949,7 @@ do shell script "\"/Applications/Tableau Desktop 2023.2.app/Contents/MacOS/Table
 quit
 ```
 
-Create this file with [the Script Editor](https://support.apple.com/guide/script-editor/welcome/mac)
+Create this file with the [Script Editor](https://support.apple.com/guide/script-editor/welcome/mac)
 (located in `/Applications/Utilities`)
 and [save it as a packaged application](https://support.apple.com/guide/script-editor/save-a-script-as-an-app-scpedt1072/mac):
 
@@ -30592,6 +30592,7 @@ github_repository: https://github.com/duckdb/arrow
 ---
 
 The `arrow` extension implements features for using [Apache Arrow](https://arrow.apache.org/), a cross-language development platform for in-memory analytics.
+See the [announcement blog post]({% post_url 2021-12-03-duck-arrow %}) for more details.
 
 ## Installing and Loading
 
@@ -30876,7 +30877,7 @@ The Azure extension has two ways to configure the authentication. The preferred 
 
 Multiple [Secret Providers]({% link docs/configuration/secrets_manager.md %}#secret-providers) are available for the Azure extension:
 
-* If you need to define different secrets for different storage accounts, use [the `SCOPE` configuration]({% link docs/configuration/secrets_manager.md %}#creating-multiple-secrets-for-the-same-service-type). Note that the `SCOPE` requires a trailing slash (`SCOPE 'azure://some_container/'`).
+* If you need to define different secrets for different storage accounts, use the [`SCOPE` configuration]({% link docs/configuration/secrets_manager.md %}#creating-multiple-secrets-for-the-same-service-type). Note that the `SCOPE` requires a trailing slash (`SCOPE 'azure://some_container/'`).
 * If you use fully qualified path then the `ACCOUNT_NAME` attribute is optional.
 
 #### `CONFIG` Provider
@@ -37732,7 +37733,7 @@ std::unique_ptr prepare = con.Prepare("SELECT count(*) FROM a WHERE i = $1");
 std::unique_ptr result = prepare->Execute(12);
 ```
 
-> Warning Do **not** use prepared statements to insert large amounts of data into DuckDB. See [the data import documentation]({% link docs/data/overview.md %}) for better options.
+> Warning Do **not** use prepared statements to insert large amounts of data into DuckDB. See the [data import documentation]({% link docs/data/overview.md %}) for better options.
 
 ### UDF API
 
@@ -38264,7 +38265,7 @@ stmt.execute();
 }
 ```
 
-> Warning Do *not* use prepared statements to insert large amounts of data into DuckDB. See [the data import documentation]({% link docs/data/overview.md %}) for better options.
+> Warning Do *not* use prepared statements to insert large amounts of data into DuckDB. See the [data import documentation]({% link docs/data/overview.md %}) for better options.
 
 ### Arrow Methods
 
@@ -38759,7 +38760,7 @@ print(res)
 
 > DuckDB keeps a reference to the R data frame after registration. This prevents the data frame from being garbage-collected. The reference is cleared when the connection is closed, but can also be cleared manually using the `duckdb_unregister()` method.
 
-Also refer to [the data import documentation]({% link docs/data/overview.md %}) for more options of efficiently importing data.
+Also refer to the [data import documentation]({% link docs/data/overview.md %}) for more options of efficiently importing data.
 
 ## dbplyr
 
