@@ -4379,7 +4379,6 @@ Several components of DuckDB are maintained in separate repositories.
 ## Main Repositories
 
 * [`duckdb`](https://github.com/duckdb/duckdb): core DuckDB project
-* [`duckdb-wasm`](https://github.com/duckdb/duckdb-wasm): WebAssembly version of DuckDB
 * [`duckdb-web`](https://github.com/duckdb/duckdb-web): documentation and blog
 
 ## Clients
@@ -4391,6 +4390,7 @@ Several components of DuckDB are maintained in separate repositories.
 * [`duckdb-r`](https://github.com/duckdb/duckdb-r): R client
 * [`duckdb-rs`](https://github.com/duckdb/duckdb-rs): Rust client
 * [`duckdb-swift`](https://github.com/duckdb/duckdb-swift): Swift client
+* [`duckdb-wasm`](https://github.com/duckdb/duckdb-wasm): WebAssembly client
 * [`duckplyr`](https://github.com/tidyverse/duckplyr): a drop-in replacement for dplyr in R
 * [`go-duckdb`](https://github.com/marcboeker/go-duckdb): Go client
 * [`ruby-duckdb`](https://github.com/suketa/ruby-duckdb): Ruby client
@@ -4398,10 +4398,10 @@ Several components of DuckDB are maintained in separate repositories.
 ## Connectors
 
 * [`dbt-duckdb`](https://github.com/duckdb/dbt-duckdb): dbt
-* [`duckdb_mysql`](https://github.com/duckdb/duckdb_mysql): MySQL connector
+* [`duckdb-mysql`](https://github.com/duckdb/duckdb-mysql): MySQL connector
+* [`duckdb-postgres`](https://github.com/duckdb/duckdb-postgres): PostgreSQL connector (connect to PostgreSQL from DuckDB)
+* [`duckdb-sqlite`](https://github.com/duckdb/duckdb-sqlite): SQLite connector
 * [`pg_duckdb`](https://github.com/duckdb/pg_duckdb): official PostgreSQL extension for DuckDB (run DuckDB in PostgreSQL)
-* [`postgres_scanner`](https://github.com/duckdb/postgres_scanner): PostgreSQL connector (connect to PostgreSQL from DuckDB)
-* [`sqlite_scanner`](https://github.com/duckdb/sqlite_scanner): SQLite connector
 
 ## Extensions
 
@@ -6376,7 +6376,7 @@ Samples are used to randomly select a subset of a dataset.
 
 ### Examples
 
-Select a sample of 5 rows from `tbl` using system sampling (cluster sampling):
+Select a sample of exactly 5 rows from `tbl` using `reservoir` sampling:
 
 ```sql
 SELECT *
@@ -6384,7 +6384,7 @@ FROM tbl
 USING SAMPLE 5;
 ```
 
-Select a sample of 10% of the table using system sampling (cluster sampling):
+Select a sample of *approximately* 10% of the table using `system` sampling:
 
 ```sql
 SELECT *
@@ -6392,7 +6392,9 @@ FROM tbl
 USING SAMPLE 10%;
 ```
 
-Select a sample of 10% of the table using bernoulli sampling:
+> Warning By default, when you specify a percentage, each [*vector*]({% link docs/internals/vector.md %}) is included in the sample with that probability. If your table contains fewer than ~10k rows, it makes sense to specify the `bernoulli` sampling option instead, which applies the probability to each row independently. Even then, you'll sometimes get more and sometimes less than the specified percentage of the number of rows, but it is much less likely that you get no rows at all. To get exactly 10% of rows (up to rounding), you must use the `reservoir` sampling option.
+
+Select a sample of *approximately* 10% of the table using `bernoulli` sampling:
 
 ```sql
 SELECT *
@@ -6400,7 +6402,15 @@ FROM tbl
 USING SAMPLE 10 PERCENT (bernoulli);
 ```
 
-Select a sample of 50 rows of the table using reservoir sampling with a fixed seed (100):
+Select a sample of *exactly* 10% (up to rounding) of the table using `reservoir` sampling:
+
+```sql
+SELECT *
+FROM tbl
+USING SAMPLE 10 PERCENT (reservoir);
+```
+
+Select a sample of *exactly* 50 rows of the table using reservoir sampling with a fixed seed (100):
 
 ```sql
 SELECT *
@@ -6409,7 +6419,7 @@ USING SAMPLE reservoir(50 ROWS)
 REPEATABLE (100);
 ```
 
-Select a sample of 20% of the table using system sampling with a fixed seed (377):
+Select a sample of *approximately* 20% of the table using `system` sampling with a fixed seed (377):
 
 ```sql
 SELECT *
@@ -6417,7 +6427,7 @@ FROM tbl
 USING SAMPLE 20% (system, 377);
 ```
 
-Select a sample of 20% of `tbl` **before** the join with `tbl2`:
+Select a sample of *approximately* 20% of `tbl` **before** the join with `tbl2`:
 
 ```sql
 SELECT *
@@ -6425,7 +6435,7 @@ FROM tbl TABLESAMPLE reservoir(20%), tbl2
 WHERE tbl.i = tbl2.i;
 ```
 
-Select a sample of 20% of `tbl` **after** the join with `tbl2`:
+Select a sample of *approximately* 20% of `tbl` **after** the join with `tbl2`:
 
 ```sql
 SELECT *
@@ -6442,7 +6452,7 @@ Samples allow you to randomly extract a subset of a dataset. Samples are useful 
 
 DuckDB supports three different types of sampling methods: `reservoir`, `bernoulli` and `system`. By default, DuckDB uses `reservoir` sampling when an exact number of rows is sampled, and `system` sampling when a percentage is specified. The sampling methods are described in detail below.
 
-Samples require a *sample size*, which is an indication of how many elements will be sampled from the total population. Samples can either be given as a percentage (`10%`) or as a fixed number of rows (`10 rows`). All three sampling methods support sampling over a percentage, but **only** reservoir sampling supports sampling a fixed number of rows.
+Samples require a *sample size*, which is an indication of how many elements will be sampled from the total population. Samples can either be given as a percentage (`10%` or `10 PERCENT`) or as a fixed number of rows (`10` or `10 ROWS`). All three sampling methods support sampling over a percentage, but **only** reservoir sampling supports sampling a fixed number of rows.
 
 Samples are probablistic, that is to say, samples can be different between runs *unless* the seed is specifically specified. Specifying the seed *only* guarantees that the sample is the same if multi-threading is not enabled (i.e., `SET threads = 1`). In the case of multiple threads running over a sample, samples are not necessarily consistent even with a fixed seed.
 
@@ -6459,15 +6469,15 @@ Reservoir sampling also incurs an additional performance penalty when multi-proc
 
 ### `bernoulli`
 
-Bernoulli sampling can only be used when a sampling percentage is specified. It is rather straightforward: every tuple in the underlying table is included with a chance equal to the specified percentage. As a result, bernoulli sampling can return a different number of tuples even if the same percentage is specified. The amount of rows will generally be more or less equal to the specified percentage of the table, but there will be some variance.
+Bernoulli sampling can only be used when a sampling percentage is specified. It is rather straightforward: every row in the underlying table is included with a chance equal to the specified percentage. As a result, bernoulli sampling can return a different number of tuples even if the same percentage is specified. The *expected* number of rows is equal to the specified percentage of the table, but there will be some *variance*.
 
 Because bernoulli sampling is completely independent (there is no shared state), there is no penalty for using bernoulli sampling together with multiple threads.
 
 ### `system`
 
-System sampling is a variant of bernoulli sampling with one crucial difference: every *vector* is included with a chance equal to the sampling percentage. This is a form of cluster sampling. System sampling is more efficient than bernoulli sampling, as no per-tuple selections have to be performed. There is almost no extra overhead for using system sampling, whereas bernoulli sampling can add additional cost as it has to perform random number generation for every single tuple.
+System sampling is a variant of bernoulli sampling with one crucial difference: every *vector* is included with a chance equal to the sampling percentage. This is a form of cluster sampling. System sampling is more efficient than bernoulli sampling, as no per-tuple selections have to be performed.
 
-System sampling is not suitable for smaller data sets as the granularity of the sampling is on the order of ~1000 tuples. That means that if system sampling is used for small data sets (e.g., 100 rows) either all the data will be filtered out, or all the data will be included.
+The *expected* number of rows is still equal to the specified percentage of the table, but the *variance* is `vectorSize` times higher. As such, system sampling is not suitable for data sets with fewer than ~10k rows, where it can happen that all rows will be filtered out, or all the data will be included, even when you ask for `50 PERCENT`.
 
 ## Table Samples
 
@@ -14414,11 +14424,13 @@ SELECT goose_name.replace('goose', 'duck') AS duck_name
 FROM unnest(['African goose', 'Faroese goose', 'Hungarian goose', 'Pomeranian goose']) breed(goose_name);
 ```
 
-> Tip To apply function chaining to a single value, use parentheses, e.g.:
+> Tip To apply function chaining to literals, you must use parentheses, e.g.:
 >
 > ```sql
 > SELECT ('hello world').replace(' ', '_');
 > ```
+
+> Function chaining via the dot operator is limited to *scalar* functions; it is not available for *table* functions. For example, `SELECT * FROM ('/myfile.parquet').read_parquet()` is not supported.
 
 ## Query Functions
 
@@ -14689,8 +14701,8 @@ All functions accept an optional set of [options](#options-for-regular-expressio
 
 | Name | Description |
 |:--|:-------|
-| [`regexp_extract(string, pattern[, group = 0][, options])`](#regexp_extractstring-pattern-group--0-options) | If `string` contains the regexp `pattern`, returns the capturing group specified by optional parameter `group`. The `group` must be a constant value. If no `group` is given, it defaults to 0. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
-| [`regexp_extract(string, pattern, name_list[, options])`](#regexp_extractstring-pattern-name_list-options) | If `string` contains the regexp `pattern`, returns the capturing groups as a struct with corresponding names from `name_list`. |
+| [`regexp_extract(string, pattern[, group = 0][, options])`](#regexp_extractstring-pattern-group--0-options) | If `string` contains the regexp `pattern`, returns the capturing group specified by optional parameter `group`; otherwise, returns the empty string. The `group` must be a constant value. If no `group` is given, it defaults to 0. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
+| [`regexp_extract(string, pattern, name_list[, options])`](#regexp_extractstring-pattern-name_list-options) | If `string` contains the regexp `pattern`, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values. |
 | [`regexp_extract_all(string, regex[, group = 0][, options])`](#regexp_extract_allstring-regex-group--0-options) | Finds non-overlapping occurrences of `regex` in `string` and returns the corresponding values of `group`. |
 | [`regexp_full_match(string, regex[, options])`](#regexp_full_matchstring-regex-options) | Returns `true` if the entire `string` matches the `regex`. |
 | [`regexp_matches(string, pattern[, options])`](#regexp_matchesstring-pattern-options) | Returns `true` if `string` contains the regexp `pattern`, `false` otherwise. |
@@ -14702,7 +14714,7 @@ All functions accept an optional set of [options](#options-for-regular-expressio
 
 
 
-| **Description** | If `string` contains the regexp `pattern`, returns the capturing group specified by optional parameter `group`. The `group` must be a constant value. If no `group` is given, it defaults to 0. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
+| **Description** | If `string` contains the regexp `pattern`, returns the capturing group specified by optional parameter `group`; otherwise, returns the empty string. The `group` must be a constant value. If no `group` is given, it defaults to 0. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
 | **Example** | `regexp_extract('abc', '([a-z])(b)', 1)` |
 | **Result** | `a` |
 
@@ -14710,7 +14722,7 @@ All functions accept an optional set of [options](#options-for-regular-expressio
 
 
 
-| **Description** | If `string` contains the regexp `pattern`, returns the capturing groups as a struct with corresponding names from `name_list`. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
+| **Description** | If `string` contains the regexp `pattern`, returns the capturing groups as a struct with corresponding names from `name_list`; otherwise, returns a struct with the same keys and empty strings as values. A set of optional [`options`](#options-for-regular-expression-functions) can be set. |
 | **Example** | `regexp_extract('2023-04-15', '(\d+)-(\d+)-(\d+)', ['y', 'm', 'd'])` |
 | **Result** | `{'y':'2023', 'm':'04', 'd':'15'}` |
 
@@ -18453,6 +18465,10 @@ In DuckDB, the [`VACUUM` statement]({% link docs/sql/statements/vacuum.md %}) is
 For instruction on reclaiming space, refer to the [â€œReclaiming spaceâ€� page]({% link docs/operations_manual/footprint_of_duckdb/reclaiming_space.md %}).
 
 ## Functions
+
+### `regexp_extract` Function
+
+Unlike PostgreSQL's `regexp_substr` function, DuckDB's `regexp_extract` returns empty strings instead of `NULL`s when there is no match.
 
 ### `to_date` Function
 
@@ -31199,26 +31215,26 @@ redirect_from:
 |:-----------------------------|----------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------|:--------------|:------------------------|
 | [arrow]({% link docs/extensions/arrow.md %}) | [GitHub](https://github.com/duckdb/arrow) | A zero-copy data integration between Apache Arrow and DuckDB | no | |
 | [autocomplete]({% link docs/extensions/autocomplete.md %}) | | Adds support for autocomplete in the shell | yes | |
-| [aws]({% link docs/extensions/aws.md %}) | [GitHub](https://github.com/duckdb/duckdb_aws) | Provides features that depend on the AWS SDK | yes | |
-| [azure]({% link docs/extensions/azure.md %}) | [GitHub](https://github.com/duckdb/duckdb_azure) | Adds a filesystem abstraction for Azure blob storage to DuckDB | yes | |
-| [delta]({% link docs/extensions/delta.md %}) | [GitHub](https://github.com/duckdb/duckdb_delta) | Adds support for Delta Lake | yes | |
-| [excel]({% link docs/extensions/excel.md %}) | [GitHub](https://github.com/duckdb/duckdb_excel) | Adds support for Excel-like format strings | yes | |
-| [fts]({% link docs/extensions/full_text_search.md %}) | | Adds support for Full-Text Search Indexes | yes | |
-| [httpfs]({% link docs/extensions/httpfs/overview.md %}) | | Adds support for reading and writing files over an HTTP(S) or S3 connection | yes | http, https, s3 |
-| [iceberg]({% link docs/extensions/iceberg.md %}) | [GitHub](https://github.com/duckdb/duckdb_iceberg) | Adds support for Apache Iceberg | no | |
+| [aws]({% link docs/extensions/aws.md %}) | [GitHub](https://github.com/duckdb/duckdb-aws) | Provides features that depend on the AWS SDK | yes | |
+| [azure]({% link docs/extensions/azure.md %}) | [GitHub](https://github.com/duckdb/duckdb-azure) | Adds a filesystem abstraction for Azure blob storage to DuckDB | yes | |
+| [delta]({% link docs/extensions/delta.md %}) | [GitHub](https://github.com/duckdb/duckdb-delta) | Adds support for Delta Lake | yes | |
+| [excel]({% link docs/extensions/excel.md %}) | [GitHub](https://github.com/duckdb/duckdb-excel) | Adds support for Excel-like format strings | yes | |
+| [fts]({% link docs/extensions/full_text_search.md %}) | [GitHub](https://github.com/duckdb/duckdb-fts) | Adds support for Full-Text Search Indexes | yes | |
+| [httpfs]({% link docs/extensions/httpfs/overview.md %}) | [GitHub](https://github.com/duckdb/duckdb-httpfs) | Adds support for reading and writing files over an HTTP(S) or S3 connection | yes | http, https, s3 |
+| [iceberg]({% link docs/extensions/iceberg.md %}) | [GitHub](https://github.com/duckdb/duckdb-iceberg) | Adds support for Apache Iceberg | no | |
 | [icu]({% link docs/extensions/icu.md %}) | | Adds support for time zones and collations using the ICU library | yes | |
-| [inet]({% link docs/extensions/inet.md %}) | [GitHub](https://github.com/duckdb/duckdb_inet) | Adds support for IP-related data types and functions | yes | |
+| [inet]({% link docs/extensions/inet.md %}) | [GitHub](https://github.com/duckdb/duckdb-inet) | Adds support for IP-related data types and functions | yes | |
 | [jemalloc]({% link docs/extensions/jemalloc.md %}) | | Overwrites system allocator with jemalloc | no | |
 | [json]({% link docs/data/json/overview.md %}) | | Adds support for JSON operations | yes | |
-| [mysql]({% link docs/extensions/mysql.md %}) | [GitHub](https://github.com/duckdb/duckdb_mysql) | Adds support for reading from and writing to a MySQL database | no | |
+| [mysql]({% link docs/extensions/mysql.md %}) | [GitHub](https://github.com/duckdb/duckdb-mysql) | Adds support for reading from and writing to a MySQL database | no | |
 | [parquet]({% link docs/data/parquet/overview.md %}) | | Adds support for reading and writing Parquet files | (built-in) | |
-| [postgres]({% link docs/extensions/postgres.md %}) | [GitHub](https://github.com/duckdb/postgres_scanner) | Adds support for reading from and writing to a PostgreSQL database | yes | postgres_scanner |
-| [spatial]({% link docs/extensions/spatial/overview.md %}) | [GitHub](https://github.com/duckdb/duckdb_spatial) | Geospatial extension that adds support for working with spatial data and functions | no | |
-| [sqlite]({% link docs/extensions/sqlite.md %}) | [GitHub](https://github.com/duckdb/sqlite_scanner) | Adds support for reading from and writing to SQLite database files | yes | sqlite_scanner, sqlite3 |
-| [substrait]({% link docs/extensions/substrait.md %}) | [GitHub](https://github.com/duckdb/substrait) | Adds support for the Substrait integration | no | |
+| [postgres]({% link docs/extensions/postgres.md %}) | [GitHub](https://github.com/duckdb/duckdb-postgres) | Adds support for reading from and writing to a PostgreSQL database | yes | postgres_scanner |
+| [spatial]({% link docs/extensions/spatial/overview.md %}) | [GitHub](https://github.com/duckdb/duckdb-spatial) | Geospatial extension that adds support for working with spatial data and functions | no | |
+| [sqlite]({% link docs/extensions/sqlite.md %}) | [GitHub](https://github.com/duckdb/duckdb-sqlite) | Adds support for reading from and writing to SQLite database files | yes | sqlite_scanner, sqlite3 |
+| [substrait]({% link docs/extensions/substrait.md %}) | [GitHub](https://github.com/substrait-io/duckdb-substrait-extension) | Adds support for the Substrait integration | no | |
 | [tpcds]({% link docs/extensions/tpcds.md %}) | | Adds TPC-DS data generation and query support | yes | |
 | [tpch]({% link docs/extensions/tpch.md %}) | | Adds TPC-H data generation and query support | yes | |
-| [vss]({% link docs/extensions/vss.md %}) | [GitHub](https://github.com/duckdb/duckdb_vss) | Adds support for vector similarity search queries | no | |
+| [vss]({% link docs/extensions/vss.md %}) | [GitHub](https://github.com/duckdb/duckdb-vss) | Adds support for vector similarity search queries | no | |
 
 ## Default Extensions
 
@@ -31247,7 +31263,7 @@ duckdb/docs/extensions/delta.md
 ---
 layout: docu
 title: Delta Extension
-github_repository: https://github.com/duckdb/duckdb_delta
+github_repository: https://github.com/duckdb/duckdb-delta
 ---
 
 The `delta` extension adds support for the [Delta Lake open-source storage format](https://delta.io/). It is built using the [Delta Kernel](https://github.com/delta-incubator/delta-kernel-rs). The extension offers **read support** for Delta tables, both local and remote.
@@ -31360,7 +31376,7 @@ duckdb/docs/extensions/excel.md
 ---
 layout: docu
 title: Excel Extension
-github_repository: https://github.com/duckdb/duckdb_excel
+github_repository: https://github.com/duckdb/duckdb-excel
 ---
 
 The `excel` extension, unlike what its name may suggest, does not provide support for reading Excel files.
@@ -31409,7 +31425,7 @@ duckdb/docs/extensions/full_text_search.md
 ---
 layout: docu
 title: Full-Text Search Extension
-github_directory: https://github.com/duckdb/duckdb_fts
+github_repository: https://github.com/duckdb/duckdb-fts
 ---
 
 Full-Text Search is an extension to DuckDB that allows for search through strings, similar to [SQLite's FTS5 extension](https://www.sqlite.org/fts5.html).
@@ -31578,7 +31594,7 @@ duckdb/docs/extensions/iceberg.md
 ---
 layout: docu
 title: Iceberg Extension
-github_repository: https://github.com/duckdb/duckdb_iceberg
+github_repository: https://github.com/duckdb/duckdb-iceberg
 ---
 
 The `iceberg` extension is a loadable extension that implements support for the [Apache Iceberg format](https://iceberg.apache.org/).
@@ -31769,7 +31785,7 @@ duckdb/docs/extensions/inet.md
 ---
 layout: docu
 title: inet Extension
-github_repository: https://github.com/duckdb/duckdb_inet
+github_repository: https://github.com/duckdb/duckdb-inet
 ---
 
 The `inet` extension defines the `INET` data type for storing [IPv4](https://en.wikipedia.org/wiki/Internet_Protocol_version_4) and [IPv6](https://en.wikipedia.org/wiki/IPv6) Internet addresses. It supports the [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation) for subnet masks (e.g., `198.51.100.0/22`, `2001:db8:3c4d::/48`).
@@ -31947,10 +31963,10 @@ duckdb/docs/extensions/mysql.md
 ---
 layout: docu
 title: MySQL Extension
-github_repository: https://github.com/duckdb/duckdb_mysql
+github_repository: https://github.com/duckdb/duckdb-mysql
 ---
 
-The [`mysql` extension](https://github.com/duckdb/duckdb_mysql) allows DuckDB to directly read and write data from/to a running MySQL instance. The data can be queried directly from the underlying MySQL database. Data can be loaded from MySQL tables into DuckDB tables, or vice versa.
+The `mysql` extension allows DuckDB to directly read and write data from/to a running MySQL instance. The data can be queried directly from the underlying MySQL database. Data can be loaded from MySQL tables into DuckDB tables, or vice versa.
 
 ## Installing and Loading
 
@@ -32465,7 +32481,7 @@ duckdb/docs/extensions/postgres.md
 ---
 layout: docu
 title: PostgreSQL Extension
-github_repository: https://github.com/duckdb/postgres_scanner
+github_repository: https://github.com/duckdb/duckdb-postgres
 redirect_from:
 - docs/extensions/postgres_scanner
 - docs/extensions/postgresql
@@ -32859,7 +32875,7 @@ duckdb/docs/extensions/sqlite.md
 ---
 layout: docu
 title: SQLite Extension
-github_repository: https://github.com/duckdb/sqlite_scanner
+github_repository: https://github.com/duckdb/duckdb-sqlite
 redirect_from:
 - docs/extensions/sqlite_scanner
 ---
@@ -33133,7 +33149,7 @@ duckdb/docs/extensions/sqlsmith.md
 ---
 layout: docu
 title: SQLSmith Extension
-github_repository: https://github.com/duckdb/duckdb_sqlsmith
+github_repository: https://github.com/duckdb/duckdb-sqlsmith
 ---
 
 The `sqlsmith` extension is used for testing.
@@ -33578,7 +33594,7 @@ In general for extensions the release cycle depends on their stability level. **
 sync with DuckDB's release cycle, but may also be quietly updated between DuckDB releases. **pre-release** and **stable**
 extensions follow their own release cycle. These may or may not coincide with DuckDB releases. To find out more about the release cycle of a specific
 extension, refer to the documentation or GitHub page of the respective extension. Generally, **pre-release** and **stable** extensions will document
-their releases as GitHub releases, an example of which you can see in the [delta extension](https://github.com/duckdb/duckdb_delta/releases).
+their releases as GitHub releases, an example of which you can see in the [`delta` extension](https://github.com/duckdb/duckdb-delta/releases).
 
 Finally, there is a small exception: All [in-tree]({% link docs/extensions/working_with_extensions.md %}#in-tree-vs-out-of-tree) extensions simply
 follow DuckDB's release cycle.
@@ -33589,7 +33605,7 @@ Just like DuckDB itself, DuckDB's core extensions have nightly or dev builds tha
 This can be useful when your workflow depends on a new feature, or when you need to confirm that your stack is compatible with the upcoming version.
 
 Nightly builds for extensions are slightly complicated due to the fact that currently DuckDB extensions binaries are tightly bound to a single DuckDB version. Because of this tight connection,
-there is a potential risk for a combinatory explosion. Therefore, not all combinations of nightly extension build and nightly DuckDB build are available.
+there is a potential risk for a combinatorial explosion. Therefore, not all combinations of nightly extension build and nightly DuckDB build are available.
 
 In general, there are 2 ways of using nightly builds: using a nightly DuckDB build and using a stable DuckDB build. Let's go over the differences between the two:
 
@@ -33662,7 +33678,7 @@ duckdb/docs/extensions/vss.md
 ---
 layout: docu
 title: Vector Similarity Search Extension
-github_repository: https://github.com/duckdb/duckdb_vss
+github_repository: https://github.com/duckdb/duckdb-vss
 ---
 
 The `vss` extension is an experimental extension for DuckDB that adds indexing support to accelerate vector similarity search queries using DuckDB's new fixed-size `ARRAY` type.
@@ -36943,7 +36959,7 @@ duckdb/docs/extensions/httpfs/overview.md
 ---
 layout: docu
 title: httpfs Extension for HTTP and S3 Support
-github_directory: https://github.com/duckdb/duckdb/tree/main/extension/httpfs
+github_repository: https://github.com/duckdb/duckdb-httpfs
 redirect_from:
 - /docs/extensions/httpfs
 - /docs/extensions/httpfs/
@@ -43479,13 +43495,13 @@ In DuckDB-Wasm, `INSTALL` is a no-op given there is no durable cross-session sto
 | [autocomplete]({% link docs/extensions/autocomplete.md %}) | Adds support for autocomplete in the shell | |
 | [excel]({% link docs/extensions/excel.md %}) | Adds support for Excel-like format strings | |
 | [fts]({% link docs/extensions/full_text_search.md %}) | Adds support for Full-Text Search Indexes | |
-| icu | Adds support for time zones and collations using the ICU library | |
-| inet | Adds support for IP-related data types and functions | |
+| [icu]({% link docs/extensions/icu.md %}) | Adds support for time zones and collations using the ICU library | |
+| [inet]({% link docs/extensions/inet.md %}) | Adds support for IP-related data types and functions | |
 | [json]({% link docs/data/json/overview.md %}) | Adds support for JSON operations | |
 | [parquet]({% link docs/data/parquet/overview.md %}) | Adds support for reading and writing Parquet files | |
-| [sqlite]({% link docs/extensions/sqlite.md %}) [GitHub](https://github.com/duckdb/sqlite_scanner) | Adds support for reading SQLite database files | sqlite, sqlite3 |
-| sqlsmith | | |
-| [substrait]({% link docs/extensions/substrait.md %}) [GitHub](https://github.com/duckdb/substrait) | Adds support for the Substrait integration | |
+| [sqlite]({% link docs/extensions/sqlite.md %}) | Adds support for reading SQLite database files | sqlite, sqlite3 |
+| [sqlsmith]({% link docs/extensions/sqlsmith.md %}) | | |
+| [substrait]({% link docs/extensions/substrait.md %}) | Adds support for the Substrait integration | |
 | [tpcds]({% link docs/extensions/tpcds.md %}) | Adds TPC-DS data generation and query support | |
 | [tpch]({% link docs/extensions/tpch.md %}) | Adds TPC-H data generation and query support | |
 
