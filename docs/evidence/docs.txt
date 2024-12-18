@@ -480,12 +480,12 @@ This means that any query chains included in `sources` will need to be replaced 
 If you use the VS Code migration command, chained queries found on markdown pages are left on the page rather than being moved to the `sources` directory like other queries. This is because we assume that most chained queries are simple enough for the syntax of your source database to match with the DuckDB syntax they will need to move to. In some cases, the syntax will not line up and you will need to make an adjustment.
 
 ### Evidence Plugins
-If your app includes an Evidence plugin (e.g., [Evidence Labs](https://labs.evidence.dev)):
+If your app includes an Evidence plugin
 1. Find the `evidence.plugins.yaml` file in your `_legacy_project` folder and copy the line(s) containing the plugin(s) you're using
 2. Paste those lines into the `evidence.plugins.yaml` file in your new project
 3. Install the plugin(s) in your project. E.g.,:
 ```shell
-npm install --save @evidence-dev/labs
+npm install --save your-plugin-name
 ```
 
 ### External Package Dependencies
@@ -12947,11 +12947,9 @@ Custom components allow you to extend the functionality of Evidence, as well as 
 
 In Evidence, you can build your own components and use them anywhere in your app. This is made possible through Svelte, the JavaScript framework Evidence is built on. These components can include the charts used for visualization, custom components created completely from scratch, or adaptations of existing UI components such as the header, sidebar, menu, etc.
 
-[Evidence Labs](https://labs.evidence.dev) contains several good examples of custom components.
-
 Below is a **short guide** on building a simple component in Evidence.
 
-For a fuller guide, Svelte offers a really great interactive tutorial that you can complete in your browser in about an hour: [Svelte Tutorial](https://svelte.dev/tutorial/basics)
+For a fuller guide, Svelte offers a great interactive tutorial that you can complete in your browser in about an hour: [Svelte Tutorial](https://svelte.dev/tutorial/basics)
 
 <Alert status=info>
 
@@ -12959,7 +12957,7 @@ For a fuller guide, Svelte offers a really great interactive tutorial that you c
 
 Let us know in our [Slack community](https://slack.evidence.dev)!
 
-We'd love to see what you've built, and may add generally applicable components to Evidence Labs, or the Evidence component library!
+We'd love to see what you've built, and may add generally applicable components to the Evidence core component library!
 
 </Alert>
 
@@ -19874,7 +19872,7 @@ Title to display in the Date Range component
     default=undefined
 >
 
-Customize "Select a Range" drop down, by including present range options. **Range options**: `'Last 7 Days'` `'Last 30 Days'` `'Last 90 Days'` `'Last 3 Months'` `'Last 6 Months'` `'Last 12 Months'` `'Last Month'` `'Last Year'` `'Month to Date'` `'Year to Date'` `'All Time'`
+Customize "Select a Range" drop down, by including present range options. **Range options**: `'Last 7 Days'` `'Last 30 Days'` `'Last 90 Days'` `'Last 365 Days'` `'Last 3 Months'` `'Last 6 Months'` `'Last 12 Months'` `'Last Month'` `'Last Year'` `'Month to Date'` `'Year to Date'` `'All Time'`
 
 </PropListing>
 <PropListing 
@@ -19884,7 +19882,7 @@ Customize "Select a Range" drop down, by including present range options. **Rang
 >
 
 
-Accepts preset in string format to apply default value in Date Range picker. **Range options**: `'Last 7 Days'` `'Last 30 Days'` `'Last 90 Days'` `'Last 3 Months'` `'Last 6 Months'` `'Last 12 Months'` `'Last Month'` `'Last Year'` `'Month to Date'` `'Year to Date'` `'All Time'`
+Accepts preset in string format to apply default value in Date Range picker. **Range options**: `'Last 7 Days'` `'Last 30 Days'` `'Last 90 Days'` `'Last 365 Days'` `'Last 3 Months'` `'Last 6 Months'` `'Last 12 Months'` `'Last Month'` `'Last Year'` `'Month to Date'` `'Year to Date'` `'All Time'`
 
 </PropListing>
 <PropListing 
@@ -20669,12 +20667,14 @@ appearance:
 
 ## Migration
 
-To enable dark mode in an Evidence application created before themes was released, add the the following to your `evidence.config.yaml`:
+To enable dark mode in an Evidence application created before themes was released, replace `evidence.plugins.yaml` with `evidence.config.yaml`:
 
 ```yaml
 appearance:
     default: system
     switcher: true
+plugins:
+    [contents of evidence.plugins.yaml, indented one additional level]
 ```
 
 
@@ -23057,7 +23057,14 @@ sidebar_position: 3
 
 You can build a component plugin to publish your own custom components, or to make existing open source component libraries easily available for Evidence users.
 
-The easiest way to get started is from the example component library [**on GitHub**](https://github.com/evidence-dev/labs), with a live demo of the components [here](https://labs.evidence.dev).
+
+<Alert status=warning>
+
+Evidence Labs is deprecated and should not be used as a plugin in your Evidence app. This section of the documentation will be updated in the future. 
+
+</Alert>
+
+An example component library [Evidence Labs](https://github.com/evidence-dev/labs) is available on GitHub, with a live demo of the components [here](https://labs.evidence.dev).
 
 ## Basic Steps
 1. Clone the [Evidence Labs example repo](https://github.com/evidence-dev/labs)
@@ -23075,7 +23082,7 @@ The easiest way to get started is from the example component library [**on GitHu
 
 Plugins must "export" their components to make them available to your Evidence apps.
 
-There are 2 ways to set up component exporting in your plugin:
+There are two ways to set up component exporting in your plugin:
 1. [Module Exports](#module-exports) (recommended)
 2. [Manifest](#manifest) - this method can be used in cases when a large component library already exists
 
@@ -23772,7 +23779,7 @@ GitHub Pages is a static site hosting service that publishes a website from HTML
 
     **Base Path**
 
-    GitHub Pages serves sites at subpaths of github.io by default, e.g. `https://[username].github.io/your-app`, so you will need to adjust the [base path](/deployment/base-paths) for your app, unless using a custom domain.
+    GitHub Pages serves sites at subpaths of github.io by default, e.g. `https://[username].github.io/your-app`, so you will need to adjust the [base path](/deployment/base-paths) AND the [build directory](/deployment/base-paths/#configuring-the-build-directory-in-packagejson) for your app, unless using a custom domain.
 </Alert>
 
 ## Prerequisites
@@ -23879,6 +23886,7 @@ on:
     # This is every 10 minutes
     - cron: '*/10 * * * *' 
 ```
+
 
 ---
 evidence/sites/docs/pages/deployment/hugging-face-spaces/index.md
