@@ -2467,7 +2467,7 @@ DuckDB supports `json` via the `JSON` logical type.
 The `JSON` logical type is interpreted as JSON, i.e., parsed, in JSON functions rather than interpreted as `VARCHAR`, i.e., a regular string (modulo the equality-comparison caveat at the bottom of this page).
 All JSON creation functions return values of this type.
 
-We also allow any of DuckDB's types to be casted to JSON, and JSON to be casted back to any of DuckDB's types, for example, to cast `JSON` to DuckDB's `STRUCT` type, run:
+We also allow any of DuckDB's types to be cast to JSON, and JSON to be cast back to any of DuckDB's types, for example, to cast `JSON` to DuckDB's `STRUCT` type, run:
 
 ```sql
 SELECT '{"duck": 42}'::JSON::STRUCT(duck INTEGER);
@@ -18237,6 +18237,7 @@ The following clauses guarantee that the original row order is preserved:
 * `UNION ALL`
 * `WHERE`
 * Window functions with an empty `OVER` clause
+* Common table expressions and table subqueries as long as they only contains the aforementioned components
 
 > Tip `row_number() OVER ()` allows turning the original row order into an explicit column that can be referenced in the operations that don't preserve row order by default. On materialized tables, the `rowid` pseudo-column can be used to the same effect.
 
@@ -18248,6 +18249,7 @@ The following operations **do not** guarantee that the row order is preserved:
 * `USING SAMPLE`
 * `GROUP BY` (in particular, the output order is undefined and the order in which rows are fed into [order-sensitive aggregate functions](https://duckdb.org/docs/sql/functions/aggregates.html#order-by-clause-in-aggregate-functions) is undefined unless explicitly specified in the aggregate function)
 * `ORDER BY` (specifically, `ORDER BY` may not use a [stable algorithm](https://en.m.wikipedia.org/wiki/Stable_algorithm))
+* Scalar subqueries
 
 ## Insertion Order
 
@@ -21243,7 +21245,7 @@ Explicit typecasting is performed by using a `CAST` expression. For example, `CA
 
 ## Implicit Casting
 
-In many situations, the system will add casts by itself. This is called *implicit* casting and happens, for example, when a function is called with an argument that does not match the type of the function but can be casted to the required type.
+In many situations, the system will add casts by itself. This is called *implicit* casting and happens, for example, when a function is called with an argument that does not match the type of the function but can be cast to the required type.
 
 Implicit casts can only be added for a number of type combinations, and is generally only possible when the cast cannot fail. For example, an implicit cast can be added from `INTEGER` to `DOUBLE` â€“ but not from `DOUBLE` to `INTEGER`.
 
@@ -39088,7 +39090,7 @@ title: Node.js API (Neo)
 
 An API for using [DuckDB](https://duckdb.org/) in [Node.js](https://nodejs.org/).
 
-This is a high-level API meant for applications.
+The primary package, [@duckdb/duckdb-api](https://www.npmjs.com/package/@duckdb/node-api), is a high-level API meant for applications.
 It depends on low-level bindings that adhere closely to [DuckDB's C API](https://duckdb.org/docs/api/c/overview),
 available separately as [@duckdb/duckdb-bindings](https://www.npmjs.com/package/@duckdb/node-bindings).
 
@@ -39115,8 +39117,10 @@ Some features are not yet complete:
 
 ### Supported Platforms
 
+- Linux arm64 (experimental)
 - Linux x64
 - Mac OS X (Darwin) arm64 (Apple Silicon)
+- Mac OS X (Darwin) x64 (Intel)
 - Windows (Win32) x64
 
 ## Examples
