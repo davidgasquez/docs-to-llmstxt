@@ -1521,7 +1521,7 @@ TO 'test' (PARTITION_BY (year, month));
 ```
 
 When reading, the partition columns are read from the directory structure and
-can be can be included or excluded depending on the `hive_partitioning` parameter.
+can be included or excluded depending on the `hive_partitioning` parameter.
 
 ```sql
 FROM read_parquet('test/*/*/*.parquet', hive_partitioning = true); -- will include year, month partition columns
@@ -4060,6 +4060,8 @@ redirect_from:
 
 Profiling is essential to help understand why certain queries exhibit specific performance characteristics.
 DuckDB contains several built-in features to enable query profiling, which this page covers.
+For a high-level example of using `EXPLAIN`, see the [â€œInspect Query Plansâ€� page]({% link docs/guides/meta/explain.md %}).
+For an in-depth explanation, see the [â€œProfilingâ€� page]({% link docs/dev/profiling.md %}) in the Developer Documentation.
 
 ## `EXPLAIN` Statement
 
@@ -28105,7 +28107,7 @@ layout: docu
 title: Import from Apache Arrow
 ---
 
-`CREATE TABLE AS` and `INSERT INTO` can be used to create a table from any query. We can then create tables or insert into existing tables by referring to referring to the Apache Arrow object in the query. This example imports from an [Arrow Table](https://arrow.apache.org/docs/python/generated/pyarrow.Table.html), but DuckDB can query different Apache Arrow formats as seen in the [SQL on Arrow guide]({% link docs/guides/python/sql_on_arrow.md %}).
+`CREATE TABLE AS` and `INSERT INTO` can be used to create a table from any query. We can then create tables or insert into existing tables by referring to the Apache Arrow object in the query. This example imports from an [Arrow Table](https://arrow.apache.org/docs/python/generated/pyarrow.Table.html), but DuckDB can query different Apache Arrow formats as seen in the [SQL on Arrow guide]({% link docs/guides/python/sql_on_arrow.md %}).
 
 ```python
 import duckdb
@@ -28166,7 +28168,7 @@ title: Import from Pandas
 ---
 
 [`CREATE TABLE ... AS`]({% link docs/sql/statements/create_table.md %}#create-table--as-select-ctas) and [`INSERT INTO`]({% link docs/sql/statements/insert.md %}) can be used to create a table from any query.
-We can then create tables or insert into existing tables by referring to referring to the [Pandas](https://pandas.pydata.org/) DataFrame in the query.
+We can then create tables or insert into existing tables by referring to the [Pandas](https://pandas.pydata.org/) DataFrame in the query.
 There is no need to register the DataFrames manually â€“
 DuckDB can find them in the Python process by name thanks to [replacement scans]({% link docs/guides/glossary.md %}#replacement-scan).
 
@@ -34035,7 +34037,7 @@ Any subsequent calls to `INSTALL âŸ¨extension_nameâŸ©` will use the local 
 FORCE INSTALL extension_name;
 ```
 
-Force installing can also be used to overwrite an extension with an extension with the same name from another repository,
+Force installing can also be used to overwrite an extension with an extension of the same name from another repository,
 
 For example, first, `spatial` is installed from the core repository:
 
@@ -39220,7 +39222,7 @@ const chunks = [];
 while (true) {
 const chunk = await result.fetchChunk();
 // Last chunk will have zero rows.
-if (chunk.rowCount === 0) {
+if (!chunk || chunk.rowCount === 0) {
 break;
 }
 chunks.push(chunk);
