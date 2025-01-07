@@ -5084,6 +5084,129 @@ FROM test_vector_types(NULL::ROW(i INTEGER, j VARCHAR, k DOUBLE), NULL::TIMESTAM
 ```
 
 ---
+duckdb/docs/dev/building/android.md
+---
+---
+layout: docu
+title: Android
+---
+
+DuckDB has experimental support for Android. Please use the latest `main` branch of DuckDB instead of the stable versions.
+
+## Building the DuckDB Library Using the Android NDK
+
+We provide build instructions for setups using macOS and Android Studio. For other setups, please adjust the steps accordingly.
+
+1. Open [Android Studio](https://developer.android.com/studio).
+Select the **Tools** menu and pick **SDK Manager**.
+Select the SDK Tools tab and tick the **NDK (Side by side)** option.
+Click **OK** to install.
+
+1. Set the Android NDK's location. For example:
+
+```batch
+ANDROID_NDK=~/Library/Android/sdk/ndk/28.0.12433566/
+```
+
+1. Set the [Android ABI](https://developer.android.com/ndk/guides/abis). For example:
+
+```batch
+ANDROID_ABI=arm64-v8a
+```
+
+Or:
+
+```batch
+ANDROID_ABI=x86_64
+```
+
+1. If you would like to use the [Ninja build system]({% link docs/dev/building/overview.md %}#prerequisites), make sure it is installed and available on the `PATH`.
+
+1. Set the list of DuckDB extensions to build. These will be statically linked in the binary. For example:
+
+```batch
+DUCKDB_EXTENSIONS="icu;json;parquet"
+```
+
+1. Navigate to DuckDB's directory and run the build as follows:
+
+```batch
+PLATFORM_NAME="android_${ANDROID_ABI}"
+BUILDDIR=./build/${PLATFORM_NAME}
+mkdir -p ${BUILDDIR}
+cd ${BUILDDIR}
+cmake \
+-G "Ninja" \
+-DEXTENSION_STATIC_BUILD=1 \
+-DDUCKDB_EXTRA_LINK_FLAGS="-llog" \
+-DBUILD_EXTENSIONS=${DUCKDB_EXTENSIONS} \
+-DENABLE_EXTENSION_AUTOLOADING=1 \
+-DENABLE_EXTENSION_AUTOINSTALL=1 \
+-DCMAKE_VERBOSE_MAKEFILE=on \
+-DANDROID_PLATFORM=${ANDROID_PLATFORM} \
+-DLOCAL_EXTENSION_REPO="" \
+-DOVERRIDE_GIT_DESCRIBE="" \
+-DDUCKDB_EXPLICIT_PLATFORM=${PLATFORM_NAME} \
+-DBUILD_UNITTESTS=0 \
+-DBUILD_SHELL=1 \
+-DANDROID_ABI=${ANDROID_ABI} \
+-DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
+-DCMAKE_BUILD_TYPE=Release ../..
+cmake \
+--build . \
+--config Release
+```
+
+1. For the `arm64-v8a` ABI, the build will produce the `build/android_arm64-v8a/duckdb` and `build/android_arm64-v8a/src/libduckdb.so` binaries.
+
+## Building the CLI in Termux
+
+To build the [command line client]({% link docs/api/cli/overview.md %}) in the [Termux application](https://termux.dev/), install the following packages:
+
+```batch
+pkg install -y git ninja clang cmake python3
+```
+
+Clone the DuckDB repository and build it as follows:
+
+```batch
+mkdir build
+cd build
+export LDFLAGS="-llog"
+cmake \
+-G "Ninja" \
+-DBUILD_EXTENSIONS="" \
+-DDUCKDB_EXPLICIT_PLATFORM=linux_arm64_android \
+-DCMAKE_BUILD_TYPE=Release \
+..
+cmake --build . --config Release
+```
+
+Note that you can also use the Python client:
+
+```batch
+pip install --pre --upgrade duckdb
+```
+
+## Troubleshooting
+
+### Log Library Is Missing
+
+**Problem:**
+The build throws the following error:
+
+```console
+ld.lld: error: undefined symbol: __android_log_write
+```
+
+**Solution:**
+Make sure the log library is linked:
+
+```bash
+export LDFLAGS="-llog"
+```
+
+---
 duckdb/docs/dev/building/build_configuration.md
 ---
 ---
@@ -5204,265 +5327,6 @@ v0.10.1-dev843 09ea97d0a9
 ```
 
 ---
-duckdb/docs/dev/building/build_instructions.md
----
----
-layout: docu
-title: Building Instructions
----
-
-## Prerequisites
-
-DuckDB needs CMake and a C++11-compliant compiler (e.g., GCC, Apple-Clang, MSVC).
-Additionally, we recommend using the [Ninja build system](https://ninja-build.org/), which automatically parallelizes the build process.
-
-## UNIX-Like Systems
-
-### macOS Packages
-
-Install Xcode and [Homebrew](https://brew.sh/). Then, install the required packages with:
-
-```batch
-brew install git cmake ninja
-```
-
-### Linux Packages
-
-Install the required packages with the package manager of your distribution.
-
-#### Ubuntu and Debian
-
-```batch
-sudo apt-get update && sudo apt-get install -y git g++ cmake ninja-build libssl-dev
-```
-
-#### Fedora, CentOS, and Red Hat
-
-```batch
-sudo yum install -y git g++ cmake ninja-build openssl-devel
-```
-
-#### Alpine Linux
-
-```batch
-apk add g++ git make cmake ninja
-```
-
-Note that Alpine Linux uses the musl libc as its C standard library.
-There are no official binaries distributed for musl libc but DuckDB can be build with it manually following the instructions on this page.
-
-### Cloning the Repository
-
-Clone the DuckDB repository:
-
-```batch
-git clone https://github.com/duckdb/duckdb
-```
-
-We recommend creating a full clone of the repository. Note that the directory uses approximately 1.3 GB of disk space.
-
-### Building DuckDB
-
-To build DuckDB, we use a Makefile which in turn calls into CMake. We also advise using [Ninja](https://ninja-build.org/manual.html) as the generator for CMake.
-
-```batch
-GEN=ninja make
-```
-
-> Bestpractice It is not advised to directly call CMake, as the Makefile sets certain variables that are crucial to properly building the package.
-
-Once the build finishes successfully, you can find the `duckdb` binary in the `build` directory:
-
-```batch
-build/release/duckdb
-```
-
-### Linking Extensions
-
-For testing, it can be useful to build DuckDB with statically linked core extensions. To do so, run:
-
-```batch
-CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch' GEN=ninja make
-```
-
-This option also accepts out-of-tree extensions:
-
-```batch
-CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch;delta' GEN=ninja make
-```
-
-For more details, see the [â€œBuilding Extensionsâ€� page]({% link docs/dev/building/building_extensions.md %}).
-
-## Windows
-
-On Windows, DuckDB requires the [Microsoft Visual C++ Redistributable package](https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist) both as a build-time and runtime dependency. Note that unlike the build process on UNIX-like systems, the Windows builds directly call CMake.
-
-### Visual Studio
-
-To build DuckDB on Windows, we recommend using the Visual Studio compiler.
-To use it, follow the instructions in the [CI workflow](https://github.com/duckdb/duckdb/blob/52b43b166091c82b3f04bf8af15f0ace18207a64/.github/workflows/Windows.yml#L73):
-
-```batch
-python scripts/windows_ci.py
-cmake \
--DCMAKE_BUILD_TYPE=Release \
--DCMAKE_GENERATOR_PLATFORM=x64 \
--DENABLE_EXTENSION_AUTOLOADING=1 \
--DENABLE_EXTENSION_AUTOINSTALL=1 \
--DDUCKDB_EXTENSION_CONFIGS="${GITHUB_WORKSPACE}/.github/config/bundled_extensions.cmake" \
--DDISABLE_UNITY=1 \
--DOVERRIDE_GIT_DESCRIBE="$OVERRIDE_GIT_DESCRIBE"
-cmake --build . --config Release --parallel
-```
-
-### MSYS2 and MinGW64
-
-DuckDB on Windows can also be built with [MSYS2](https://www.msys2.org/) and [MinGW64](https://www.mingw-w64.org/).
-Note that this build is only supported for compatibility reasons and should only be used if the Visual Studio build is not feasible on a given platform.
-To build DuckDB with MinGW64, install the required dependencies using Pacman.
-When prompted with `Enter a selection (default=all)`, select the default option by pressing `Enter`.
-
-```batch
-pacman -Syu git mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
-git clone https://github.com/duckdb/duckdb
-cd duckdb
-cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DBUILD_EXTENSIONS="icu;parquet;json"
-cmake --build . --config Release
-```
-
-Once the build finishes successfully, you can find the `duckdb.exe` binary in the repository's directory:
-
-```batch
-./duckdb.exe
-```
-
-## Android
-
-DuckDB has experimental support for Android. Please use the latest `main` branch of DuckDB instead of the stable versions.
-
-### Building the DuckDB Library Using the Android NDK
-
-We provide build instructions for setups using macOS and Android Studio. For other setups, please adjust the steps accordingly.
-
-1. Open [Android Studio](https://developer.android.com/studio).
-Select the **Tools** menu and pick **SDK Manager**.
-Select the SDK Tools tab and tick the **NDK (Side by side)** option.
-Click **OK** to install.
-
-1. Set the Android NDK's location. For example:
-
-```batch
-ANDROID_NDK=~/Library/Android/sdk/ndk/28.0.12433566/
-```
-
-1. Set the [Android ABI](https://developer.android.com/ndk/guides/abis). For example:
-
-```batch
-ANDROID_ABI=arm64-v8a
-```
-
-Or:
-
-```batch
-ANDROID_ABI=x86_64
-```
-
-1. If you would like to use the [Ninja build system](#prerequisites), make sure it is installed and available on the `PATH`.
-
-1. Set the list of DuckDB extensions to build. These will be statically linked in the binary. For example:
-
-```batch
-DUCKDB_EXTENSIONS="icu;json;parquet"
-```
-
-1. Navigate to DuckDB's directory and run the build as follows:
-
-```batch
-PLATFORM_NAME="android_${ANDROID_ABI}"
-BUILDDIR=./build/${PLATFORM_NAME}
-mkdir -p ${BUILDDIR}
-cd ${BUILDDIR}
-cmake \
--G "Ninja" \
--DEXTENSION_STATIC_BUILD=1 \
--DDUCKDB_EXTRA_LINK_FLAGS="-llog" \
--DBUILD_EXTENSIONS=${DUCKDB_EXTENSIONS} \
--DENABLE_EXTENSION_AUTOLOADING=1 \
--DENABLE_EXTENSION_AUTOINSTALL=1 \
--DCMAKE_VERBOSE_MAKEFILE=on \
--DANDROID_PLATFORM=${ANDROID_PLATFORM} \
--DLOCAL_EXTENSION_REPO="" \
--DOVERRIDE_GIT_DESCRIBE="" \
--DDUCKDB_EXPLICIT_PLATFORM=${PLATFORM_NAME} \
--DBUILD_UNITTESTS=0 \
--DBUILD_SHELL=1 \
--DANDROID_ABI=${ANDROID_ABI} \
--DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
--DCMAKE_BUILD_TYPE=Release ../..
-cmake \
---build . \
---config Release
-```
-
-1. For the `arm64-v8a` ABI, the build will produce the `build/android_arm64-v8a/duckdb` and `build/android_arm64-v8a/src/libduckdb.so` binaries.
-
-### Building the CLI in Termux
-
-To build the [command line client]({% link docs/api/cli/overview.md %}) in the [Termux application](https://termux.dev/), install the following packages:
-
-```batch
-pkg install -y git ninja clang cmake python3
-```
-
-Clone the DuckDB repository and build it as follows:
-
-```batch
-mkdir build
-cd build
-export LDFLAGS="-llog"
-cmake \
--G "Ninja" \
--DBUILD_EXTENSIONS="" \
--DDUCKDB_EXPLICIT_PLATFORM=linux_arm64_android \
--DCMAKE_BUILD_TYPE=Release \
-..
-cmake --build . --config Release
-```
-
-Note that you can also use the Python client:
-
-```batch
-pip install --pre --upgrade duckdb
-```
-
-## Raspberry Pi (32-bit)
-
-On 32-bit Raspberry Pi boards, you need to add the [`-latomic` link flag](https://github.com/duckdb/duckdb/issues/13855#issuecomment-2341539339).
-As extensions are not distributed for this platform, it's recommended to also include them in the build.
-For example:
-
-```batch
-mkdir build
-cd build
-cmake .. \
--DCORE_EXTENSIONS="httpfs;json;parquet" \
--DDUCKDB_EXTRA_LINK_FLAGS="-latomic"
-make -j4
-```
-
-## Troubleshooting
-
-### The Build Runs Out of Memory
-
-Ninja parallelizes the build, which can cause out-of-memory issues on systems with limited resources.
-These issues have also been reported to occur on Alpine Linux, especially on machines with limited resources.
-In these cases, avoid using Ninja by setting the Makefile generator to empty (`GEN=`):
-
-```batch
-GEN= make
-```
-
----
 duckdb/docs/dev/building/building_extensions.md
 ---
 ---
@@ -5472,41 +5336,45 @@ title: Building Extensions
 
 [Extensions]({% link docs/extensions/overview.md %}) can be built from source and installed from the resulting local binary.
 
-## Building Extensions Using Build Flags
+## Building Extensions
 
-To build using extension flags, set the `CORE_EXTENSIONS` flag to the list of extensions that you want to be build.
+To build using extension flags, set the `CORE_EXTENSIONS` flag to the list of extensions that you want to be build. For example:
 
-Extension will in most cases by directly linked the resulting DuckDB executable.
-
-For example, to build DuckDB with the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}), run the following script:
-
-```bash
-GEN=ninja CORE_EXTENSIONS='httpfs' make
+```batch
+CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch' GEN=ninja make
 ```
 
-### Special Extension Flags
+This option also accepts out-of-tree extensions such as [`delta`]({% link docs/extensions/delta.md %}):
 
-#### `BUILD_JEMALLOC`
+```batch
+CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch;delta' GEN=ninja make
+```
+
+In most cases, extension will be directly linked in the resulting DuckDB executable.
+
+## Special Extension Flags
+
+### `BUILD_JEMALLOC`
 
 When this flag is set, the [`jemalloc` extension]({% link docs/extensions/jemalloc.md %}) is built.
 
-#### `BUILD_TPCE`
+### `BUILD_TPCE`
 
 When this flag is set, the [TPCE](https://www.tpc.org/tpce/) libray is built. Unlike TPC-H and TPC-DS this is not a proper extension and it's not distributed as such. Enablign this allows TPC-E enabled queries through our test suite.
 
-### Debug Flags
+## Debug Flags
 
-#### `CRASH_ON_ASSERT`
+### `CRASH_ON_ASSERT`
 
 `D_ASSERT(condition)` is used all throughout the code, these will throw an InternalException in debug builds.
 With this flag enabled, when the assertion triggers it will instead directly cause a crash.
 
-#### `DISABLE_STRING_INLINE`
+### `DISABLE_STRING_INLINE`
 
 In our execution format `string_t` has the feature to â€œinlineâ€� strings that are under a certain length (12 bytes), this means they don't require a separate allocation.
 When this flag is set, we disable this and don't inline small strings.
 
-#### `DISABLE_MEMORY_SAFETY`
+### `DISABLE_MEMORY_SAFETY`
 
 Our data structures that are used extensively throughout the non-performance-critical code have extra checks to ensure memory safety, these checks include:
 
@@ -5515,11 +5383,11 @@ Our data structures that are used extensively throughout the non-performance-cri
 
 With this flag enabled we remove these checks, this is mostly done to check that the performance hit of these checks is negligible.
 
-#### `DESTROY_UNPINNED_BLOCKS`
+### `DESTROY_UNPINNED_BLOCKS`
 
 When previously pinned blocks in the BufferManager are unpinned, with this flag enabled we destroy them instantly to make sure that there aren't situations where this memory is still being used, despite not being pinned.
 
-#### `DEBUG_STACKTRACE`
+### `DEBUG_STACKTRACE`
 
 When a crash or assertion hit occurs in a test, print a stack trace.
 This is useful when debugging a crash that is hard to pinpoint with a debugger attached.
@@ -5539,13 +5407,13 @@ duckdb_extension_load(parquet)
 
 Build DuckDB as follows:
 
-```bash
+```batch
 GEN=ninja EXTENSION_CONFIGS="extension_config.cmake" make
 ```
 
 Then, to install the extensions in one go, run:
 
-```bash
+```batch
 # for release builds
 cd build/release/extension/
 # for debug builds
@@ -5557,6 +5425,194 @@ done
 ```
 
 ---
+duckdb/docs/dev/building/linux.md
+---
+---
+layout: docu
+title: Linux
+---
+
+## Prerequisites
+
+On Linux, install the required packages with the package manager of your distribution.
+
+### Ubuntu and Debian
+
+```batch
+sudo apt-get update && sudo apt-get install -y git g++ cmake ninja-build libssl-dev
+```
+
+### Fedora, CentOS, and Red Hat
+
+```batch
+sudo yum install -y git g++ cmake ninja-build openssl-devel
+```
+
+### Alpine Linux
+
+```batch
+apk add g++ git make cmake ninja
+```
+
+Note that Alpine Linux uses the musl libc as its C standard library.
+There are no official binaries distributed for musl libc but DuckDB can be build with it manually following the instructions on this page.
+
+## Building DuckDB
+
+Clone and build DuckDB as follows:
+
+```batch
+git clone https://github.com/duckdb/duckdb
+cd duckdb
+GEN=ninja make
+```
+
+Once the build finishes successfully, you can find the `duckdb` binary in the `build` directory:
+
+```batch
+build/release/duckdb
+```
+
+For different build configurations (`debug`, `relassert`, etc.), please consult the [Build Configurations page]({% link docs/dev/building/build_configuration.md %}).
+
+## Troubleshooting
+
+### R Package on Linux AArch64: `too many GOT entries` Build Error
+
+**Problem:**
+Building the R package on Linux running on an ARM64 architecture (AArch64) may result in the following error message:
+
+```console
+/usr/bin/ld: /usr/include/c++/10/bits/basic_string.tcc:206:
+warning: too many GOT entries for -fpic, please recompile with -fPIC
+```
+
+**Solution:**
+Create or edit the `~/.R/Makevars` file. This example also contains the [flag to parallelize the build](#r-package-the-build-only-uses-a-single-thread):
+
+```ini
+ALL_CXXFLAGS = $(PKG_CXXFLAGS) -fPIC $(SHLIB_CXXFLAGS) $(CXXFLAGS)
+MAKEFLAGS = -j$(nproc)
+```
+
+When making this change, also consider [making the build parallel](#r-package-the-build-only-uses-a-single-thread).
+
+### Building the httpfs Extension Fails
+
+**Problem:**
+When building the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) on Linux, the build may fail with the following error.
+
+```console
+CMake Error at /usr/share/cmake-3.22/Modules/FindPackageHandleStandardArgs.cmake:230 (message):
+Could NOT find OpenSSL, try to set the path to OpenSSL root folder in the
+system variable OPENSSL_ROOT_DIR (missing: OPENSSL_CRYPTO_LIBRARY
+OPENSSL_INCLUDE_DIR)
+```
+
+**Solution:**
+Install the `libssl-dev` library.
+
+```bash
+sudo apt-get install -y libssl-dev
+```
+
+Then, build with:
+
+```bash
+GEN=ninja CORE_EXTENSIONS="httpfs" make
+```
+
+---
+duckdb/docs/dev/building/macos.md
+---
+---
+layout: docu
+title: macOS
+---
+
+## Prerequisites
+
+Install Xcode and [Homebrew](https://brew.sh/). Then, install the required packages with:
+
+```batch
+brew install git cmake ninja
+```
+
+## Building DuckDB
+
+Clone and build DuckDB as follows.
+
+```batch
+git clone https://github.com/duckdb/duckdb
+cd duckdb
+GEN=ninja make
+```
+
+Once the build finishes successfully, you can find the `duckdb` binary in the `build` directory:
+
+```batch
+build/release/duckdb
+```
+
+For different build configurations (`debug`, `relassert`, etc.), please consult the [Build Configurations page]({% link docs/dev/building/build_configuration.md %}).
+
+## Troubleshooting
+
+### Debug Build Prints malloc Warning
+
+**Problem:**
+The `debug` build on macOS prints a `malloc` warning, e.g.:
+
+```text
+duckdb(83082,0x205b30240) malloc: nano zone abandoned due to inability to reserve vm space.
+```
+
+To prevent this, set the `MallocNanoZone` flag to 0:
+
+```batch
+MallocNanoZone=0 make debug
+```
+
+To apply this change for your future terminal sessions, you can add the following to your `~/.zshrc` file:
+
+```batch
+export MallocNanoZone=0
+```
+
+### Python Package on macOS: Building the httpfs Extension Fails
+
+**Problem:**
+The build fails on macOS when both the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) and the Python package are included:
+
+```batch
+GEN=ninja BUILD_PYTHON=1 CORE_EXTENSIONS="httpfs" make
+```
+
+```console
+ld: library not found for -lcrypto
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+error: command '/usr/bin/clang++' failed with exit code 1
+ninja: build stopped: subcommand failed.
+make: *** [release] Error 1
+```
+
+**Solution:**
+If you would like to build DuckDB from source, avoid using the `BUILD_PYTHON=1` flag unless you are actively developing the Python library.
+Instead, first build the `httpfs` extension (if required), then build and install the Python package separately using pip:
+
+```batch
+GEN=ninja CORE_EXTENSIONS="httpfs" make
+python3 -m pip install tools/pythonpkg --use-pep517 --user
+```
+
+If the second line complains about pybind11 being missing, or `--use-pep517` not being supported, make sure you're using a modern version of pip and setuptools.
+The default `python3-pip` on your OS may not be modern, so you may need to update it using:
+
+```batch
+python3 -m pip install pip -U
+```
+
+---
 duckdb/docs/dev/building/overview.md
 ---
 ---
@@ -5565,59 +5621,93 @@ title: Building DuckDB from Source
 redirect_from:
 - /dev/building
 - /docs/dev/building
+- /docs/dev/building/build_instructions
+- /docs/dev/building/platforms
 ---
 
-> DuckDB binaries are available for stable and nightly builds on the [installation page](/docs/installation/index).
-> You should only build DuckDB under specific circumstances, such as when running on a specific architecture or building an unmerged pull request.
+## When Should You Build DuckDB?
 
----
-duckdb/docs/dev/building/platforms.md
----
----
-layout: docu
-title: Platforms
-redirect_from:
-- docs/dev/building/supported_platforms
----
+DuckDB binaries are available for stable and nightly builds on the [installation page]({% link docs/installation/index.html %}).
+You should only build DuckDB under specific circumstances, such as when running on an experimental platform, when building an unmerged pull request, or developing your fork of DuckDB.
+
+## Prerequisites
+
+DuckDB needs CMake and a C++11-compliant compiler (e.g., GCC, Apple-Clang, MSVC).
+Additionally, we recommend using the [Ninja build system](https://ninja-build.org/), which automatically parallelizes the build process.
 
 ## Supported Platforms
 
-DuckDB officially supports the following platforms:
+DuckDB fully supports Linux, macOS and Windows. Both AMD64 (x86_64) and ARM64 (AArch64) builds are available for these platforms.
 
 | Platform name | Description |
-|--------------------|--------------------------------------------|
-| `linux_amd64` | Linux AMD64 |
-| `linux_arm64` | Linux ARM64 |
-| `osx_amd64` | macOS 12+ (Intel CPUs) |
-| `osx_arm64` | macOS 12+ (Apple Silicon: M1, M2, M3 CPUs) |
-| `windows_amd64` | Windows 10+ on Intel and AMD CPUs (x86_64) |
-| `windows_arm64` | Windows 10+ on ARM CPUs (AArch64) |
+|--------------------|--------------------------------------|
+| `linux_amd64` | Linux AMD64 (x86_64) |
+| `linux_arm64` | Linux ARM64 (AArch64) |
+| `osx_amd64` | macOS 12+ AMD64 (Intel CPUs) |
+| `osx_arm64` | macOS 12+ ARM64 (Apple Silicon CPUs) |
+| `windows_amd64` | Windows 10+ AMD64 (x86_64) |
+| `windows_arm64` | Windows 10+ ARM64 (AArch64) |
 
-## Other Platforms
+For instructions to build from source, see:
 
-There are several platforms with varying levels of support.
-For some, DuckDB binaries and extensions (or a [subset of extensions]({% link docs/extensions/working_with_extensions.md %}#platforms)) are distributed.
-For most platforms, DuckDB can often be [built from source](#building-duckdb-from-source).
+* [Linux]({% link docs/dev/building/linux.md %})
+* [macOS]({% link docs/dev/building/macos.md %})
+* [Windows]({% link docs/dev/building/windows.md %})
+
+## Experimental Platforms
+
+There are several additional platforms with varying levels of support.
+For some platforms, DuckDB binaries and extensions (or a [subset of extensions]({% link docs/extensions/working_with_extensions.md %}#platforms)) are distributed. For others, building from source is possible.
 
 | Platform name | Description |
 |------------------------|------------------------------------------------------------------------------------------------------|
-| `freebsd_amd64` | FreeBSD AMD64 (x64_64) |
-| `freebsd_arm64` | FreeBSD ARM64 |
-| `linux_arm64_android` | Android ARM64 |
-| `linux_arm64_gcc4` | Linux AMD64 with GCC 4 (e.g., CentOS 7) |
+| `freebsd_amd64` | FreeBSD AMD64 (x86_64) |
+| `freebsd_arm64` | FreeBSD ARM64 (AArch64) |
+| `linux_arm64_android` | Android ARM64 (AArch64) |
+| `linux_arm64_gcc4` | Linux ARM64 (AArch64) with GCC 4, e.g., CentOS 7 |
 | `wasm_eh` | WebAssembly Exception Handling |
 | `wasm_mvp` | WebAssembly Minimum Viable Product |
 | `windows_amd64_mingw` | Windows 10+ AMD64 (x86_64) with MinGW |
 | `windows_amd64_rtools` | Windows 10+ AMD64 (x86_64) for [RTools](https://cran.r-project.org/bin/windows/Rtools/) (deprecated) |
-| `windows_arm64_mingw` | Windows 10+ AMD64 (x86_64) with MinGW |
+| `windows_arm64_mingw` | Windows 10+ ARM64 (AArch64) with MinGW |
 
-32-bit architectures are officially not supported but it is possible to build DuckDB manually for some of these platforms, e.g., for [Raspberry Pi boards]({% link docs/dev/building/build_instructions.md %}#raspberry-pi-32-bit).
+> These platforms are not covered by DuckDB's community support. For details on commercial support, see the [support policy blog post](https://duckdblabs.com/news/2023/10/02/support-policy#platforms).
 
-## Building DuckDB from Source
+Below, we provide detailed build instructions for some platforms:
 
-DuckDB can be [built from source]({% link docs/dev/building/build_instructions.md %}) for several other platforms such as Android, FreeBSD, macOS 11, and Linux distributions using musl libc.
+* [Android]({% link docs/dev/building/android.md %})
+* [Raspberry Pi]({% link docs/dev/building/raspberry_pi.md %})
 
-For details on free and commercial support, see the [support policy blog post](https://duckdblabs.com/news/2023/10/02/support-policy#platforms).
+### Outdated Platforms
+
+DuckDB can be built for end-of-life platforms such as [macOS 11](https://endoflife.date/macos) and [CentOS 7/8](https://endoflife.date/centos) using the instructions provided for macOS and Linux.
+
+### 32-bit Architectures
+
+32-bit architectures are officially not supported but it is possible to build DuckDB manually for some of these platforms, e.g., for [Raspberry Pi boards]({% link docs/dev/building/raspberry_pi.md %}).
+
+---
+duckdb/docs/dev/building/raspberry_pi.md
+---
+---
+layout: docu
+title: Raspberry Pi
+---
+
+DuckDB can be built for Raspberry Pi.
+
+On 32-bit Raspberry Pi boards, you need to add the [`-latomic` link flag](https://github.com/duckdb/duckdb/issues/13855#issuecomment-2341539339).
+As extensions are not distributed for this platform, it's recommended to also include them in the build.
+For example:
+
+```batch
+mkdir build
+cd build
+cmake .. \
+-DCORE_EXTENSIONS="httpfs;json;parquet" \
+-DDUCKDB_EXTRA_LINK_FLAGS="-latomic"
+make -j4
+```
 
 ---
 duckdb/docs/dev/building/troubleshooting.md
@@ -5626,6 +5716,21 @@ duckdb/docs/dev/building/troubleshooting.md
 layout: docu
 title: Troubleshooting
 ---
+
+This page contains solutions to common problems reported by users. If you have platform-specific issues, make sure you also consult the troubleshooting guide for your platform such as the one for [Linux builds]({% link docs/dev/building/linux.md %}#troubleshooting).
+
+## The Build Runs Out of Memory
+
+**Problem:**
+Ninja parallelizes the build, which can cause out-of-memory issues on systems with limited resources.
+These issues have also been reported to occur on Alpine Linux, especially on machines with limited resources.
+
+**Solution:**
+Avoid using Ninja by setting the Makefile generator to empty via `GEN=`:
+
+```batch
+GEN= make
+```
 
 ## R Package: The Build Only Uses a Single Thread
 
@@ -5646,26 +5751,6 @@ MAKEFLAGS = -j$(nproc)
 ```
 
 However, note that, the more threads that are used, the higher the RAM consumption. If the system runs out of RAM while compiling, then the R session will crash.
-
-## R Package on Linux AArch64: `too many GOT entries` Build Error
-
-**Problem:**
-Building the R package on Linux running on an ARM64 architecture (AArch64) may result in the following error message:
-
-```console
-/usr/bin/ld: /usr/include/c++/10/bits/basic_string.tcc:206:
-warning: too many GOT entries for -fpic, please recompile with -fPIC
-```
-
-**Solution:**
-Create or edit the `~/.R/Makevars` file. This example also contains the [flag to parallelize the build](#r-package-the-build-only-uses-a-single-thread):
-
-```ini
-ALL_CXXFLAGS = $(PKG_CXXFLAGS) -fPIC $(SHLIB_CXXFLAGS) $(CXXFLAGS)
-MAKEFLAGS = -j$(nproc)
-```
-
-When making this change, also consider [making the build parallel](#r-package-the-build-only-uses-a-single-thread).
 
 ## Python Package: `No module named 'duckdb.duckdb'` Build Error
 
@@ -5694,62 +5779,53 @@ ModuleNotFoundError: No module named 'duckdb.duckdb'
 The problem is caused by Python trying to import from the current working directory.
 To work around this, navigate to a different directory (e.g., `cd ..`) and try running Python import again.
 
-## Python Package on macOS: Building the httpfs Extension Fails
+---
+duckdb/docs/dev/building/windows.md
+---
+---
+layout: docu
+title: Windows
+---
 
-**Problem:**
-The build fails on macOS when both the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) and the Python package are included:
+On Windows, DuckDB requires the [Microsoft Visual C++ Redistributable package](https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist) both as a build-time and runtime dependency. Note that unlike the build process on UNIX-like systems, the Windows builds directly call CMake.
 
-```bash
-GEN=ninja BUILD_PYTHON=1 CORE_EXTENSIONS="httpfs" make
+## Visual Studio
+
+To build DuckDB on Windows, we recommend using the Visual Studio compiler.
+To use it, follow the instructions in the [CI workflow](https://github.com/duckdb/duckdb/blob/52b43b166091c82b3f04bf8af15f0ace18207a64/.github/workflows/Windows.yml#L73):
+
+```batch
+python scripts/windows_ci.py
+cmake \
+-DCMAKE_BUILD_TYPE=Release \
+-DCMAKE_GENERATOR_PLATFORM=x64 \
+-DENABLE_EXTENSION_AUTOLOADING=1 \
+-DENABLE_EXTENSION_AUTOINSTALL=1 \
+-DDUCKDB_EXTENSION_CONFIGS="${GITHUB_WORKSPACE}/.github/config/bundled_extensions.cmake" \
+-DDISABLE_UNITY=1 \
+-DOVERRIDE_GIT_DESCRIBE="$OVERRIDE_GIT_DESCRIBE"
+cmake --build . --config Release --parallel
 ```
 
-```console
-ld: library not found for -lcrypto
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-error: command '/usr/bin/clang++' failed with exit code 1
-ninja: build stopped: subcommand failed.
-make: *** [release] Error 1
+## MSYS2 and MinGW64
+
+DuckDB on Windows can also be built with [MSYS2](https://www.msys2.org/) and [MinGW64](https://www.mingw-w64.org/).
+Note that this build is only supported for compatibility reasons and should only be used if the Visual Studio build is not feasible on a given platform.
+To build DuckDB with MinGW64, install the required dependencies using Pacman.
+When prompted with `Enter a selection (default=all)`, select the default option by pressing `Enter`.
+
+```batch
+pacman -Syu git mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+git clone https://github.com/duckdb/duckdb
+cd duckdb
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DBUILD_EXTENSIONS="icu;parquet;json"
+cmake --build . --config Release
 ```
 
-**Solution:**
-In general, we recommended using the nightly builds, available under GitHub main on the [installation page]({% link docs/installation/index.html %}).
-If you would like to build DuckDB from source, avoid using the `BUILD_PYTHON=1` flag unless you are actively developing the Python library.
-Instead, first build the `httpfs` extension (if required), then build and install the Python package separately using pip:
+Once the build finishes successfully, you can find the `duckdb.exe` binary in the repository's directory:
 
-```bash
-GEN=ninja CORE_EXTENSIONS="httpfs" make
-```
-
-If the next line complains about pybind11 being missing, or `--use-pep517` not being supported, make sure you're using a modern version of pip and setuptools.
-`python3-pip` on your OS may not be modern, so you may need to run `python3 -m pip install pip -U` first.
-
-```bash
-python3 -m pip install tools/pythonpkg --use-pep517 --user
-```
-
-## Linux: Building the httpfs Extension Fails
-
-**Problem:**
-When building the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) on Linux, the build may fail with the following error.
-
-```console
-CMake Error at /usr/share/cmake-3.22/Modules/FindPackageHandleStandardArgs.cmake:230 (message):
-Could NOT find OpenSSL, try to set the path to OpenSSL root folder in the
-system variable OPENSSL_ROOT_DIR (missing: OPENSSL_CRYPTO_LIBRARY
-OPENSSL_INCLUDE_DIR)
-```
-
-**Solution:**
-Install the `libssl-dev` library.
-
-```bash
-sudo apt-get install -y libssl-dev
-```
-
-Then, build with:
-
-```bash
-GEN=ninja CORE_EXTENSIONS="httpfs" make
+```batch
+./duckdb.exe
 ```
 
 ---
@@ -28251,7 +28327,7 @@ cd tools/pythonpkg
 python setup.py install
 ```
 
-For detailed instructions on how to compile DuckDB from source, see the [Building guide]({% link docs/dev/building/build_instructions.md %}).
+For detailed instructions on how to compile DuckDB from source, see the [Building guide]({% link docs/dev/building/overview.md %}).
 
 ---
 duckdb/docs/guides/python/jupyter.md
@@ -31198,7 +31274,7 @@ For more details, see the [`h3` extensionâ€™s documentation]({% link commun
 
 ## Developer Experience
 
-From the developerâ€™s perspective, the Community Extensions repository performs the steps required for publishing extensions, including building the extensions for all relevant [platforms]({% link docs/dev/building/platforms.md %}), signing the extension binaries and serving them from the repository.
+From the developerâ€™s perspective, the Community Extensions repository performs the steps required for publishing extensions, including building the extensions for all relevant [platforms]({% link docs/dev/building/overview.md %}#supported-platforms), signing the extension binaries and serving them from the repository.
 
 For the [maintainer of `h3`](https://github.com/isaacbrodsky/), the publication process required performing the following steps:
 
@@ -31949,7 +32025,7 @@ The availability of the `jemalloc` extension depends on the operating system.
 ### Linux
 
 On Linux, the AMD64 (x86_64) distribution of DuckDB ships with the `jemalloc` extension.
-To disable the `jemalloc` extension, [build DuckDB from source]({% link docs/dev/building/build_instructions.md %}) and set the `SKIP_EXTENSIONS` flag as follows:
+To disable the `jemalloc` extension, [build DuckDB from source]({% link docs/dev/building/overview.md %}) and set the `SKIP_EXTENSIONS` flag as follows:
 
 ```bash
 GEN=ninja SKIP_EXTENSIONS="jemalloc" make
@@ -31964,7 +32040,7 @@ GEN=ninja BUILD_JEMALLOC=1 make
 
 ### macOS
 
-The macOS version of DuckDB does not ship with the `jemalloc` extension but can be [built from source]({% link docs/dev/building/build_instructions.md %}) to include it:
+The macOS version of DuckDB does not ship with the `jemalloc` extension but can be [built from source]({% link docs/dev/building/macos.md %}) to include it:
 
 ```bash
 GEN=ninja BUILD_JEMALLOC=1 make
@@ -34117,7 +34193,7 @@ Note that using remote paths for compressed files is currently not possible.
 
 ### Building and Installing Extensions from Source
 
-For building and installing extensions from source, see the [building guide]({% link docs/dev/building/build_instructions.md %}#building-and-installing-extensions-from-source).
+For building and installing extensions from source, see the [building guide]({% link docs/dev/building/overview.md %}).
 
 ### Statically Linking Extensions
 
@@ -37324,7 +37400,7 @@ SET s3_access_key_id = 'âŸ¨AWS access key idâŸ©';
 SET s3_secret_access_key = 'âŸ¨AWS secret access keyâŸ©';
 ```
 
-Alternatively, session tokens are also supported and can be used instead:
+Alternatively, temporary S3 credentials are also supported. They require setting an additional session token:
 
 ```sql
 SET s3_session_token = 'âŸ¨AWS session tokenâŸ©';
@@ -37345,8 +37421,8 @@ Multiple configurations per query are also allowed:
 
 ```sql
 SELECT *
-FROM 's3://bucket/file.parquet?s3_region=region&s3_session_token=session_token' t1
-INNER JOIN 's3://bucket/file.csv?s3_access_key_id=accessKey&s3_secret_access_key=secretKey' t2;
+FROM 's3://bucket/file.parquet?s3_access_key_id=accessKey1&s3_secret_access_key=secretKey1' t1
+INNER JOIN 's3://bucket/file.csv?s3_access_key_id=accessKey2&s3_secret_access_key=secretKey2' t2;
 ```
 
 ## Configuration
