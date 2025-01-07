@@ -784,7 +784,7 @@ router.post(
 )
 ```
 
-You'll notice this code looks almost exactly like what we're doing in `firehose.ts`.
+You'll notice this code looks almost exactly like what we're doing in `ingester.ts`.
 
 ## Thinking in AT Proto
 
@@ -944,7 +944,7 @@ export const metadata = {
 
 # Glossary of terms
 
-The AT Protocol uses a lot of terms that may not be immediately familiar. This page gives a quick reference to these terms and includes some links to move information. {{className: 'lead'}}
+The AT Protocol uses a lot of terms that may not be immediately familiar. This page gives a quick reference to these terms and includes some links to more information. {{className: 'lead'}}
 
 ## Atmosphere
 
@@ -994,7 +994,7 @@ Data repositories are signed merkle trees. Their signatures can be verified agai
 
 ## Collection
 
-The "collection" is a bucket of JSON [records](#record) in a [data repository](#data-repo). They support ordered list operations. Every collection is identified by an [NSID](#nsid) which is expected to map to a [Lexicon](#lexicon) schema.
+The "collection" is a bucket of JSON [records](#record) in a [data repository](#data-repo). They support ordered list operations. Every collection is identified by an [NSID](#nsid-namespaced-id) which is expected to map to a [Lexicon](#lexicon) schema.
 
 ## Record
 
