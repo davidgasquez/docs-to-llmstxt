@@ -342,7 +342,7 @@ Queries can access the secrets defined in the Secrets Manager. For example, if t
 
 ## Locking Configurations
 
-Security-related configuration settings generally lock themselves for safety reasons. For example, while we can disable [community extensions]({% link docs/extensions/community_extensions.md %}) using the `SET allow_community_extensions = false`, we cannot re-enable them again after the fact without restarting the database. Trying to do so will result in an error:
+Security-related configuration settings generally lock themselves for safety reasons. For example, while we can disable [Community Extensions]({% link community_extensions/index.md %}) using the `SET allow_community_extensions = false`, we cannot re-enable them again after the fact without restarting the database. Trying to do so will result in an error:
 
 ```console
 Invalid Input Error: Cannot upgrade allow_community_extensions setting while database is running
@@ -421,8 +421,8 @@ DuckDB offers the following security levels for extensions.
 
 | Usable extensions | Description | Configuration |
 |-----|---|---|
-| core | Extensions can only be installed from the `core` repository. | `SET allow_community_extensions = false` |
-| core and community | Extensions can only be installed from the `core` and `community` repositories. | This is the default security level. |
+| `core` | Extensions can only be installed from the `core` repository. | `SET allow_community_extensions = false` |
+| `core` and `community` | Extensions can only be installed from the `core` and `community` repositories. | This is the default security level. |
 | any extension incl. unsigned | Any extensions can be installed. | `SET allow_unsigned_extensions = true` |
 
 Security-related configuration settings [lock themselves]({% link docs/operations_manual/securing_duckdb/overview.md %}#locking-configurations), i.e., it is only possible to restrict capabilities in the current process.
@@ -440,7 +440,7 @@ Invalid Input Error: Cannot upgrade allow_community_extensions setting while dat
 
 ## Community Extensions
 
-DuckDB has a [Community Extensions repository]({% link docs/extensions/community_extensions.md %}), which allows convenient installation of third-party extensions.
+DuckDB has a [Community Extensions repository]({% link community_extensions/index.md %}), which allows convenient installation of third-party extensions.
 Community extension repositories like pip or npm are essentially enabling remote code execution by design. This is less dramatic than it sounds. For better or worse, we are quite used to piping random scripts from the web into our shells, and routinely install a staggering amount of transitive dependencies without thinking twice. Some repositories like CRAN enforce a human inspection at some point, but thatâ€™s no guarantee for anything either.
 
 Weâ€™ve studied several different approaches to community extension repositories and have picked what we think is a sensible approach: we do not attempt to review the submissions, but require that the *source code of extensions is available*. We do take over the complete build, sign and distribution process. Note that this is a step up from pip and npm that allow uploading arbitrary binaries but a step down from reviewing everything manually. We allow users to [report malicious extensions](https://github.com/duckdb/community-extensions/security/advisories/new) and show adoption statistics like GitHub stars and download count. Because we manage the repository, we can remove problematic extensions from distribution quickly.
@@ -11677,12 +11677,12 @@ The table below shows the available mathematical operators for `DATE` types.
 
 | Operator | Description | Example | Result |
 |:-|:--|:---|:--|
-| `+` | Addition of days (integers) | `DATE '1992-03-22' + 5` | `1992-03-27` |
-| `+` | Addition of an `INTERVAL` | `DATE '1992-03-22' + INTERVAL 5 DAY` | `1992-03-27` |
-| `+` | Addition of a variable `INTERVAL` | `SELECT DATE '1992-03-22' + INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-27` and `1992-04-02` |
-| `-` | Subtraction of `DATE`s | `DATE '1992-03-27' - DATE '1992-03-22'` | `5` |
-| `-` | Subtraction of an `INTERVAL` | `DATE '1992-03-27' - INTERVAL 5 DAY` | `1992-03-22` |
-| `-` | Subtraction of a variable `INTERVAL` | `SELECT DATE '1992-03-27' - INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-22` and `1992-03-16` |
+| `+` | addition of days (integers) | `DATE '1992-03-22' + 5` | `1992-03-27` |
+| `+` | addition of an `INTERVAL` | `DATE '1992-03-22' + INTERVAL 5 DAY` | `1992-03-27 00:00:00.000000` |
+| `+` | addition of a variable `INTERVAL` | `SELECT DATE '1992-03-22' + INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-27 00:00:00.000000` and `1992-04-02 00:00:00.000000` |
+| `-` | subtraction of `DATE`s | `DATE '1992-03-27' - DATE '1992-03-22'` | `5` |
+| `-` | subtraction of an `INTERVAL` | `DATE '1992-03-27' - INTERVAL 5 DAY` | `1992-03-22 00:00:00.000000` |
+| `-` | subtraction of a variable `INTERVAL` | `SELECT DATE '1992-03-27' - INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-22 00:00:00.000000` and `1992-03-16 00:00:00.000000` |
 
 Adding to or subtracting from [infinite values]({% link docs/sql/data_types/date.md %}#special-values) produces the same infinite value.
 
@@ -18548,7 +18548,7 @@ Unlike PostgreSQL's `regexp_substr` function, DuckDB's `regexp_extract` returns 
 DuckDB does not support the [`to_date` PostgreSQL date formatting function](https://www.postgresql.org/docs/17/functions-formatting.html).
 Instead, please use the [`strptime` function]({% link docs/sql/functions/dateformat.md %}#strptime-examples).
 
-### current_date / current_time / current_timestamp
+### `current_date` / `current_time` / `current_timestamp`
 
 DuckDB's `current_date` and `current_time` pseudo-columns return the current date (as `DATE`) and time (as `TIME`) in UTC, whereas PostgreSQL returns the current date (as `DATE`) in the configured local timezone and time as `TIMETZ`. For the current time in the configured timezone, still as regular `TIME`, DuckDB offers the function `current_localtime()`.
 
@@ -19240,6 +19240,8 @@ TIMESTAMP '2000-01-01 01:33:30' - INTERVAL '1 month 13 hours',
 TIME '02:00:00' - INTERVAL '3 days 23 hours', -- wraps; equals TIME '03:00:00'
 ;
 ```
+
+> Warning Addition or subtraction of an `INTERVAL` value with a `DATE` value will return a `TIMESTAMP` with the time component set to `00:00:00.000000`.
 
 Conversely, subtracting two `TIMESTAMP`s or two `TIMESTAMPTZ`s from one another creates an `INTERVAL` describing the difference between the timestamps with only the *days and microseconds* components. For example:
 
@@ -24394,7 +24396,7 @@ Install the [`httpfs`]({% link docs/extensions/httpfs/overview.md %}) extension:
 INSTALL httpfs;
 ```
 
-Install the `h3` [Community Extension]({% link docs/extensions/community_extensions.md %}):
+Install the [`h3` Community Extension]({% link community_extensions/extensions/h3.md %}):
 
 ```sql
 INSTALL h3 FROM community;
@@ -31241,72 +31243,8 @@ layout: docu
 title: Community Extensions
 ---
 
-DuckDB recently launched a [Community Extensions repository](https://github.com/duckdb/community-extensions).
-For details, see the [announcement blog post]({% post_url 2024-07-05-community-extensions %}).
-
-## User Experience
-
-We are going to use the [`h3` extension](https://github.com/isaacbrodsky/h3-duckdb) as our example.
-This extension implements [hierarchical hexagonal indexing](https://github.com/uber/h3) for geospatial data.
-
-Using the DuckDB Community Extensions repository, you can install and load the `h3` extension as follows:
-
-```sql
-INSTALL h3 FROM community;
-LOAD h3;
-```
-
-Then, you can instantly start using it. Note that the sample data is 500 MB:
-
-```sql
-SELECT
-h3_latlng_to_cell(pickup_latitude, pickup_longitude, 9) AS cell_id,
-h3_cell_to_boundary_wkt(cell_id) AS boundary,
-count() AS cnt
-FROM read_parquet('https://blobs.duckdb.org/data/yellow_tripdata_2010-01.parquet')
-GROUP BY cell_id
-HAVING cnt > 10;
-```
-
-On load, the extensionâ€™s signature is checked, both to ensure platform and versions are compatible, and to verify that the source of the binary is the community extensions repository. Extensions are built, signed and distributed for Linux, macOS, Windows, and WebAssembly. This allows extensions to be available to any DuckDB client using version 1.0.0 and upcoming versions.
-
-For more details, see the [`h3` extensionâ€™s documentation]({% link community_extensions/extensions/h3.md %}).
-
-## Developer Experience
-
-From the developerâ€™s perspective, the Community Extensions repository performs the steps required for publishing extensions, including building the extensions for all relevant [platforms]({% link docs/dev/building/overview.md %}#supported-platforms), signing the extension binaries and serving them from the repository.
-
-For the [maintainer of `h3`](https://github.com/isaacbrodsky/), the publication process required performing the following steps:
-
-1. Sending a PR with a metadata file `description.yml` contains the description of the extension:
-
-```yaml
-extension:
-name: h3
-description: Hierarchical hexagonal indexing for geospatial data
-version: 1.0.0
-language: C++
-build: cmake
-license: Apache-2.0
-maintainers:
-- isaacbrodsky
-
-repo:
-github: isaacbrodsky/h3-duckdb
-ref: 3c8a5358e42ab8d11e0253c70f7cc7d37781b2ef
-```
-
-2. The CI will build and test the extension. The checks performed by the CI are aligned with the [`extension-template` repository](https://github.com/duckdb/extension-template), so iterations can be done independently.
-
-3. Wait for approval from the DuckDB Community Extension repositoryâ€™s maintainers and for the build process to complete.
-
-## Security Considerations
-
-See the [Securing Extensions page]({% link docs/operations_manual/securing_duckdb/securing_extensions.md %}) for details.
-
-## List of Community Extensions
-
-See the [DuckDB Community Extensions repository site](https://duckdb.org/community_extensions).
+Community-contributed extensions can be installed from the Community Extensions repository since [summer 2024]({% post_url 2024-07-05-community-extensions %}).
+Please visit the [Community Extensions section]({% link community_extensions/index.md %}) of the documentation for more details.
 
 ---
 duckdb/docs/extensions/core_extensions.md
@@ -32480,7 +32418,7 @@ to `LOAD` the spatial extension (again ignoring the statement if it is already l
 #### Extension Repository
 
 Optionally a repository can be provided where the extension should be installed from, by appending `FROM ` to the `INSTALL`/`FORCE INSTALL` command.
-This repository can either be an alias, such as [`community`]({% link docs/extensions/community_extensions.md %}), or it can be a direct URL, provided as a single-quoted string.
+This repository can either be an alias, such as [`community`]({% link community_extensions/index.md %}), or it can be a direct URL, provided as a single-quoted string.
 
 After installing/loading an extension, the [`duckdb_extensions` function](#listing-extensions) can be used to get more information.
 
@@ -32502,7 +32440,7 @@ To see which extensions can be autoloaded, check the [core extensions list]({% l
 
 ### Community Extensions
 
-DuckDB supports installing third-party [Community Extensions]({% link docs/extensions/community_extensions.md %}).
+DuckDB supports installing third-party [Community Extensions]({% link community_extensions/index.md %}).
 These are contributed by community members but they are built, signed, and distributed in a centralized repository.
 
 ### Installing Extensions through Client APIs
@@ -34202,7 +34140,7 @@ To statically link extensions, follow the [developer documentation's â€œUsin
 ## In-Tree vs. Out-of-Tree
 
 Originally, DuckDB extensions lived exclusively in the DuckDB main repository, `github.com/duckdb/duckdb`. These extensions are called in-tree. Later, the concept
-of out-of-tree extensions was added, where extensions where separated into their own repository, which we call out-of-tree.
+of out-of-tree extensions was added, where extensions were separated into their own repository, which we call out-of-tree.
 
 While from a user's perspective, there are generally no noticeable differences, there are some minor differences related to versioning:
 
@@ -38754,8 +38692,8 @@ Client APIs:
 * Standalone [Command Line Interface (CLI)]({% link docs/api/cli/overview.md %}) client
 * [ADBC API]({% link docs/api/adbc.md %})
 * [C]({% link docs/api/c/overview.md %})
-* [C#](https://github.com/Giorgi/DuckDB.NET) by [Giorgi](https://github.com/Giorgi)
 * [C++]({% link docs/api/cpp.md %})
+* [C#](https://github.com/Giorgi/DuckDB.NET) by [Giorgi](https://github.com/Giorgi)
 * [Common Lisp](https://github.com/ak-coram/cl-duckdb) by [ak-coram](https://github.com/ak-coram)
 * [Crystal](https://github.com/amauryt/crystal-duckdb) by [amauryt](https://github.com/amauryt)
 * [Dart]({% link docs/api/dart.md %}) by [TigerEye](https://www.tigereye.com/)
@@ -39206,7 +39144,7 @@ available separately as [@duckdb/node-bindings](https://www.npmjs.com/package/@d
 
 ## Features
 
-### Main differences from [duckdb-node](https://www.npmjs.com/package/duckdb)
+### Main Differences from [duckdb-node](https://www.npmjs.com/package/duckdb)
 
 - Native support for Promises; no need for separate [duckdb-async](https://www.npmjs.com/package/duckdb-async) wrapper.
 - DuckDB-specific API; not based on the [SQLite Node API](https://www.npmjs.com/package/sqlite3).
@@ -41005,7 +40943,7 @@ con.load_extension("spatial")
 
 ### Community Extensions
 
-To load [community extensions]({% link docs/extensions/community_extensions.md %}), use `repository="community"` argument to the `install_extension` method.
+To load [community extensions]({% link community_extensions/index.md %}), use `repository="community"` argument to the `install_extension` method.
 
 For example, install and load the `h3` community extension as follows:
 
