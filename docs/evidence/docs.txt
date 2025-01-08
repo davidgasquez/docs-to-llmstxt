@@ -73,7 +73,7 @@ If you're trying out Evidence, and need some support we'd love to hear from you.
 
 - Message us on <a href='https://slack.evidence.dev' target="_blank">Slack</a>
 - Open an issue on <a href='https://github.com/evidence-dev/evidence' target="_blank">Github</a>
-- See all the <a href="https://docs.evidence.dev/components/all-components" target="_blank">charts and components</a>.
+- See all the <a href="/components/all-components" target="_blank">charts and components</a>.
 
 If there's **anything** you find difficult in the docs, please [open an issue](https://github.com/evidence-dev/evidence/issues/new/choose) or reach out to us on Slack.
 
@@ -743,7 +743,7 @@ The link property makes the Value component clickable, allowing navigation to ot
         comparison=order_growth
         comparisonFmt=pct1
         comparisonTitle="vs. Last Month"
-        link='/components/data/big-value/'
+        link='/components/data/big-value'
       />
     </div>
 
@@ -755,7 +755,7 @@ The link property makes the Value component clickable, allowing navigation to ot
   comparison=order_growth
   comparisonFmt=pct1
   comparisonTitle="vs. Last Month"
-  link='/components/data/big-value/'
+  link='/components/data/big-value'
 />
 ```
 </DocTab>
@@ -1004,7 +1004,7 @@ limit 100
 
 ### Custom Column Formatting
 
-You can use the `fmt` prop to format your columns using [built-in format names or Excel format codes](/core-concepts/formatting/)
+You can use the `fmt` prop to format your columns using [built-in format names or Excel format codes](/core-concepts/formatting)
 
 <DocTab>
     <div slot='preview'>
@@ -1674,7 +1674,7 @@ order by number asc
 
 
 ### Including Images
-You can include images by indicating either an absolute path e.g. `https://www.example.com/images/image.png` or a relative path e.g. `/images/image.png`. For relative paths, see [storing static files in a static folder](/reference/markdown/#storing-images-and-static-files). 
+You can include images by indicating either an absolute path e.g. `https://www.example.com/images/image.png` or a relative path e.g. `/images/image.png`. For relative paths, see [storing static files in a static folder](/reference/markdown#storing-images-and-static-files). 
 
 In this example, `flag` is either an absolute path or a relative path to the image.
 
@@ -3274,7 +3274,7 @@ In the custom component:
 1. **Import any [Evidence components](https://github.com/evidence-dev/evidence/tree/main/sites/example-project/src/components)** you want to use in the custom component
 
 ## Optional: Publishing Your Components as a Plugin
-If you have built custom components that you would like other Evidence users to be able to use in their apps, you can publish them as an Evidence plugin. See the [Plugin section](/plugins/create-component-plugin/) for more details.
+If you have built custom components that you would like other Evidence users to be able to use in their apps, you can publish them as an Evidence plugin. See the [Plugin section](/plugins/create-component-plugin) for more details.
 
 ## Utility Functions
 Evidence provides a collection of helpful utility functions to use within custom components, for things like error handling, data manipulation, and value formatting.
@@ -7126,7 +7126,7 @@ Minimum height of the chart area (excl. header and footer) in pixels. Adjusting 
     options="{`{{exampleOption:'exampleValue'}}`}"
 >
 
-Custom Echarts options to override the default options. See [reference page](/components/charts/echarts-options/) for available options.
+Custom Echarts options to override the default options. See [reference page](/components/charts/echarts-options) for available options.
 
 </PropListing>
 <PropListing
@@ -7528,12 +7528,12 @@ queries:
 
 <PropListing 
     name="echartsOptions"
-    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleOption:'exampleValue'}}`}"
 />
 <PropListing 
     name="seriesOptions"
-    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 />
 <PropListing 
@@ -8419,7 +8419,7 @@ Minimum height of the chart area (excl. header and footer) in pixels. Adjusting 
     defaultValue="true"
 />
 
-Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on renderers](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/).
+Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on renderers](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg).
 
 </PropListing>
 
@@ -8430,7 +8430,7 @@ Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on
     options="{`{{exampleOption:'exampleValue'}}`}"
 >
 
-Custom Echarts options to override the default options. See [reference page](/components/charts/echarts-options/) for available options.
+Custom Echarts options to override the default options. See [reference page](/components/charts/echarts-options) for available options.
 
 </PropListing>
 <PropListing
@@ -8438,7 +8438,7 @@ Custom Echarts options to override the default options. See [reference page](/co
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 >
 
-Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See [reference page](/components/charts/echarts-options/) for available options.
+Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See [reference page](/components/charts/echarts-options) for available options.
 
 </PropListing>
 <PropListing
@@ -9219,12 +9219,12 @@ queries:
 
 <PropListing
     name=echartsOptions
-    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleOption:'exampleValue'}}`}"
 />
 <PropListing
     name=seriesOptions
-    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 />
 <PropListing
@@ -9696,12 +9696,12 @@ order by state asc, item asc
 
 <PropListing
     name=echartsOptions
-    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleOption:'exampleValue'}}`}"
 />
 <PropListing
     name=seriesOptions
-    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 />
 <PropListing
@@ -10137,12 +10137,12 @@ select * from (
 
 <PropListing
     name=echartsOptions
-    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleOption:'exampleValue'}}`}"
 />
 <PropListing
     name=seriesOptions
-    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 />
 <PropListing
@@ -10560,12 +10560,12 @@ from ${sales_distribution_by_channel}
 
 <PropListing 
     name="echartsOptions"
-    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleOption:'exampleValue'}}`}"
 />
 <PropListing 
     name="seriesOptions"
-    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 />
 <PropListing 
@@ -11576,7 +11576,7 @@ Minimum height of the chart area (excl. header and footer) in pixels. Adjusting 
     defaultValue="true"
 />
 
-Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on renderers](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/).
+Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on renderers](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg).
 
 </PropListing>
 
@@ -11587,7 +11587,7 @@ Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on
     options="{`{{exampleOption:'exampleValue'}}`}"
 >
 
-Custom Echarts options to override the default options. See [reference page](/components/charts/echarts-options/) for available options.
+Custom Echarts options to override the default options. See [reference page](/components/charts/echarts-options) for available options.
 
 </PropListing>
 <PropListing
@@ -11595,7 +11595,7 @@ Custom Echarts options to override the default options. See [reference page](/co
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 >
 
-Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See [reference page](/components/charts/echarts-options/) for available options.
+Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See [reference page](/components/charts/echarts-options) for available options.
 
 </PropListing>
 <PropListing
@@ -11873,12 +11873,12 @@ queries:
 
 <PropListing 
     name="echartsOptions"
-    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleOption:'exampleValue'}}`}"
 />
 <PropListing 
     name="seriesOptions"
-    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 />
 <PropListing 
@@ -12265,7 +12265,7 @@ Apply a specific color to each series in your chart. Unspecified series will rec
     defaultValue="true"
 />
 
-Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on renderers](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/).
+Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on renderers](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg).
 
 </PropListing>
 
@@ -14974,12 +14974,12 @@ group by all
 
 <PropListing
     name=echartsOptions
-    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleOption:'exampleValue'}}`}"
 />
 <PropListing
     name=seriesOptions
-    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 />
 <PropListing
@@ -15546,14 +15546,14 @@ queries:
 
 <PropListing
     name="echartsOptions"
-    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options. See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     required=false
     options="{`{{exampleOption:'exampleValue'}}`}"
     defaultValue="-"
 />
 <PropListing
     name="seriesOptions"
-    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options/' class=markdown>reference page</a> for available options."
+    description="Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See <a href='/components/charts/echarts-options' class=markdown>reference page</a> for available options."
     required=false
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
     defaultValue="-"
@@ -16509,7 +16509,7 @@ or file ilike 'populated_places%'
 order by scale desc, category, file
 ```
 
-Below are a selection of publically available GeoJSON files that may be useful for mapping. These are from the [Natural Earth Data](https://www.naturalearthdata.com/) project, and hosted by [GeoJSON.xyz](https://geojson.xyz/).
+Below are a selection of publically available GeoJSON files that may be useful for mapping. These are from the [Natural Earth Data](https://www.naturalearthdata.com) project, and hosted by [GeoJSON.xyz](https://geojson.xyz).
 
 ### Country, State, and City Locations
 
@@ -17305,7 +17305,7 @@ Text to display when an empty dataset is received - only applies when `emptySet`
     defaultValue="true"
 />
 
-Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on renderers](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/).
+Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on renderers](https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg).
 
 </PropListing>
 
@@ -17316,7 +17316,7 @@ Which chart renderer type (canvas or SVG) to use. See ECharts' [documentation on
     options="{`{{exampleOption:'exampleValue'}}`}"
 >
 
-Custom Echarts options to override the default options. See [reference page](/components/charts/echarts-options/) for available options.
+Custom Echarts options to override the default options. See [reference page](/components/charts/echarts-options) for available options.
 
 </PropListing>
 <PropListing
@@ -17324,7 +17324,7 @@ Custom Echarts options to override the default options. See [reference page](/co
     options="{`{{exampleSeriesOption:'exampleValue'}}`}"
 >
 
-Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See [reference page](/components/charts/echarts-options/) for available options.
+Custom Echarts options to override the default options for all series in the chart. This loops through the series to apply the settings rather than having to specify every series manually using `echartsOptions` See [reference page](/components/charts/echarts-options) for available options.
 
 </PropListing>
 <PropListing
@@ -18626,7 +18626,7 @@ or file ilike 'populated_places%'
 order by scale desc, category, file
 ```
 
-Below are a selection of publically available GeoJSON files that may be useful for mapping. These are from the [Natural Earth Data](https://www.naturalearthdata.com/) project, and hosted by [GeoJSON.xyz](https://geojson.xyz/).
+Below are a selection of publically available GeoJSON files that may be useful for mapping. These are from the [Natural Earth Data](https://www.naturalearthdata.com) project, and hosted by [GeoJSON.xyz](https://geojson.xyz).
 
 ### Country, State, and City Locations
 
@@ -19196,11 +19196,11 @@ sidebar_position: 1
 
 <DocTab>
     <div slot='preview'>
-      <BigLink href='/components/ui/big-link/'>My Big Link</BigLink> 
+      <BigLink href='/components/ui/big-link'>My Big Link</BigLink> 
     </div>
 
 ```markdown
-<BigLink href='/components/ui/big-link/'>
+<BigLink href='/components/ui/big-link'>
   My Big Link
 </BigLink>
 ```
@@ -20538,7 +20538,7 @@ To connect to a Trino installation that is accessible via HTTPS, you need to set
 
 #### Starburst Quickstart
 
-[Starburst](https://www.starburst.io/), the company behind Trino, offers a SAAS solution where they run Trino for you. Once you have signed up and created a Trino cluster, you should be able to connect Evidence with the following configuration:
+[Starburst](https://www.starburst.io), the company behind Trino, offers a SAAS solution where they run Trino for you. Once you have signed up and created a Trino cluster, you should be able to connect Evidence with the following configuration:
 
 Host: `<YOUR_DOMAIN>-<YOUR_CLUSTER_NAME>.galaxy.starburst.io`
 
@@ -20748,8 +20748,8 @@ The theme configuration defines the colors used by your app.
 
 The theme consists of 3 elements that define colors for different purposes:
 
-- [Color palettes](#color-palettes) configure colors for charts with different data series (e.g. [Bar Charts](/components/charts/bar-chart/#props-colorPalette)).
-- [Color scales](#color-scales) configure color ranges for charts with continuous data (e.g. [Heatmaps](/components/charts/heatmap/#props-colorScale)).
+- [Color palettes](#color-palettes) configure colors for charts with different data series (e.g. [Bar Charts](/components/charts/bar-chart#props-colorPalette)).
+- [Color scales](#color-scales) configure color ranges for charts with continuous data (e.g. [Heatmaps](/components/charts/heatmap#props-colorScale)).
 - [Colors](#colors) configure colors of UI elements (e.g. background, text, inputs).
 
 You can pass any valid CSS color values to these properties (hexadecimal, RGB, HSL, named CSS colors, etc).
@@ -20827,7 +20827,7 @@ Color palettes can have any number of colors listed. If a chart has more series 
 
 ### Default Color Palette
 
-The `default` color palette is used by all series-based charts (e.g. [Bar Charts](/components/charts/bar-chart/#props-colorPalette), [Line Charts](/components/charts/line-chart/#props-colorPalette)).
+The `default` color palette is used by all series-based charts (e.g. [Bar Charts](/components/charts/bar-chart#props-colorPalette), [Line Charts](/components/charts/line-chart#props-colorPalette)).
 
 You can configure the default color palette for light and dark mode individually (different colors for each):
 
@@ -20950,7 +20950,7 @@ Color scales can have any number of colors listed. The colors will be blended in
 
 ### Default Color Scale
 
-The `default` color scale is used by charts that represent continuous data<!-- (e.g. [Heatmaps](/components/charts/heatmap/#props-colorScale), [Area Maps](/components/maps/area-map/#props-colorScale), [Data Tables](/components/data/data-table/#props-colorScale) -->.
+The `default` color scale is used by charts that represent continuous data.
 
 You can configure the default color palette for light and dark mode individually (different colors for each):
 
@@ -21120,7 +21120,7 @@ Then use them in component props
 
 ### Props
 
-The color props accepted by many components (e.g. [`fillColor`](/components/charts/bar-chart/#props-fillColor), [`labelColor`](/components/charts/annotations/#props-labelColor)) accept a color in several different formats to reduce the friction of theming your app.
+The color props accepted by many components (e.g. [`fillColor`](/components/charts/bar-chart/#props-fillColor), [`labelColor`](/components/charts/annotations#props-labelColor)) accept a color in several different formats to reduce the friction of theming your app.
 
 
 1. **Use a color name from your theme.** Its configured light and dark values will be used.
@@ -21150,7 +21150,7 @@ The color props accepted by many components (e.g. [`fillColor`](/components/char
 
 ## Advanced
 
-The [colors listed above](/core-concepts/themes/#colors) are the bare minimum you should configure to theme your application. If you need more control, there are other colors you can customize.
+The [colors listed above](/core-concepts/themes#colors) are the bare minimum you should configure to theme your application. If you need more control, there are other colors you can customize.
 
 ```sql advanced_color_tokens
     select '<span class="p-0.5 rounded-sm font-semibold bg-primary text-primary-content">primary-content</span>' as 'color', 'Text color used on top of a primary background' as 'where-its-used', 'A readable shade of primary' as default union all
@@ -21321,7 +21321,7 @@ Evidence also has support for queries outside the markdown, which is especially 
 
 ### Basic Usage
 
-To use sql file queries, you need to place them in the `queries` directory, and then reference them in your [frontmatter](/reference/markdown/#frontmatter).
+To use sql file queries, you need to place them in the `queries` directory, and then reference them in your [frontmatter](/reference/markdown#frontmatter).
 
 An example setup could be:
 
@@ -21335,7 +21335,7 @@ my-evidence-project/
         my_category_file_query.sql
 ```
 
-These queries can then be used on `my_page.md` with the following [frontmatter](/reference/markdown/#frontmatter)
+These queries can then be used on `my_page.md` with the following [frontmatter](/reference/markdown#frontmatter)
 
 ```yaml
 ---
@@ -21361,7 +21361,7 @@ queries:
 
 #### File Query Chaining
 
-SQL file queries can [depend on other query files](/core-concepts/queries/#query-chaining), but they will all need to be referenced in the files you use them in. For example, if `my_file_query` depends on `some_category_my_category_file_query`, then you will have to have them both in your [frontmatter](/reference/markdown/#frontmatter), as shown above.
+SQL file queries can [depend on other query files](/core-concepts/queries#query-chaining), but they will all need to be referenced in the files you use them in. For example, if `my_file_query` depends on `some_category_my_category_file_query`, then you will have to have them both in your [frontmatter](/reference/markdown#frontmatter), as shown above.
 
 ## Query Parameters
 
@@ -22101,7 +22101,7 @@ There are a number of variables available to access information about the curren
 ```markdown
 The current page path is: {$page.route.id}
 
-<!-- Result: The current page path is: /core-concepts/syntax/ -->
+<!-- Result: The current page path is: /core-concepts/syntax -->
 ```
 
 ## Frontmatter
@@ -22196,7 +22196,7 @@ A useful reference can be found in the [Needful Things example app](https://gith
 
 ## Quickstart: VS Code Extension
 
-1. **Create a [SQL file query](/core-concepts/queries/#sql-file-queries) in your queries folder**. It should return:
+1. **Create a [SQL file query](/core-concepts/queries#sql-file-queries) in your queries folder**. It should return:
    - **One row per page** you want to generate
    - **A column containing a unique name or id** for each page
    - **Other columns containing data you want** to use in the pages
@@ -22374,7 +22374,7 @@ description: A 10 minute guide to building your first Evidence app.
 ---
 
 
-This is a guided tutorial to help you build your first Evidence app. If you'd prefer to learn how Evidence works, start with the [Syntax](/core-concepts/syntax/).
+This is a guided tutorial to help you build your first Evidence app. If you'd prefer to learn how Evidence works, start with the [Syntax](/core-concepts/syntax).
 
 <Alert>
 
@@ -22421,7 +22421,7 @@ npm run dev
 
 <br>
 
-If you chose a different setup during [Install Evidence](/install-evidence/#other-options), use the command that matches your setup.
+If you chose a different setup during [Install Evidence](/install-evidence#other-options), use the command that matches your setup.
 
 Your browser should open automatically. If it doesn't, open your browser and navigate to `localhost:3000` in the address bar. You should see your Evidence app:
 
@@ -22451,7 +22451,7 @@ Make some more changes to the page. You'll see them reflected "live" in the brow
 
 This is called **hot reloading** (HMR), and it allows you to see your changes in real-time as you are building your page.
 
-Evidence pages are `.md` files, and are written in a popular language called Markdown. You can learn more about Markdown [here](https://docs.evidence.dev/reference/markdown/).
+Evidence pages are `.md` files, and are written in a popular language called Markdown. You can learn more about Markdown [here](/reference/markdown).
 
 You can also insert HTML directly into your page if you need more control.
 
@@ -22486,7 +22486,7 @@ Now that you know how to create and edit pages, let's move on to working with da
 
 Navigate to `localhost:3000/settings` in your browser.
 
-Here you'll find our demo dataset, `needful_things`. It is a [DuckDB](https://duckdb.org/) database, which is one of many databases that Evidence supports.
+Here you'll find our demo dataset, `needful_things`. It is a [DuckDB](https://duckdb.org) database, which is one of many databases that Evidence supports.
 
 ![The Evidence settings page.](/img/getting-started/duck_db.png)
 
@@ -22529,7 +22529,7 @@ Once you have configured source queries, you need to **run sources** to actually
 
 If your dev server is running, sources will run automatically if you make changes to your queries.
 
-If your data source itself has changed, or if you are building pages [for deployment](/deployment/overview/), you may need to run sources manually from the Command Line:
+If your data source itself has changed, or if you are building pages [for deployment](/deployment/overview), you may need to run sources manually from the Command Line:
 
 ```bash
 npm run sources
@@ -22544,7 +22544,7 @@ Data from various sources and formats (i.e. Snowflake, a Postgres database, and 
 <br/>
 
 
-Learn more at at Core Concepts &gt; [Data Sources](/core-concepts/data-sources/).
+Learn more at at Core Concepts &gt; [Data Sources](/core-concepts/data-sources).
 </Alert>
 
 ### 7. Set up a Markdown Query
@@ -22585,7 +22585,7 @@ A **source query** is run directly against your data source, and must be written
 A **Markdown query** is written in the DuckDB dialect, and is run against the data cache. Markdown queries run with every page load, and their outputs are directly accessible by components within your pages.
 <br>
 
-To learn more about Markdown queries, including how to reuse them across pages, take a look at Core Concepts &gt; [Markdown Queries](/core-concepts/queries/).
+To learn more about Markdown queries, including how to reuse them across pages, take a look at Core Concepts &gt; [Markdown Queries](/core-concepts/queries).
 
 </Alert>
 
@@ -22593,7 +22593,7 @@ To learn more about Markdown queries, including how to reuse them across pages, 
 
 ### 8. Create a Data Table
 
-One simple way to display data is with a [Data Table](/components/data/data-table/). Add a `DataTable` component that uses `my_query_summary` as its data source:
+One simple way to display data is with a [Data Table](/components/data/data-table). Add a `DataTable` component that uses `my_query_summary` as its data source:
 
 **new-page.md**
 ````markdown
@@ -22673,7 +22673,7 @@ This will display:
 
 
 
-A Data Table is a built-in **component** of Evidence, and there are many more. To see a full list of components, take a look at the left-hand sidebar, or go to [All Components](/components/all-components/).
+A Data Table is a built-in **component** of Evidence, and there are many more. To see a full list of components, take a look at the left-hand sidebar, or go to [All Components](/components/all-components).
 
 ### 9. Create a Bar Chart
 
@@ -22726,7 +22726,7 @@ Select Source Type: **CSV**, and give your source a name. Hit Confirm:
 
 ![Add new source](/img/getting-started/add_new_source2.png)
 
-You can read about various configuration options for CSV files [here](https://docs.evidence.dev/core-concepts/data-sources/#csv-files). For now, leave this blank, and hit **Confirm Changes**:
+You can read about various configuration options for CSV files [here](/core-concepts/data-sources#csv-files). For now, leave this blank, and hit **Confirm Changes**:
 
 ![Add new source](/img/getting-started/add_new_source_confirm_changes.png)
 
@@ -22771,9 +22771,9 @@ That's it! You now know the basics of setting up data sources, writing queries, 
 
 ## Next steps
 
-- Explore other components: [All Components](/components/all-components/)
-- Learn how to deploy your Evidence app: [Deployment](/deployment/overview/)
-- Learn more about writing and organizing Markdown queries: [SQL Queries](/core-concepts/queries/)
+- Explore other components: [All Components](/components/all-components)
+- Learn how to deploy your Evidence app: [Deployment](/deployment/overview)
+- Learn more about writing and organizing Markdown queries: [SQL Queries](/core-concepts/queries)
 
 ### Help and support
 If you need help, or have corrections and suggestions for this tutorial, please join the [Evidence Slack community](https://slack.evidence.dev).
@@ -23218,7 +23218,7 @@ description: Evidence supports most markdown syntax. Below are some of the most 
 
 # Markdown Reference
 
-Evidence supports most markdown syntax. Below are some of the most common markdown features. For more details, check out [Markdown Guide](https://www.markdownguide.org/cheat-sheet/).
+Evidence supports most markdown syntax. Below are some of the most common markdown features. For more details, check out [Markdown Guide](https://www.markdownguide.org/cheat-sheet).
 
 ## Text Paragraphs
 
@@ -23270,7 +23270,7 @@ _Italic_ text is wrapped in single asterisks
 ```markdown
 [External link](https://google.com)
 
-[Internal link](another/page/)
+[Internal link](/another/page)
 ```
 
 ## Images
@@ -23383,7 +23383,7 @@ title: Evidence Docs
 ---
 ```
 
-You can put whatever data you would like here, and it uses a [yaml syntax](https://yaml.org/), but some properties are special:
+You can put whatever data you would like here, and it uses a [yaml syntax](https://yaml.org), but some properties are special:
 
 <PropListing
     name="title"
@@ -23444,7 +23444,7 @@ E.g.
 
 </PropListing>
 
-Anything outside of these values won't do anything on their own, but they will be accessible as [variables](/core-concepts/syntax/#expressions) on the page.
+Anything outside of these values won't do anything on their own, but they will be accessible as [variables](/core-concepts/syntax#expressions) on the page.
 
 ## Partials
 
@@ -23869,7 +23869,7 @@ description: Evidence is a static site generator, so can be deployed to any stat
 
 # Deployment Overview
 
-In production, Evidence generates [static sites](https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one/) by default. This means it doesn't run queries against your database when someone visits your site, but queries and pre-builds all pages as HTML beforehand.
+In production, Evidence generates [static sites](https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one) by default. This means it doesn't run queries against your database when someone visits your site, but queries and pre-builds all pages as HTML beforehand.
 
 Static sites are very versatile, and so you can host your Evidence app using Evidence Cloud, cloud services like AWS, Azure, Netlify or Vercel, or your own infrastructure.
 
@@ -24140,7 +24140,7 @@ GitHub Pages is a static site hosting service that publishes a website from HTML
 
     **Base Path**
 
-    GitHub Pages serves sites at subpaths of github.io by default, e.g. `https://[username].github.io/your-app`, so you will need to adjust the [base path](/deployment/configuration/base-paths) AND the [build directory](/deployment/configuration/base-paths/#configuring-the-build-directory-in-packagejson) for your app, unless using a custom domain.
+    GitHub Pages serves sites at subpaths of github.io by default, e.g. `https://[username].github.io/your-app`, so you will need to adjust the [base path](/deployment/configuration/base-paths) AND the [build directory](/deployment/configuration/base-paths#configuring-the-build-directory-in-packagejson) for your app, unless using a custom domain.
 
 </Alert>
 
@@ -24360,7 +24360,7 @@ og:
     image: /img/deployment/deploy-cloudflare-pages.png
 ---
 
-Cloudflare is a popular CDN and DNS provider that also offers a static site hosting service called [Cloudflare Pages](https://pages.cloudflare.com/). Cloudflare Pages can deploy Evidence apps from a Git repository.
+Cloudflare is a popular CDN and DNS provider that also offers a static site hosting service called [Cloudflare Pages](https://pages.cloudflare.com). Cloudflare Pages can deploy Evidence apps from a Git repository.
 
 ## Prerequisites
 
@@ -24398,7 +24398,7 @@ Your app will be deployed to a URL like `https://[repo-name].pages.dev`. It can 
 
 By default, your app will be public.
 
-Authentication can be configured with [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/identity/access/).
+Authentication can be configured with [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/identity/access).
 
 Workers & Pages > [Your app] > Settings > General > Access Policy > Manage
 
@@ -24426,11 +24426,11 @@ og:
     image: /img/deployment/deploy-gitlab-pages.png
 ---
 
-[GitLab Pages](https://docs.gitlab.com/ee/user/project/pages/) is a service that allows you to host static websites and single-page apps. Evidence apps can be deployed to GitLab Pages by pushing your Evidence project to a GitLab repository and enabling Pages for the repository.
+[GitLab Pages](https://docs.gitlab.com/ee/user/project/pages) is a service that allows you to host static websites and single-page apps. Evidence apps can be deployed to GitLab Pages by pushing your Evidence project to a GitLab repository and enabling Pages for the repository.
 
 ## Prerequisites
 
-- A [GitLab](https://gitlab.com/) account
+- A [GitLab](https://gitlab.com) account
 - An Evidence project pushed to a GitLab repository
 
 ## Deploy Evidence to GitLab Pages
@@ -24489,7 +24489,7 @@ og:
     image: /img/deployment/deploy-aws-amplify.png
 ---
 
-[AWS Amplify](https://aws.amazon.com/amplify/) is an AWS service that allows you to create full stack web and mobile apps. Amplify can deploy Evidence apps by linking to a Git repository.
+[AWS Amplify](https://aws.amazon.com/amplify) is an AWS service that allows you to create full stack web and mobile apps. Amplify can deploy Evidence apps by linking to a Git repository.
 
 ## Prerequisites
 
@@ -24543,7 +24543,7 @@ Hosting > Access control > Manage access.
 
 #### Cognito
 
-It is also possible to set up auth via [Cognito](https://docs.amplify.aws/react/build-a-backend/auth/).
+It is also possible to set up auth via [Cognito](https://docs.amplify.aws/react/build-a-backend/auth).
 
 ### Custom domains
 
@@ -24571,7 +24571,7 @@ og:
     image: /img/deployment/deploy-azure-static-apps.png
 ---
 
-[Azure Static Apps](https://learn.microsoft.com/en-us/azure/static-web-apps/) is a Microsoft Azure service that allows you to deploy static websites and web apps to Azure. Azure Static Apps can deploy Evidence apps by linking to a Git repository.
+[Azure Static Apps](https://learn.microsoft.com/en-us/azure/static-web-apps) is a Microsoft Azure service that allows you to deploy static websites and web apps to Azure. Azure Static Apps can deploy Evidence apps by linking to a Git repository.
 
 ## Prerequisites
 
@@ -24940,9 +24940,9 @@ Netlify Dashboard >> [your-site] >> Domain management >> Add a domain
 
 #### Schedule updates using Build Hooks
 
-If you want your site to update on a regular schedule, you can use GitHub Actions (or another similar service) to schedule regular calls to a [Netlify build hook](https://docs.netlify.com/configure-builds/build-hooks/).
+If you want your site to update on a regular schedule, you can use GitHub Actions (or another similar service) to schedule regular calls to a [Netlify build hook](https://docs.netlify.com/configure-builds/build-hooks).
 
-1. Create a [Netlify build hook](https://docs.netlify.com/configure-builds/build-hooks/) in **Site configuration > Build & deploy > Continuous deployment > Build hooks**
+1. Create a [Netlify build hook](https://docs.netlify.com/configure-builds/build-hooks) in **Site configuration > Build & deploy > Continuous deployment > Build hooks**
    ![netlify-add-build-hook](/img/netlify-add-build-hook.png)
    This will give you a URL that GitHub will use to trigger builds
 2. Add `NETLIFY_BUILD_HOOK` to your Github Repo's Secrets
