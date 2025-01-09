@@ -7,11 +7,11 @@ title: Documentation
 
 ## Connecting to DuckDB
 
-    DuckDB connection overview   
+    DuckDB Connection Overview   
 
 ## Client APIs
 
-    CLI (command line interface)      Java      Python      R      WebAssembly   
+    CLI (Command Line Interface)      Java      Python      R      WebAssembly   
 
 See all [client APIs]({% link docs/api/overview.md %}).
 
@@ -21,9 +21,7 @@ See all [client APIs]({% link docs/api/overview.md %}).
 
 ## Other
 
-    Guides      Installation   
-
-You can also [browse the DuckDB documentation offline]({% link docs/guides/offline-copy.md %}).
+    Guides      Installation      Building DuckDB      Browsing Offline   
 
 ---
 duckdb/docs/search.md
@@ -421,9 +419,9 @@ DuckDB offers the following security levels for extensions.
 
 | Usable extensions | Description | Configuration |
 |-----|---|---|
-| `core` | Extensions can only be installed from the `core` repository. | `SET allow_community_extensions = false` |
-| `core` and `community` | Extensions can only be installed from the `core` and `community` repositories. | This is the default security level. |
-| any extension incl. unsigned | Any extensions can be installed. | `SET allow_unsigned_extensions = true` |
+| `core` | Extensions can only be loaded if signed from a `core` key. | `SET allow_community_extensions = false` |
+| `core` and `community` | Extensions can only be loaded if signed from a `core` or `community` key. | This is the default security level. |
+| any extension incl. unsigned | Any extensions can be loaded. | `SET allow_unsigned_extensions = true` |
 
 Security-related configuration settings [lock themselves]({% link docs/operations_manual/securing_duckdb/overview.md %}#locking-configurations), i.e., it is only possible to restrict capabilities in the current process.
 
@@ -3811,8 +3809,6 @@ COPY
 TO 'row-groups-zstd.parquet'
 (FORMAT PARQUET, COMPRESSION ZSTD, ROW_GROUP_SIZE 100_000);
 ```
-
-> LZ4 compression is currently only available in the nightly and source builds:
 
 Write a CSV file to an `LZ4_RAW`-compressed Parquet file:
 
@@ -8874,7 +8870,7 @@ INSERT INTO edge VALUES
 (6, 3), (6, 4), (7, 4), (8, 1), (9, 4);
 ```
 
-Note that the graph contains directed cycles, e.g., between nodes 1, 2, and 5.
+Note that the graph contains directed cycles, e.g., between nodes 1, 5 and 8.
 
 #### Enumerate All Paths from a Node
 
@@ -11678,11 +11674,11 @@ The table below shows the available mathematical operators for `DATE` types.
 | Operator | Description | Example | Result |
 |:-|:--|:---|:--|
 | `+` | addition of days (integers) | `DATE '1992-03-22' + 5` | `1992-03-27` |
-| `+` | addition of an `INTERVAL` | `DATE '1992-03-22' + INTERVAL 5 DAY` | `1992-03-27 00:00:00.000000` |
-| `+` | addition of a variable `INTERVAL` | `SELECT DATE '1992-03-22' + INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-27 00:00:00.000000` and `1992-04-02 00:00:00.000000` |
+| `+` | addition of an `INTERVAL` | `DATE '1992-03-22' + INTERVAL 5 DAY` | `1992-03-27 00:00:00` |
+| `+` | addition of a variable `INTERVAL` | `SELECT DATE '1992-03-22' + INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-27 00:00:00` and `1992-04-02 00:00:00` |
 | `-` | subtraction of `DATE`s | `DATE '1992-03-27' - DATE '1992-03-22'` | `5` |
-| `-` | subtraction of an `INTERVAL` | `DATE '1992-03-27' - INTERVAL 5 DAY` | `1992-03-22 00:00:00.000000` |
-| `-` | subtraction of a variable `INTERVAL` | `SELECT DATE '1992-03-27' - INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-22 00:00:00.000000` and `1992-03-16 00:00:00.000000` |
+| `-` | subtraction of an `INTERVAL` | `DATE '1992-03-27' - INTERVAL 5 DAY` | `1992-03-22 00:00:00` |
+| `-` | subtraction of a variable `INTERVAL` | `SELECT DATE '1992-03-27' - INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-22 00:00:00` and `1992-03-16 00:00:00` |
 
 Adding to or subtracting from [infinite values]({% link docs/sql/data_types/date.md %}#special-values) produces the same infinite value.
 
@@ -12646,7 +12642,7 @@ For example, the following are all valid lambda functions:
 
 All scalar functions can be arbitrarily nested.
 
-_Nested lambda functions to get all squares of even list elements:_
+Nested lambda functions to get all squares of even list elements:
 
 ```sql
 SELECT list_transform(
@@ -12659,7 +12655,7 @@ y -> y * y
 [0, 4, 16]
 ```
 
-_Nested lambda function to add each element of the first list to the sum of the second list:_
+Nested lambda function to add each element of the first list to the sum of the second list:
 
 ```sql
 SELECT list_transform(
@@ -12696,7 +12692,7 @@ SELECT apply([1, 2], x -> apply([4], x -> x + tbl.x)[1] + x) FROM tbl;
 All lambda functions accept an optional extra parameter that represents the index of the current element.
 This is always the last parameter of the lambda function, and is 1-based (i.e., the first element has index 1).
 
-_Get all elements that are larger than their index:_
+Get all elements that are larger than their index:
 
 ```sql
 SELECT list_filter([1, 3, 1, 5], (x, i) -> x > i);
@@ -12901,7 +12897,7 @@ title: List Functions
 | [`list_intersect(list1, list2)`](#list_intersectlist1-list2) | Returns a list of all the elements that exist in both `l1` and `l2`, without duplicates. |
 | [`list_position(list, element)`](#list_positionlist-element) | Returns the index of the element if the list contains the element. If the element is not found, it returns `NULL`. |
 | [`list_prepend(element, list)`](#list_prependelement-list) | Prepends `element` to `list`. |
-| [`list_reduce(list, lambda)`](#list_reducelist-lambda) | Returns a single value that is the result of applying the lambda function to each element of the input list. See the [Lambda Functions]({% link docs/sql/functions/lambda.md %}#reduce) page for more details. |
+| [`list_reduce(list, lambda)`](#list_reducelist-lambda) | Returns a single value that is the result of applying the lambda function to each element of the input list. See the [Lambda Functions]({% link docs/sql/functions/lambda.md %}#reduce) page for more details. While list functions use a 1-based indexing, `list_reduce` uses a 0-based indexing. This is a [known issue](https://github.com/duckdb/duckdb/issues/14619). |
 | [`list_resize(list, size[, value])`](#list_resizelist-size-value) | Resizes the list to contain `size` elements. Initializes new elements with `value` or `NULL` if `value` is not set. |
 | [`list_reverse_sort(list)`](#list_reverse_sortlist) | Sorts the elements of the list in reverse order. See the [Sorting Lists]({% link docs/sql/functions/list.md %}#sorting-lists) section for more details about the `NULL` sorting order. |
 | [`list_reverse(list)`](#list_reverselist) | Reverses the list. |
@@ -13147,7 +13143,7 @@ title: List Functions
 
 
 
-| **Description** | Returns a single value that is the result of applying the lambda function to each element of the input list. See the [Lambda Functions]({% link docs/sql/functions/lambda.md %}#reduce) page for more details. |
+| **Description** | Returns a single value that is the result of applying the lambda function to each element of the input list. See the [Lambda Functions]({% link docs/sql/functions/lambda.md %}#reduce) page for more details. While list functions use a 1-based indexing, `list_reduce` uses a 0-based indexing. This is a [known issue](https://github.com/duckdb/duckdb/issues/14619). |
 | **Example** | `list_reduce([4, 5, 6], (x, y) -> x + y)` |
 | **Result** | `15` |
 | **Aliases** | `array_reduce`, `reduce` |
@@ -18588,6 +18584,84 @@ DESCRIBE myschema.mytable;
 | v | ENUM('as', 'df') | YES | NULL | NULL | NULL |
 
 ---
+duckdb/docs/sql/dialect/sql_quirks.md
+---
+---
+layout: docu
+title: SQL Quirks
+---
+
+Like all programming languages and libraries, DuckDB has its share of idiosyncrasies and inconsistencies.
+Some are vestiges of our feathered friend's evolution; others are inevitable because we strive to adhere to the [SQL Standard](https://blog.ansi.org/sql-standard-iso-iec-9075-2023-ansi-x3-135/) and specifically to PostgreSQL's dialect (see the [â€œPostgreSQL Compatibilityâ€�]({% link docs/sql/dialect/postgresql_compatibility.md %}) page for exceptions).
+The rest may simply come down to different preferences, or we may even agree on what _should_ be done but just havenâ€™t gotten around to it yet.
+
+Acknowledging these quirks is the best we can do, which is why we have compiled below a list of examples.
+
+## Aggregating Empty Groups
+
+On empty groups, the aggregate functions `sum`, `list`, and `string_agg` all return `NULL` instead of `0`, `[]` and `''`, respectively. This is dictated by the SQL Standard and obeyed by all SQL implementations we know. This behavior is inherited by the list aggregate [`list_sum`]({% link docs/sql/functions/list.md %}#list_-rewrite-functions), but not by the DuckDB original [`list_dot_product`]({% link docs/sql/functions/list.md %}#list_dot_productlist1-list2) which returns `0` on empty lists.
+
+## Indexing
+
+To comply with standard SQL, one-based indexing is used almost everywhere, e.g., array and string indexing and slicing, and window functions (`row_number`, `rank`, `dense_rank`). However, similarly to PostgreSQL, [JSON features use a zero-based indexing]({% link docs/data/json/overview.md %}#indexing).
+
+> While list functions use a 1-based indexing, `list_reduce` uses a 0-based indexing. This is a [known issue](https://github.com/duckdb/duckdb/issues/14619).
+
+## Expressions
+
+### Results That May Surprise You
+
+
+
+| Expression | Result | Note |
+|----------------------------|---------|-------------------------------------------------------------------------------|
+| `-2^2` | `4.0` | PostgreSQL compatibility means the unary minus has higher precedence than the exponentiation operator. Use additional parentheses, e.g., `-(2^2)` or the [`pow` function]({% link docs/sql/functions/numeric.md %}#powx-y), e.g. `-pow(2, 2)`, to avoid mistakes. |
+| `'t' = true` | `true` | Compatible with PostgreSQL. |
+| `1 = true` | `true` | Not compatible with PostgreSQL. |
+| `1 = '1.1'` | `true` | Not compatible with PostgreSQL. |
+| `1 IN (0, NULL)` | `NULL` | Makes sense if you think of the `NULL`s in the input and output as `UNKNOWN`. |
+| `1 in [0, NULL]` | `false` | |
+| `concat('abc', NULL)` | `abc` | Compatible with PostgreSQL. `list_concat` behaves similarly. |
+| `'abc' || NULL` | `NULL` | |
+
+
+
+### `NaN` Values
+
+`'NaN'::FLOAT = 'NaN'::FLOAT` and `'NaN'::FLOAT > 3` violate IEEE-754 but mean floating point data types have a total order, like all other datatypes (beware the consequences for `greatest`/`least`)
+
+### `age` Function
+
+`age(x)` is `current_date - x` instead of `current_timestamp - x`. Another quirk inherited from PostgreSQL.
+
+### Extract Functions
+
+`list_extract` / `map_extract` return `NULL` on non-existing keys. `struct_extract` throws an error because keys of structs are like columns.
+
+## Clauses
+
+### Automatic Column Deduplication in `SELECT`
+
+Column names are deduplicated with the first occurrence shadowing the others:
+
+```sql
+CREATE TABLE tbl AS SELECT 1 AS a;
+SELECT a FROM (SELECT *, 2 AS a FROM tbl);
+```
+
+| a |
+|--:|
+| 1 |
+
+### Case Insensitivity for `SELECT`ing Columns
+
+Due to case-insensitivity, it's not possible to use `SELECT a FROM 'file.parquet'` when a column called `A` appears before the desired column `a` in `file.parquet`.
+
+### `USING SAMPLE`
+
+The `USING SAMPLE` clause is syntactically placed after the `WHERE` and `GROUP BY` clauses (same as the `LIMIT` clause) but is semantically applied before both (unlike the `LIMIT` clause).
+
+---
 duckdb/docs/sql/data_types/array.md
 ---
 ---
@@ -19241,7 +19315,7 @@ TIME '02:00:00' - INTERVAL '3 days 23 hours', -- wraps; equals TIME '03:00:00'
 ;
 ```
 
-> Warning Addition or subtraction of an `INTERVAL` value with a `DATE` value will return a `TIMESTAMP` with the time component set to `00:00:00.000000`.
+> Adding an `INTERVAL` to a `DATE` returns a `TIMESTAMP` even when the `INTERVAL` has no microseconds component. The result is the same as if the `DATE` was cast to a `TIMESTAMP` (which sets the time component to `00:00:00`) before adding the `INTERVAL`.
 
 Conversely, subtracting two `TIMESTAMP`s or two `TIMESTAMPTZ`s from one another creates an `INTERVAL` describing the difference between the timestamps with only the *days and microseconds* components. For example:
 
@@ -25918,7 +25992,7 @@ duckdb/docs/guides/offline-copy.md
 ---
 ---
 layout: docu
-title: Browse Offline
+title: Browsing Offline
 ---
 
 You can browse the DuckDB documentation offline in the following formats:
@@ -26574,7 +26648,7 @@ redirect_from:
 If you find that your workload in DuckDB is slow, we recommend performing the following checks. More detailed instructions are linked for each point.
 
 1. Do you have enough memory? DuckDB works best if you have [5-10 GB memory per CPU core]({% link docs/guides/performance/environment.md %}#cpu-and-memory).
-1. Are you using a fast disk? Network-attached disks (such as cloud block storage) cause write-intenstive and[larger than memory]({% link docs/guides/performance/how_to_tune_workloads.md %}#spilling-to-disk) workloads to slow down. For running such workloads in cloud environments, it is recommended to use instance-attached storage (NVMe SSDs).
+1. Are you using a fast disk? Network-attached disks (such as cloud block storage) cause write-intenstive and [larger than memory]({% link docs/guides/performance/how_to_tune_workloads.md %}#spilling-to-disk) workloads to slow down. For running such workloads in cloud environments, it is recommended to use instance-attached storage (NVMe SSDs).
 1. Are you using indexes or constraints (primary key, unique, etc.)? If possible, try [disabling them]({% link docs/guides/performance/schema.md %}#indexing), which boosts load and update performance.
 1. Are you using the correct types? For example, [use `TIMESTAMP` to encode datetime values]({% link docs/guides/performance/schema.md %}#types).
 1. Are you reading from Parquet files? If so, do they have [row group sizes between 100k and 1M]({% link docs/guides/performance/file_formats.md %}#the-effect-of-row-group-sizes) and file sizes between 100 MB to 10 GB?
@@ -36837,9 +36911,53 @@ FROM read_parquet([
 ]);
 ```
 
-## Using a Custom Certificate File
+## Authenticating
 
-> This feature is currently only available in the nightly build. It will be [released]({% link docs/dev/release_calendar.md %}) in version 0.10.1.
+To authenticate for an HTTP(S) endpoint, create an `HTTP` secret using the [Secrets Manager]({% link docs/configuration/secrets_manager.md %}):
+
+```sql
+CREATE SECRET http_auth (
+TYPE HTTP,
+BEARER_TOKEN 'âŸ¨tokenâŸ©'
+);
+
+```
+
+Or:
+
+```sql
+CREATE SECRET http_auth (
+TYPE HTTP,
+EXTRA_HTTP_HEADERS MAP {
+'Authorization': 'Bearer âŸ¨tokenâŸ©'
+}
+);
+```
+
+## HTTP Proxy
+
+DuckDB supports HTTP proxies.
+
+You can add an HTTP proxy using the [Secrets Manager]({% link docs/configuration/secrets_manager.md %}):
+
+```sql
+CREATE SECRET http_proxy (
+TYPE HTTP,
+HTTP_PROXY 'âŸ¨http_proxy_urlâŸ©',
+HTTP_PROXY_USERNAME 'âŸ¨usernameâŸ©',
+HTTP_PROXY_PASSWORD 'âŸ¨passwordâŸ©'
+);
+```
+
+Alternatively, you can add it via [configuration options]({% link docs/configuration/pragmas.md %}):
+
+```sql
+SET http_proxy = 'âŸ¨http_proxy_urlâŸ©';
+SET http_proxy_username = 'âŸ¨usernameâŸ©';
+SET http_proxy_password = 'âŸ¨passwordâŸ©';
+```
+
+## Using a Custom Certificate File
 
 To use the `httpfs` extension with a custom certificate file, set the following [configuration options]({% link docs/configuration/pragmas.md %}) prior to loading the extension:
 
@@ -38096,7 +38214,7 @@ github_repository: https://github.com/marcboeker/go-duckdb
 The DuckDB Go driver, `go-duckdb`, allows using DuckDB via the `database/sql` interface.
 For examples on how to use this interface, see the [official documentation](https://pkg.go.dev/database/sql) and [tutorial](https://go.dev/doc/tutorial/database-access).
 
-> The Go client is a third-party library and its repository is hosted .
+> The `go-duckdb` project, hosted at , is the official DuckDB Go client.
 
 ## Installation
 
@@ -60372,15 +60490,20 @@ The **Secrets manager** provides a unified user interface for secrets across all
 
 ## Types of Secrets
 
-Secrets are typed, their type identifies which service they are for. Currently, the following cloud services are available:
+Secrets are typed, their type identifies which service they are for.
+Most secrets are not included in DuckDB default, instead, they are registered by extensions.
+Currently, the following secret types are available:
 
-* AWS S3 (`S3`), through the [`httpfs` extension]({% link docs/extensions/httpfs/s3api.md %})
-* Azure Blob Storage (`AZURE`), through the [`azure` extension]({% link docs/extensions/azure.md %})
-* Cloudflare R2 (`R2`), through the [`httpfs` extension]({% link docs/extensions/httpfs/s3api.md %})
-* Google Cloud Storage (`GCS`), through the [`httpfs` extension]({% link docs/extensions/httpfs/s3api.md %})
-* Hugging Face (`HUGGINGFACE`), through the [`httpfs` extension]({% link docs/extensions/httpfs/hugging_face.md %})
-* MySQL (`MYSQL`), through the [`mysql` extension]({% link docs/extensions/mysql.md %})
-* PostgreSQL (`POSTGRES`), through the [`postgres` extension]({% link docs/extensions/postgres.md %})
+| Secret type | Service / protocol | Extension |
+|---------------|-----------------------|---------------------------------------------------------------|
+| `AZURE` | Azure Blob Storage | [`azure`]({% link docs/extensions/azure.md %}) |
+| `GCS` | Google Cloud Storage | [`httpfs`]({% link docs/extensions/httpfs/s3api.md %}) |
+| `HTTP` | HTTP and HTTPS | [`httpfs`]({% link docs/extensions/httpfs/https.md %}) |
+| `HUGGINGFACE` | Hugging Face | [`httpfs`]({% link docs/extensions/httpfs/hugging_face.md %}) |
+| `MYSQL` | MySQL | [`mysql`]({% link docs/extensions/mysql.md %}) |
+| `POSTGRES` | PostgreSQL | [`postgres`]({% link docs/extensions/postgres.md %}) |
+| `R2` | Cloudflare R2 | [`httpfs`]({% link docs/extensions/httpfs/s3api.md %}) |
+| `S3` | AWS S3 | [`httpfs`]({% link docs/extensions/httpfs/s3api.md %}) |
 
 For each type, there are one or more â€œsecret providersâ€� that specify how the secret is created. Secrets can also have an optional scope, which is a file path prefix that the secret applies to. When fetching a secret for a path, the secret scopes are compared to the path, returning the matching secret for the path. In the case of multiple matching secrets, the longest prefix is chosen.
 
