@@ -4360,7 +4360,7 @@ Since version 0.4.0, only major and minor versions get a codename.
 ## Release Calendar as a CSV File
 
 You can get a [CSV file containing past DuckDB releases](/data/duckdb-releases.csv) and analyze it using DuckDB's [CSV reader]({% link docs/data/csv/overview.md %}).
-
+This also [works in the online DuckDB shell](https://shell.duckdb.org/#queries=v0,SELECT-release_date%2C-version_number%2C-codename%2C-duck_species_primary%2C-duck_species_secondary%0AFROM-'https%3A%2F%2Fduckdb.org%2Fdata%2Fduckdb%20releases.csv'~).
 
 ---
 duckdb/docs/dev/repositories.md
@@ -12690,7 +12690,7 @@ SELECT apply([1, 2], x -> apply([4], x -> x + tbl.x)[1] + x) FROM tbl;
 ## Indexes as Parameters
 
 All lambda functions accept an optional extra parameter that represents the index of the current element.
-This is always the last parameter of the lambda function, and is 1-based (i.e., the first element has index 1).
+This is always the last parameter of the lambda function (e.g., `i` in `(x, y, i)`), and is 1-based (i.e., the first element has index 1).
 
 Get all elements that are larger than their index:
 
@@ -17292,7 +17292,7 @@ Whenever either of the input arguments is `NULL`, the output of the comparison i
 | `>` | greater than | `2 > 3` | `false` |
 | `<=` | less than or equal to | `2 <= 3` | `true` |
 | `>=` | greater than or equal to | `4 >= NULL` | `NULL` |
-| `=` | equal | `NULL = NULL` | `NULL` |
+| `=` or `==` | equal | `NULL = NULL` | `NULL` |
 | `<>` or `!=` | not equal | `2 <> 2` | `false` |
 
 The table below shows the standard distinction operators.
@@ -17302,6 +17302,18 @@ These operators treat `NULL` values as equal.
 |:---|:---|:---|:-|
 | `IS DISTINCT FROM` | not equal, including `NULL` | `2 IS DISTINCT FROM NULL` | `true` |
 | `IS NOT DISTINCT FROM` | equal, including `NULL` | `NULL IS NOT DISTINCT FROM NULL` | `true` |
+
+### Combination Casting
+
+When performing comparison on different types, DuckDB performs [Combination Casting]({% link docs/sql/data_types/typecasting.md %}#combination-casting).
+These casts were introduced to make interactive querying more convenient and are in line with the casts performed by several programming languages but are often not compatible with PostgreSQL's behavior. For example, the following expressions evaluate and return `true` in DuckDB but fail in PostgreSQL.
+
+```sql
+SELECT 1 = true;
+SELECT 1 = '1.1';
+```
+
+> It is not possible to enforce stricter type-checking for DuckDB's comparison operators. If you require stricter type-checking, we recommend creating a [macro]({% link docs/sql/statements/create_macro.md %}) with the [`typeof` function]({% link docs/sql/functions/utility.md %}#typeofexpression) or implementing a [user-defined function]({% link docs/api/python/function.md %}).
 
 ## `BETWEEN` and `IS [NOT] NULL`
 
@@ -18617,6 +18629,10 @@ To comply with standard SQL, one-based indexing is used almost everywhere, e.g.,
 |----------------------------|---------|-------------------------------------------------------------------------------|
 | `-2^2` | `4.0` | PostgreSQL compatibility means the unary minus has higher precedence than the exponentiation operator. Use additional parentheses, e.g., `-(2^2)` or the [`pow` function]({% link docs/sql/functions/numeric.md %}#powx-y), e.g. `-pow(2, 2)`, to avoid mistakes. |
 | `'t' = true` | `true` | Compatible with PostgreSQL. |
+| `1 = '1'` | `true` | Compatible with PostgreSQL. |
+| `1 = ' 1'` | `true` | Compatible with PostgreSQL. |
+| `1 = '01'` | `true` | Compatible with PostgreSQL. |
+| `1 = ' 01 '` | `true` | Compatible with PostgreSQL. |
 | `1 = true` | `true` | Not compatible with PostgreSQL. |
 | `1 = '1.1'` | `true` | Not compatible with PostgreSQL. |
 | `1 IN (0, NULL)` | `NULL` | Makes sense if you think of the `NULL`s in the input and output as `UNKNOWN`. |
@@ -20529,27 +20545,23 @@ duckdb/docs/sql/data_types/timestamp.md
 ---
 layout: docu
 title: Timestamp Types
-blurb: A timestamp specifies a combination of a date (year, month, day) and a time (hour, minute, second, microsecond or nanosecond).
+blurb: Timestamps represent points in time.
 ---
 
-Timestamps represent points in absolute time, usually called *instants*.
-DuckDB represents instants as the number of microseconds (Âµs) (or nanoseconds, for `TIMESTAMP_NS`) since `1970-01-01 00:00:00+00`.
-
-A timestamp specifies a combination of [`DATE`]({% link docs/sql/data_types/date.md %}) (year, month, day) and a [`TIME`]({% link docs/sql/data_types/time.md %}) (hour, minute, second, microsecond or nanosecond). Timestamps can be created using the `TIMESTAMP` keyword, where the data must be formatted according to the ISO 8601 format (`YYYY-MM-DD hh:mm:ss[.zzzzzz][+-TT[:tt]]` (three extra decimal places supported by `TIMESTAMP_NS`). Decimal places beyond the targeted sub-second precision are ignored.
-
-(Note: To avoid confusion from different time notation conventions, we will be using ISO-8601 y-m-d notation in this documentation.)
+Timestamps represent points in time. As such, they combine [`DATE`]({% link docs/sql/data_types/date.md %}) and [`TIME`]({% link docs/sql/data_types/time.md %}) information.
+They can be created using the type name followed by a string formatted according to the ISO 8601 format, `YYYY-MM-DD hh:mm:ss[.zzzzzzzzz][+-TT[:tt]]`, which is also the format we use in this documentation. Decimal places beyond the supported precision are ignored.
 
 ## Timestamp Types
 
 | Name | Aliases | Description |
 |:---|:---|:---|
-| `TIMESTAMP_NS` | | timestamp with nanosecond precision (UTC) |
-| `TIMESTAMP` | `DATETIME`, `TIMESTAMP WITHOUT TIME ZONE` | timestamp with microsecond precision (UTC) |
-| `TIMESTAMP_MS` | | timestamp with millisecond precision (UTC) |
-| `TIMESTAMP_S` | | timestamp with second precision (UTC) |
-| `TIMESTAMPTZ` | `TIMESTAMP WITH TIME ZONE` | timestamp with microsecond precision (time-zone aware) |
+| `TIMESTAMP_NS` | | naive timestamp with nanosecond precision |
+| `TIMESTAMP` | `DATETIME`, `TIMESTAMP WITHOUT TIME ZONE` | naive timestamp with microsecond precision |
+| `TIMESTAMP_MS` | | naive timestamp with millisecond precision |
+| `TIMESTAMP_S` | | naive timestamp with second precision |
+| `TIMESTAMPTZ` | `TIMESTAMP WITH TIME ZONE` | time zone aware timestamp with microsecond precision |
 
-> Since there is not currently a `TIMESTAMP_NS WITH TIME ZONE` data type, external columns with nano-second precision and "instant semantics", e.g., [parquet timestamp columns with `isAdjustedToUTC=true`](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#instant-semantics-timestamps-normalized-to-utc), lose precision when read using DuckDB.
+> Warning Since there is not currently a `TIMESTAMP_NS WITH TIME ZONE` data type, external columns with nanosecond precision and `WITH TIME ZONE` semantics, e.g., [Parquet timestamp columns with `isAdjustedToUTC=true`](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#instant-semantics-timestamps-normalized-to-utc), are converted to `TIMESTAMP WITH TIME ZONE` and thus lose precision when read using DuckDB.
 
 ```sql
 SELECT TIMESTAMP_NS '1992-09-20 11:30:00.123456789';
@@ -20561,14 +20573,6 @@ SELECT TIMESTAMP_NS '1992-09-20 11:30:00.123456789';
 
 ```sql
 SELECT TIMESTAMP '1992-09-20 11:30:00.123456789';
-```
-
-```text
-1992-09-20 11:30:00.123456
-```
-
-```sql
-SELECT DATETIME '1992-09-20 11:30:00.123456789';
 ```
 
 ```text
@@ -20600,25 +20604,56 @@ SELECT TIMESTAMPTZ '1992-09-20 11:30:00.123456789';
 ```
 
 ```sql
-SELECT TIMESTAMP WITH TIME ZONE '1992-09-20 11:30:00.123456789';
+SELECT TIMESTAMPTZ '1992-09-20 12:30:00.123456789+01:00';
 ```
 
 ```text
 1992-09-20 11:30:00.123456+00
 ```
 
+DuckDB distinguishes timestamps `WITHOUT TIME ZONE` and `WITH TIME ZONE` (of which the only current representative is `TIMESTAMP WITH TIME ZONE`).
+
+Despite the name, a `TIMESTAMP WITH TIME ZONE` does not store time zone information. Instead, it only stores the `INT64` number of non-leap microseconds since the Unix epoch `1970-01-01 00:00:00+00`, and thus unambiguously identifies a point in absolute time, or [*instant*]({% link docs/sql/data_types/timestamp.md %}#instants). The reason for the labels *time zone aware* and `WITH TIME ZONE` is that timestamp arithmetic, [*binning*]({% link docs/sql/data_types/timestamp.md %}#temporal-binning), and string formatting for this type are performed in a [configured time zone]({% link docs/sql/data_types/timestamp.md %}#time-zone-support), which defaults to the system time zone and is just `UTC+00:00` in the examples above.
+
+The corresponding `TIMESTAMP WITHOUT TIME ZONE` stores the same `INT64`, but arithmetic, binning, and string formatting follow the straightforward rules of Coordinated Universal Time (UTC) without offsets or time zones. Accordingly, `TIMESTAMP`s could be interpreted as UTC timestamps, but more commonly they are used to represent *local* observations of time recorded in an unspecified time zone, and operations on these types can be interpreted as simply manipulating tuple fields following nominal temporal logic.
+It is a common data cleaning problem to disambiguate such observations, which may also be stored in raw strings without time zone specification or UTC offsets, into unambiguous `TIMESTAMP WITH TIME ZONE` instants. One possible solution to this is to append UTC offsets to strings, followed by an explicit cast to `TIMESTAMP WITH TIME ZONE`. Alternatively, a `TIMESTAMP WITHOUT TIME ZONE` may be created first and then be combined with a time zone specification to obtain a time zone aware `TIMESTAMP WITH TIME ZONE`.
+
+## Conversion Between Strings And Naive And Time Zone-Aware Timestamps
+
+The conversion between strings *without* UTC offsets or IANA time zone names and `WITHOUT TIME ZONE` types is unambiguous and straightforward.
+The conversion between strings *with* UTC offsets or time zone names and `WITH TIME ZONE` types is also unambiguous, but requires the `ICU` extension to handle time zone names.
+
+When strings *without* UTC offsets or time zone names are converted to a `WITH TIME ZONE` type, the string is interpreted in the configured time zone. Conversely, when strings *with* UTC offsets are passed to a `WITHOUT TIME ZONE` type, the local time in the configured time zone at the instant specified by the string is stored.
+
+Finally, when `WITH TIME ZONE` and `WITHOUT TIME ZONE` types are converted to each other via explicit or implicit casts, the translation uses the configured time zone. To use an alternative time zone, the `timezone` function provided by the `ICU` extension may be used:
+
+```sql
+SELECT
+timezone('America/Denver', TIMESTAMP '2001-02-16 20:38:40') AS aware1,
+timezone('America/Denver', TIMESTAMPTZ '2001-02-16 04:38:40') AS naive1,
+timezone('UTC', TIMESTAMP '2001-02-16 20:38:40+00:00') AS aware2,
+timezone('UTC', TIMESTAMPTZ '2001-02-16 04:38:40 Europe/Berlin') AS naive2;
+```
+
+
+
+| aware1 | naive1 | aware2 | naive2 |
+|------------------------|---------------------|------------------------|---------------------|
+| 2001-02-17 04:38:40+01 | 2001-02-15 20:38:40 | 2001-02-16 21:38:40+01 | 2001-02-16 03:38:40 |
+
+Note that `TIMESTAMP`s are displayed without time zone specification in the results, following ISO 8601 rules for local times, while time-zone aware `TIMESTAMPTZ`s are displayed with the UTC offset of the configured time zone, which is `'Europe/Berlin'` in the example. The UTC offsets of `'America/Denver'` and `'Europe/Berlin'` at all involved instants are `-07:00` and `+01:00`, respectively.
+
 ## Special Values
 
-There are also three special date values that can be used on input:
+Three special strings can be used to create timestamps:
 
-| Input string | Valid types | Description |
-|:-------------|:---------------------------|:-----------------------------------------------|
-| `epoch` | `TIMESTAMP`, `TIMESTAMPTZ` | 1970-01-01 00:00:00+00 (Unix system time zero) |
-| `infinity` | `TIMESTAMP`, `TIMESTAMPTZ` | later than all other time stamps |
-| `-infinity` | `TIMESTAMP`, `TIMESTAMPTZ` | earlier than all other time stamps |
+| Input string | Description |
+|:-------------|:-------------------------------------------------|
+| `epoch` | 1970-01-01 00:00:00[+00] (Unix system time zero) |
+| `infinity` | later than all other timestamps |
+| `-infinity` | earlier than all other timestamps |
 
-The values `infinity` and `-infinity` are specially represented inside the system and will be displayed unchanged;
-but `epoch` is simply a notational shorthand that will be converted to the time stamp value when read.
+The values `infinity` and `-infinity` are special cased and are displayed unchanged, whereas the value `epoch` is simply a notational shorthand that is converted to the corresponding timestamp value when read.
 
 ```sql
 SELECT '-infinity'::TIMESTAMP, 'epoch'::TIMESTAMP, 'infinity'::TIMESTAMP;
@@ -20634,33 +20669,30 @@ See [Timestamp Functions]({% link docs/sql/functions/timestamp.md %}).
 
 ## Time Zones
 
-To understand time zones and the `WITH TIME ZONE` types, it helps to start with two concepts: _instants_ and _temporal binning_.
+To understand time zones and the `WITH TIME ZONE` types, it helps to start with two concepts: *instants* and *temporal binning*.
 
 ### Instants
 
-A common claim is that database time is "stored in UTC", but in reality, databases store instants. An instant is a point in universal time, usually given as a count of some time increment from a fixed point in time (called the _epoch_). This is similar to how positions on the earth's surface are given using latitude and longitude relative to the equator and the Greenwich Meridian. In DuckDB, the fixed point is the Unix epoch `1970-01-01 00:00:00 +00:00`, and the increment is microseconds (Âµs).
+An instant is a point in absolute time, usually given as a count of some time increment from a fixed point in time (called the *epoch*). This is similar to how positions on the earth's surface are given using latitude and longitude relative to the equator and the Greenwich Meridian. In DuckDB, the fixed point is the Unix epoch `1970-01-01 00:00:00+00:00`, and the increment is in seconds, milliseconds, microseconds, or nanoseconds, depending on the specific data type.
 
 ### Temporal Binning
 
-Binning is a common practice with continuous data: A set of values is broken up into ranges and the binning maps each value to the range (or _bin_) that it falls into. _Temporal binning_ is simply applying this practice to instants:
+Binning is a common practice with continuous data: A range of possible values is broken up into contiguous subsets and the binning operation maps actual values to the *bin* they fall into. *Temporal binning* is simply applying this practice to instants; for example, by binning instants into years, months, and days.
 
 Time Zone Instants at the Epoch
 
-Temporal binning rules are complex, and generally come in two sets: _time zones_ and _calendars_.
+Temporal binning rules are complex, and generally come in two sets: *time zones* and *calendars*.
 For most tasks, the calendar will just be the widely used Gregorian calendar,
 but time zones apply locale-specific rules and can vary widely.
-For example, here is what the binning from the UTC time zone looks like at the epoch:
+For example, here is what binning for the `'America/Los_Angeles'` time zone looks like near the epoch:
 
 Two Time Zones at the Epoch
 
 The most common temporal binning problem occurs when daylight savings time changes.
-This example contains a daylight savings time change where the "hour" bin is two hours long.
-To distinguish the two hours, another bin containing the offset from UTC is needed:
+The example below contains a daylight savings time change where the "hour" bin is two hours long.
+To distinguish the two hours, another range of bins containing the offset from UTC is needed:
 
 Two Time Zones at a Daylight Savings Time transition
-
-This illustrates why temporal data should always be stored as instants.
-For more on this subject, see the section on "naÃ¯ve timestamps" below.
 
 ### Time Zone Support
 
@@ -20744,17 +20776,7 @@ WHERE name = 'Calendar';
 |----------|-----------|----------------------|------------|
 | Calendar | gregorian | The current calendar | VARCHAR |
 
-> If you find that your binning operations are not behaving as you expect, check these values and adjust them if needed.
-
-## NaÃ¯ve Timestamps
-
-Timestamp values are sometimes created from a string formatted using a _local_ binning system instead of one that can represent instants.
-This results in the column values being offset from UTC, which can cause problems with daylight savings time.
-More generally, such string representations can have "holes" or "collisions" around DST transitions.
-These values are called *naÃ¯ve* timestamps, and often constitute a data cleaning problem.
-
-A simple way to avoid this situation going forward is to add the UTC offset to non-UTC strings: `2021-07-31 07:20:15 -07:00`.
-The DuckDB `VARCHAR` cast operation parses these offsets correctly and will generate the corresponding instant.
+> If you find that your binning operations are not behaving as you expect, check the `TimeZone` and `Calendar` values and adjust them if needed.
 
 ---
 duckdb/docs/sql/data_types/timezones.md
@@ -21436,11 +21458,11 @@ Implicit casts can only be added for a number of type combinations, and is gener
 
 Consider the function `sin(DOUBLE)`. This function takes as input argument a column of type `DOUBLE`, however, it can be called with an integer as well: `sin(1)`. The integer is converted into a double before being passed to the `sin` function.
 
-### Combination casting
+### Combination Casting
 
 When values of different types need to be combined to an unspecified joint parent type, the system will perform implicit casts to an automatically selected parent type. For example, `list_value(1::INT64, 1::UINT64)` creates a list of type `INT128[]`. The implicit casts performed in this situation are sometimes more lenient than regular implicit casts. For example, a `BOOL` value may be cast to `INT` (with `true` mapping to `1` and `false` to `0`) even though this is not possible for regular implicit casts.
 
-This *combination casting* occurs for comparisons (`==` / `<` / `>`), set operations (`UNION` / `EXCEPT` / `INTERSECT`), and nested type constructors (`list_value` / `[...]` / `MAP`).
+This *combination casting* occurs for comparisons (`=` / `<` / `>`), set operations (`UNION` / `EXCEPT` / `INTERSECT`), and nested type constructors (`list_value` / `[...]` / `MAP`).
 
 ## Casting Operations Matrix
 
@@ -22518,6 +22540,12 @@ COPY lineitem FROM 'lineitem.json' (FORMAT JSON, ARRAY true);
 
 
 
+> To ensure compatibility with PostgreSQL, DuckDB accepts `COPY ... FROM` statements that do not fully comply with the railroad diagram shown here. For example, the following is a valid statement:
+>
+> ```sql
+> COPY tbl FROM 'tbl.csv' WITH DELIMITER '|' CSV HEADER;
+> ```
+
 ## `COPY ... TO`
 
 `COPY ... TO` exports data from DuckDB to an external CSV or Parquet file. It has mostly the same set of options as `COPY ... FROM`, however, in the case of `COPY ... TO` the options specify how the file should be written to disk. Any file created by `COPY ... TO` can be copied back into the database by using `COPY ... FROM` with a similar set of options.
@@ -22598,6 +22626,12 @@ With few exceptions, the below options are applicable to all formats written wit
 ### Syntax
 
 
+
+> To ensure compatibility with PostgreSQL, DuckDB accepts `COPY ... TO` statements that do not fully comply with the railroad diagram shown here. For example, the following is a valid statement:
+>
+> ```sql
+> COPY (SELECT 42 AS x, 84 AS y) TO 'out.csv' WITH DELIMITER '|' CSV HEADER;
+> ```
 
 ## `COPY FROM DATABASE ... TO`
 
@@ -22841,7 +22875,7 @@ Create a macro that adds two expressions (`a` and `b`):
 CREATE MACRO add(a, b) AS a + b;
 ```
 
-Create a macro for a case expression:
+Create a macro for a `CASE` expression:
 
 ```sql
 CREATE MACRO ifelse(a, b, c) AS CASE WHEN a THEN b ELSE c END;
@@ -38803,32 +38837,45 @@ layout: docu
 title: Client APIs Overview
 ---
 
-DuckDB is an in-process database system and offers client APIs for several languages. These clients support the same DuckDB file format and SQL syntax. We strived to make their APIs follow their host language's conventions.
+DuckDB is an in-process database system and offers client APIs for several languages. These clients support the same DuckDB file format and SQL syntax. Note: DuckDB database files are portable between different clients.
 
-Client APIs:
+| Client API | Maintainer | Support tier |
+|------------|------------|--------------|
+| [C]({% link docs/api/c/overview.md %}) | DuckDB team | Primary |
+| [Command Line Interface (CLI)]({% link docs/api/cli/overview.md %}) | DuckDB team | Primary |
+| [Java]({% link docs/api/java.md %}) | DuckDB team | Primary |
+| [Go]({% link docs/api/go.md %}) | DuckDB team and [Mark Boeker](https://github.com/marcboeker) | Primary |
+| [Node.js (deprecated)]({% link docs/api/nodejs/overview.md %}) | DuckDB team | Primary |
+| [Node.js (node-neo)]({% link docs/api/node_neo/overview.md %}) | Jeff Raymakers and Antony Courtney ([MotherDuck](https://motherduck.com/)) | Primary |
+| [Python]({% link docs/api/python/overview.md %}) | DuckDB team | Primary |
+| [R]({% link docs/api/r.md %}) | DuckDB team and [Kirill MÃ¼ller](https://github.com/krlmlr) | Primary |
+| [WebAssembly (Wasm)]({% link docs/api/wasm/overview.md %}) | DuckDB team | Primary |
+| [ADBC (Arrow)]({% link docs/api/adbc.md %}) | DuckDB team | Secondary |
+| [C++]({% link docs/api/cpp.md %}) | DuckDB team | Secondary |
+| [C# (.NET)](https://duckdb.net/) | [Giorgi](https://github.com/Giorgi) | Secondary |
+| [Dart]({% link docs/api/dart.md %}) | [TigerEye](https://www.tigereye.com/) | Secondary |
+| [ODBC]({% link docs/api/odbc/overview.md %}) | DuckDB team | Secondary |
+| [Rust]({% link docs/api/rust.md %}) | DuckDB team | Secondary |
+| [Julia]({% link docs/api/julia.md %}) | DuckDB team | Secondary |
+| [Swift]({% link docs/api/swift.md %}) | DuckDB team | Secondary |
+| [Common Lisp](https://github.com/ak-coram/cl-duckdb) | [ak-coram](https://github.com/ak-coram) | Tertiary |
+| [Crystal](https://github.com/amauryt/crystal-duckdb) | [amauryt](https://github.com/amauryt) | Tertiary |
+| [Elixir](https://github.com/AlexR2D2/duckdbex) | [AlexR2D2](https://github.com/AlexR2D2/duckdbex) | Tertiary |
+| [Erlang](https://github.com/mmzeeman/educkdb) | [MM Zeeman](https://github.com/mmzeeman) | Tertiary |
+| [Ruby](https://github.com/suketa/ruby-duckdb) | [suketa](https://github.com/suketa) | Tertiary |
+| [Zig](https://github.com/karlseguin/zuckdb.zig) | [karlseguin](https://github.com/karlseguin) | Tertiary |
 
-* Standalone [Command Line Interface (CLI)]({% link docs/api/cli/overview.md %}) client
-* [ADBC API]({% link docs/api/adbc.md %})
-* [C]({% link docs/api/c/overview.md %})
-* [C++]({% link docs/api/cpp.md %})
-* [C#](https://github.com/Giorgi/DuckDB.NET) by [Giorgi](https://github.com/Giorgi)
-* [Common Lisp](https://github.com/ak-coram/cl-duckdb) by [ak-coram](https://github.com/ak-coram)
-* [Crystal](https://github.com/amauryt/crystal-duckdb) by [amauryt](https://github.com/amauryt)
-* [Dart]({% link docs/api/dart.md %}) by [TigerEye](https://www.tigereye.com/)
-* [Elixir](https://github.com/AlexR2D2/duckdbex) by [AlexR2D2](https://github.com/AlexR2D2/duckdbex)
-* [Erlang](https://github.com/mmzeeman/educkdb) by [MM Zeeman](https://github.com/mmzeeman)
-* [Go]({% link docs/api/go.md %}) by [marcboeker](https://github.com/marcboeker)
-* [Java]({% link docs/api/java.md %})
-* [Julia]({% link docs/api/julia.md %})
-* [Node.js]({% link docs/api/nodejs/overview.md %})
-* [ODBC API]({% link docs/api/odbc/overview.md %})
-* [Python]({% link docs/api/python/overview.md %})
-* [R]({% link docs/api/r.md %})
-* [Ruby](https://github.com/suketa/ruby-duckdb) by [suketa](https://github.com/suketa)
-* [Rust]({% link docs/api/rust.md %})
-* [Swift]({% link docs/api/swift.md %})
-* [WebAssembly (Wasm)]({% link docs/api/wasm/overview.md %})
-* [Zig](https://github.com/karlseguin/zuckdb.zig) by [karlseguin](https://github.com/karlseguin)
+## Support Tiers
+
+Since there is such a wide variety of clients, the DuckDB team focuses their development effort on the most popular clients.
+To reflect this, we distinguish three tiers of support for clients.
+Primary clients are the first to receive new features and are covered by [community support](https://duckdblabs.com/news/2023/10/02/support-policy).
+Secondary clients receive new features but are not covered by community support.
+Finally, all tertiary clients are maintained by third parties, so there are no feature or support guarantees for them.
+
+> The DuckDB clients listed above are open-source and we welcome community contributions to these libraries.
+> All primary and secondary clients are available for the MIT license.
+> For tertiary clients, please consult the repository for the license.
 
 ---
 duckdb/docs/api/r.md
