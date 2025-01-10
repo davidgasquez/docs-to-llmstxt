@@ -6,12 +6,34 @@ evidence/sites/docs/pages/+layout.svelte
 	import { EvidenceDefaultLayout } from '@evidence-dev/core-components';
 	import EditInGitHub from '../components/EditInGitHub.svelte';
 	export let data;
+	import { page } from '$app/stores';
+	let pageRoute = $page.route.id.replace(/\/$/, '')
+
+	// Check if the page has an og:image set in the frontmatter
+	let tree = data.pagesManifest
+	let frontMatter = undefined
+	for (const part of $page.route.id.split('/').slice(1)) {
+		tree = tree.children[part]
+		frontMatter = tree?.frontMatter
+	}
+	const ogImageOverride = frontMatter?.og?.image || undefined
+	
+	
 </script>
 
 <head>
 	<script async defer src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
 </head>
 
+<svelte:head>
+	{#if ogImageOverride}
+		<meta property="twitter:image" content="https://docs.evidence.dev{ogImageOverride}"/>	
+		<meta property="og:image" content="{ogImageOverride}"/>
+	{:else}
+		<meta property="twitter:image" content="https://docs.evidence.dev{pageRoute}/og.png"/>	
+		<meta property="og:image" content="{pageRoute}/og.png"/>
+	{/if}
+</svelte:head>
 <EvidenceDefaultLayout
 	{data}
 	githubRepo="https://github.com/evidence-dev/evidence"
@@ -39,8 +61,6 @@ sidebar_position: 1
 title: What is Evidence? | Evidence Docs
 description: Evidence is an open source framework for building data products with SQL - things like reports, decision-support tools, and customer-facing/embedded reporting. It's a code-driven alternative to drag-and-drop BI tools.
 hide_title: true
-og:
-  image: /img/how-it-works.png
 ---
 
 # What is Evidence?
@@ -79,9 +99,88 @@ If there's **anything** you find difficult in the docs, please [open an issue](h
 
 
 ---
+evidence/sites/docs/pages/[...route]/og.png/+server.js
+---
+import {html as toReactNode} from 'satori-html';
+import SocialCard from '$lib/SocialCard.svelte';
+export const prerender = true;
+import fs from 'fs';
+import path from 'path';
+
+import satori from 'satori';
+import {Resvg} from '@resvg/resvg-js';
+
+const fontDataTight = fs.readFileSync(path.join(process.cwd(), 'src/components', 'InterTight-SemiBold.ttf'));
+const fontData = fs.readFileSync(path.join(process.cwd(), 'src/components', 'Inter_24pt-Regular.ttf'));
+const fontDataMono = fs.readFileSync(path.join(process.cwd(), 'src/components', 'GT-America-Mono-Regular.otf'));
+const height = 630;
+const width = 1200;
+
+
+/** @type {import('./$types').RequestHandler} */
+export const GET = async ({url, fetch}) => {
+  // Fetch the pages manifest
+  const manifestRes = await fetch('/api/pagesManifest.json');
+  let tree = await manifestRes.json();
+  let parent = undefined;
+  // Get the frontmatter for the route by getting the route recursively using split('/') (trimming the /og.png)
+  const route = url.pathname.replace('/og.png', '');
+  let frontMatter = undefined;
+  for (const part of route.split('/').slice(1)) {
+    parent = tree;
+    tree = tree.children[part];
+    frontMatter = tree.frontMatter;
+  }
+  
+  const title = frontMatter?.title || undefined;
+  const description = frontMatter?.description || undefined;
+  const category = parent?.frontMatter?.title || undefined;
+  const result = SocialCard.render({title, description, category});
+  const element = toReactNode(`${result.html}<style>${result.css.code}</style>`);
+  const svg = await satori(element, {
+    height,
+    width,
+    fonts: [
+      {
+        name: 'Inter',
+        data: await fontData,
+        style: 'normal'
+      },
+      {
+        name: 'InterTight',
+        data: await fontDataTight,
+        style: 'normal'
+      },
+      {
+        name: 'GTAmericaMono',
+        data: await fontDataMono,
+        style: 'normal'
+      },
+    ]
+  });
+
+  const resvg = new Resvg(svg, {
+    fitTo: {
+      mode: 'width',
+      value: width
+    }
+  });
+
+  const image = resvg.render();
+  const imageBuffer = await image.asPng();
+  return new Response(imageBuffer, {
+    headers: {
+      'Content-Type': 'image/png'
+    }
+  });
+};
+
+
+---
 evidence/sites/docs/pages/guides/index.md
 ---
 ---
+title: Guides
 sidebar_position: 6
 sidebar_link: false
 ---
@@ -384,10 +483,11 @@ evidence/sites/docs/pages/components/data/value/index.md
 ---
 ---
 title: Value
+description: Display a formatted value from a query inline in text.
 sidebar_position: 0
 ---
 
-The Value component accepts a query and displays a formatted value inline in text.
+Use a Value component to display a formatted value from a query inline in text.
 
 By default, `Value` will display the value from the first row of the first column of the referenced data.
 
@@ -593,12 +693,13 @@ evidence/sites/docs/pages/components/data/big-value/index.md
 ---
 ---
 title: Big Value
+description: Display a large value standalone, and optionally include a comparison and a sparkline.
 sidebar_position: 1
 queries: 
 - orders_with_comparisons.sql
 ---
 
-Big Value displays a large value, and can be configured to include a comparison and a sparkline.
+Use big values to display a large value standalone, and optionally include a comparison and a sparkline.
 
 <DocTab>
     <div slot='preview'>
@@ -951,8 +1052,11 @@ evidence/sites/docs/pages/components/data/data-table/index.md
 ---
 ---
 title: Data Table
+description: Display a richly formatted table of data, in a dense, readable format.
 sidebar_position: 1
 ---
+
+Use a DataTable component to display a richly formatted table of data from a query. Tables are powerful default choice for data display that allow high information density, and are easy to read.
 
 ## Examples
 
@@ -2891,19 +2995,22 @@ evidence/sites/docs/pages/components/data/delta/index.md
 ---
 sidebar_position: 1
 title: Delta
+description: Display an inline indicator that shows how a value has changed.
 ---
 
+Use a Delta component to display an inline indicator that shows how a value has changed.
+
 ```sql growth
-select 0.366 as positive, -0.366 as negative
+select 0.366 as positive, -0.366 as negative, 0.01 as neutral
 ```
 
 <DocTab>
     <div slot='preview'>
-        <Delta data={growth} column=positive fmt=pct1 />
+        This value is <Delta data={growth} column=positive fmt="+0.0%;-0.0%;0.0%" /> since last month.
     </div>
 
 ```markdown
-<Delta data={sales} column=growth fmt=pct1 />
+This value is <Delta data={growth} column=positive fmt="+0.0%;-0.0%;0.0%" /> since last month.
 ```
 </DocTab>
 
@@ -2911,22 +3018,11 @@ select 0.366 as positive, -0.366 as negative
 
 ### Value Types
 
-#### Positive & Negative
-
-<Delta data={growth} column=positive fmt=pct1 />
-
-<Delta data={growth} column=negative fmt=pct1 />
-
-```markdown
-<Delta data={sales} column=growth fmt=pct1 />
-```
-
-#### Neutral
-<Delta data={growth} column=positive fmt=pct1 neutralMin=0 neutralMax=0.4/>
+#### Positive
 
 <DocTab>
     <div slot='preview'>
-        <Delta data={growth} column=positive fmt=pct1/>
+        <Delta data={growth} column=positive fmt=pct1 />
     </div>
 
 ```markdown
@@ -2951,37 +3047,28 @@ select 0.366 as positive, -0.366 as negative
 
 <DocTab>
     <div slot='preview'>
-        <Delta data={growth} column=positive fmt=pct1 neutralMin=0 neutralMax=0.4/>
+        <Delta data={growth} column=neutral fmt=pct1 neutralMin=-0.02 neutralMax=0.02/>
     </div>
 
 ```markdown
-<Delta data={sales} column=growth fmt=pct1 neutralMin=-0.4 neutralMax=0.4 />
+<Delta data={growth} column=neutral fmt=pct1 neutralMin=-0.02 neutralMax=0.02 />
 ```
 </DocTab>
 
 ### Chips
 
-#### Positive & Negative
-
-<Delta data={growth} column=positive fmt=pct1 chip=true />
-
-<Delta data={growth} column=negative fmt=pct1 chip=true />
-
-```markdown
-<Delta data={sales} column=growth fmt=pct1 chip=true />
-```
-
-#### Neutral
+#### Positive
 
 <DocTab>
     <div slot='preview'>
-        <Delta data={growth} column=positive fmt=pct1 chip=true/>
+        <Delta data={growth} column=positive fmt=pct1 chip=true />
     </div>
 
-````markdown
-<Delta data={growth} column=positive fmt=pct1 chip=true/>
-````
+```markdown
+<Delta data={growth} column=growth fmt=pct1 chip=true />
+```
 </DocTab>
+
 
 #### Negative 
 
@@ -2990,9 +3077,9 @@ select 0.366 as positive, -0.366 as negative
         <Delta data={growth} column=negative fmt=pct1 chip=true/>
     </div>
 
-````markdown
+```markdown
 <Delta data={growth} column=negative fmt=pct1 chip=true/>
-````
+```
 </DocTab>
 
 #### Neutral*
@@ -3000,11 +3087,11 @@ select 0.366 as positive, -0.366 as negative
 
 <DocTab>
     <div slot='preview'>
-        <Delta data={growth} column=positive fmt=pct1 neutralMin=0 neutralMax=0.4 chip=true/>
+        <Delta data={growth} column=neutral fmt=pct1 neutralMin=-0.02 neutralMax=0.02 chip=true/>
     </div>
 
 ```markdown
-<Delta data={sales} column=growth fmt=pct1 chip=true neutralMin=-0.4 neutralMax=0.4 />
+<Delta data={growth} column=neutral fmt=pct1 chip=true neutralMin=-0.02 neutralMax=0.02 />
 ```
 </DocTab>
 
@@ -3019,7 +3106,7 @@ select 0.366 as positive, -0.366 as negative
 
 
 ```html
-<Delta data={sales} column=growth fmt=pct1 symbolPosition=left/>
+<Delta data={growth} column=positive fmt=pct1 symbolPosition=left/>
 ```
 </DocTab>
 
@@ -3027,11 +3114,11 @@ select 0.366 as positive, -0.366 as negative
 
 <DocTab>
     <div slot='preview'>
-        <Delta data={growth} column=negative fmt=pct1 symbolPosition=left/>
+        <Delta data={growth} column=positive fmt=pct1 symbolPosition=left chip=true/>
     </div>
 
 ```html
-<Delta data={sales} column=growth fmt=pct1 chip=true symbolPosition=left/>
+<Delta data={growth} column=positive fmt=pct1 chip=true symbolPosition=left/>
 ```
 </DocTab>
 
@@ -3185,6 +3272,7 @@ evidence/sites/docs/pages/components/custom/custom-component/index.md
 ---
 ---
 title: Custom Components
+description: Build your own components to extend the functionality of Evidence.
 sidebar_position: 1
 ---
 
@@ -3410,6 +3498,7 @@ evidence/sites/docs/pages/components/custom/component-queries/index.md
 ---
 ---
 title: Component Queries
+description: Execute SQL queries from inside custom components.
 sidebar_position: 2
 ---
 
@@ -3584,7 +3673,7 @@ sidebar_position: 0
 title: All Components
 hide_title: false
 hide_table_of_contents: false
-description:  A list of all the components available in the Evidence library.
+description:  An index of the components available in the Evidence library.
 ---
 
 ## Data
@@ -4247,6 +4336,7 @@ evidence/sites/docs/pages/components/inputs/slider/index.md
 ---
 ---
 title: Slider
+description: Display a linear input to select a value from a range.
 sidebar_position: 1
 ---
 
@@ -4520,7 +4610,7 @@ evidence/sites/docs/pages/components/inputs/date-input/index.md
 ---
 title: Date Input
 sidebar_position: 1
-description: A date input component allows the user to select a date or a range of dates. The selected dates can be used as inputs to queries or components.
+description: Display a date picker for selecting a singledate or a range of dates.
 queries: 
 - orders_by_day.sql
 ---
@@ -4825,6 +4915,7 @@ evidence/sites/docs/pages/components/inputs/dropdown/index.md
 ---
 ---
 title: Dropdown
+description: Display a dropdown menu with a options from a query or hardcoded options.
 sidebar_position: 1
 ---
 
@@ -5248,6 +5339,7 @@ evidence/sites/docs/pages/components/inputs/text-input/index.md
 ---
 ---
 title: Text Input
+description: Display a text box for freeform text input, useful for searching or filtering.
 sidebar_position: 1
 ---
 
@@ -5443,6 +5535,7 @@ evidence/sites/docs/pages/components/inputs/button-group/index.md
 ---
 ---
 title: Button Group
+description: Display a group of single-select buttons for quick filtering using a small set of options.
 sidebar_position: 1
 queries:
 - categories.sql
@@ -5781,6 +5874,7 @@ evidence/sites/docs/pages/components/inputs/checkbox/index.md
 ---
 ---
 title: Checkbox
+description: Display a toggleable box for a boolean value.
 sidebar_position: 1
 ---
 
@@ -5857,9 +5951,20 @@ WHERE  not ${inputs.exclude_low_value} -- When True, Do not evaluate the next co
     </div>
 
 ````markdown
+```sql orders
+select 
+    COUNT(*) as records_count
+from needful_things.orders
+WHERE  not ${inputs.exclude_low_value} -- When True, Do not evaluate the next condition
+    OR ( 
+            ${inputs.exclude_low_value} -- Input is set to false
+        AND sales < 10  -- Apply this condition
+    )
+```
+
 <Checkbox
-title="Exclude low values" 
-name=exclude_low_value
+    title="Exclude low values" 
+    name=exclude_low_value
 />
 
 <BigValue fmt=num0 value=records_count data={orders}/>
@@ -5903,6 +6008,7 @@ evidence/sites/docs/pages/components/inputs/dimension-grid/index.md
 ---
 ---
 title: Dimension Grid
+description: Display an interactive grid of one dimensional columns to filter by many dimensions simultaneously.
 sidebar_position: 1
 ---
 
@@ -6081,6 +6187,7 @@ evidence/sites/docs/pages/components/inputs/date-range/index.md
 ---
 title: Date Range
 sidebar_position: 1
+description: Display a date picker for selecting a range of dates.
 queries: 
 - orders_by_day.sql
 ---
@@ -6369,10 +6476,11 @@ evidence/sites/docs/pages/components/charts/sankey-diagram/index.md
 ---
 ---
 title: Sankey Diagram
+description: Display flows of a metric transferring between different categories.
 sidebar_position: 6
 ---
 
-The SankeyDiagram component accepts a query and displays a flow from one set of values to another.
+Use Sankey diagrams to display flows of a metric transferring between different categories.
 
 To display a flow with multiple levels, like these examples, see [Mutli-level](#multi-level) below.
 
@@ -7144,10 +7252,13 @@ evidence/sites/docs/pages/components/charts/bubble-chart/index.md
 ---
 ---
 title: Bubble Chart
+description: Display categorical data across three metrics. The X and Y position, and the size of the bubble each represent a different metric for the category.
 sidebar_position: 1
 queries:
 - price_vs_volume.sql
 ---
+
+Use bubble charts to display categorical data across three metrics. The X and Y position, and the size of the bubble each represent a different metric for the category.
 
 <DocTab>
     <div slot='preview'>
@@ -7596,7 +7707,10 @@ evidence/sites/docs/pages/components/charts/echarts-options/index.md
 ---
 sidebar_position: 999
 title: ECharts Options
+description: Evidence charts are based on ECharts. Pass options to ECharts directly using the echartsOptions property.
 ---
+
+Evidence charts are based on ECharts. Pass options to ECharts directly using the echartsOptions property.
 
 <Alert status=warning>
 
@@ -7966,10 +8080,13 @@ evidence/sites/docs/pages/components/charts/scatter-plot/index.md
 ---
 ---
 title: Scatter Plot
+description: Show the correlation between two metrics for categorical values, or a set of samples.
 sidebar_position: 1
 queries:
 - price_vs_volume.sql
 ---
+
+Use scatter plots to show the correlation between two metrics for categorical values, or a set of samples.
 
 <DocTab>
   <div slot='preview'>
@@ -8479,6 +8596,7 @@ evidence/sites/docs/pages/components/charts/bar-chart/index.md
 ---
 ---
 title: Bar Chart
+description: Compare a metric across a small number of categories. 
 sidebar_position: 1
 queries: 
 - orders_by_month.sql
@@ -8486,6 +8604,8 @@ queries:
 - orders_by_item_all_time.sql
 - categories_by_channel.sql
 ---
+
+Use bar or column charts to compare a metric across categories. Bar charts are best with a small number of categories and series, and should generally start at 0.
 
 <DocTab>
     <div slot='preview'>
@@ -9269,8 +9389,11 @@ evidence/sites/docs/pages/components/charts/heatmap/index.md
 ---
 ---
 title: Heatmap
+description: Show patterns in a single metric across two categorical dimensions, using colour to indicate size.
 sidebar_position: 5
 ---
+
+Use heatmaps to show patterns in a single metric across two categorical dimensions, using colour to indicate size.
 
 ```orders
 select category, dayname(order_datetime) as day, dayofweek(order_datetime) as day_num, count(*) as order_count from needful_things.orders
@@ -9724,8 +9847,11 @@ evidence/sites/docs/pages/components/charts/sparkline/index.md
 ---
 ---
 title: Sparkline
+description: Display a compact visual representation of a single metric over time.
 sidebar_position: 9
 ---
+
+Use sparklines to display a compact visual representation of a single metric over time or a continuous range.
 
 ```sql orders_by_month
 select order_month as month, sum(sales) as sales_usd0k, count(1) as orders from needful_things.orders
@@ -9920,8 +10046,11 @@ evidence/sites/docs/pages/components/charts/funnel-chart/index.md
 ---
 ---
 title: Funnel Chart
+description: Display how a single metric changes across a series of stages. Funnel charts are widely used for visualizing conversion.
 sidebar_position: 6
 ---
+
+Use funnel charts to display a single metric across a series of stages. Funnel charts are widely used for visualizing conversion.
 
 ```sql funnel_data
 select * from (
@@ -10166,10 +10295,13 @@ evidence/sites/docs/pages/components/charts/box-plot/index.md
 ---
 ---
 title: Box Plot
+description: Summarize the distribution and range of a metric around the median value.
 sidebar_position: 1
 queries: 
 - sales_distribution_by_channel.sql
 ---
+
+Use box plots to summarize the distribution and range of a metric around the median value.
 
 <DocTab>
     <div slot='preview'>
@@ -10604,6 +10736,7 @@ evidence/sites/docs/pages/components/charts/custom-echarts/index.md
 ---
 sidebar_position: 98
 title: Custom ECharts
+description: Evidence charts are based on ECharts, a powerful and flexible open source charting library. You can configure any ECharts graph directly using the ECharts component.
 ---
 
 Our chart library is based on [ECharts](https://echarts.apache.org/examples/en/index.html), a powerful and flexible open source JavaScript chart library. We use many of the features in ECharts, and combine them with custom data transformation, logic, and theming.
@@ -11284,8 +11417,11 @@ evidence/sites/docs/pages/components/charts/histogram/index.md
 ---
 ---
 title: Histogram
+description: Display the distribution of a metric along a continuous range, aggregated into buckets.
 sidebar_position: 1
 ---
+
+Use histograms to display the distribution of a metric along a continuous range, aggregated into buckets.
 
 ```sql orders
 select * from needful_things.orders limit 1000
@@ -11636,11 +11772,14 @@ evidence/sites/docs/pages/components/charts/calendar-heatmap/index.md
 ---
 ---
 title: Calendar Heatmap
+description: Display how a single metric varies over weeks and months in a familar GitHub-style format
 sidebar_position: 5
 queries:
 - orders_by_day.sql
 - orders_by_day_2021.sql
 ---
+
+Use calendar heatmaps to display how a single metric varies over weeks and months.
 
 <DocTab>
     <div slot='preview'>
@@ -11899,10 +12038,16 @@ queries:
 ---
 evidence/sites/docs/pages/components/charts/mixed-type-charts/index.md
 ---
+
 ---
 title: Mixed-Type Charts
+description: Display multiple series types on the same chart, for example a bar for an amount, and a line for a related percentage.
 sidebar_position: 99
 ---
+
+Use mixed-type charts to display multiple series types on the same chart, for example a bar for an amount, and a line for a related percentage. 
+
+Mixed-type charts can be confusing, so use them sparingly. To add reference lines, areas or points to a chart instead, see [Annotations](/components/charts/annotations).
 
 <Alert status=info>
 
@@ -12817,13 +12962,14 @@ evidence/sites/docs/pages/components/charts/annotations/index.md
 ---
 ---
 title: Annotations
+description: Add important context directly to a chart - highlight areas, or specific points to make it easier for your reader to draw insights.
 sidebar_position: 9
 queries: 
 - orders_by_month.sql
 - orders_by_category_2021.sql
 ---
 
-Annotations help you add important context directly within a chart - highlight important dates, time periods, or specific points on a chart to make it easier for your audience to pull insights from the information.
+Use annotations to add important context directly to a chart - highlight areas, or specific points to make it easier for your reader to draw insights.
 
 ## At a glance
 
@@ -14288,8 +14434,11 @@ evidence/sites/docs/pages/components/charts/line-chart/index.md
 ---
 ---
 title: Line Chart
+description: Display how one or more metrics over time. Line charts are suitable for plotting a large number of data points on the same chart.
 sidebar_position: 1
 ---
+
+Use line charts to display how one or more metrics over time. Line charts are suitable for plotting a large number of data points on the same chart.
 
 ```sql orders_by_month
 select order_month as month, sum(sales) as sales_usd0k, count(1) as orders from needful_things.orders
@@ -15014,11 +15163,14 @@ evidence/sites/docs/pages/components/charts/area-chart/index.md
 ---
 ---
 title: 'Area Chart'
+description: Track how a metric with multiple series changes over time, or a continuous range. 
 sidebar_position: 1
 queries:
 - orders_by_month.sql
 - orders_by_category_2021.sql
 ---
+
+Use area charts to track how a metric with multiple series changes over time, or a continuous range. Area charts emphasize changes in the sum of series over the individual series.
 
 <DocTab>
     <div slot='preview'>
@@ -15600,8 +15752,11 @@ evidence/sites/docs/pages/components/maps/point-map/index.md
 ---
 ---
 title: Point Map
+description: Display points of interest on a map, optionally color-coded by a metric.
 sidebar_position: 1
 ---
+
+Show points of interest on a map, optionally color-coded by a metric.
 
 <DocTab>
     <div slot='preview'>
@@ -15612,9 +15767,7 @@ sidebar_position: 1
 <PointMap 
     data={la_locations} 
     lat=lat 
-    long=long 
-    value=sales 
-    valueFmt=usd 
+    long=long  
     pointName=point_name 
     height=200
 />
@@ -16272,8 +16425,11 @@ evidence/sites/docs/pages/components/maps/base-map/index.md
 ---
 ---
 title: Base Map
+description: Combine multiple map layers including areas, points, and bubbles.
 sidebar_position: 2
 ---
+
+Combine multiple map layers including areas, points, and bubbles.
 
 <DocTab>
     <div slot='preview'>
@@ -16939,10 +17095,13 @@ evidence/sites/docs/pages/components/maps/us-map/index.md
 ---
 ---
 title: US Map
+description: Compare a metric across US states using a flat choropleth map.
 sidebar_position: 3
 queries:
 - state_population.sql
 ---
+
+Compare a metric across US states using a flat choropleth map. For other regions see the more general [Area Map](/components/maps/area-map) component.
 
 <DocTab>
     <div slot='preview'>
@@ -17352,8 +17511,11 @@ evidence/sites/docs/pages/components/maps/bubble-map/index.md
 ---
 ---
 title: Bubble Map
+description: Compare points of interest on a map using bubble size, and optionally color, to visualize metrics.
 sidebar_position: 1
 ---
+
+Compare points of interest on a map using bubble size, and optionally color, to visualize metrics. It is easier to distinguish size than color, so the primary metric should generally be used to set the size.
 
 <DocTab>
     <div slot='preview'>
@@ -18114,8 +18276,11 @@ evidence/sites/docs/pages/components/maps/area-map/index.md
 ---
 ---
 title: Area Map
+description: Compare a metric across different regions on a map using a choropleth map
 sidebar_position: 1
 ---
+
+Compare a metric across different regions on a map using a choropleth map
 
 <DocTab>
     <div slot='preview'>
@@ -18958,10 +19123,11 @@ evidence/sites/docs/pages/components/ui/details/index.md
 ---
 ---
 title: Details
+description: Add a collapsible section of markdown content that can be expanded to reveal more information.
 sidebar_position: 1
 ---
 
-The details component allows you to add a collapsible section to your markdown. This is useful for adding additional information that you don't want to be visible by default.
+The details component allows you to add a collapsible section to your markdown. This is useful for adding additional information that you don't want to be visible by default, but can be expanded by the reader.
 
 ## Default state
 
@@ -19068,8 +19234,11 @@ evidence/sites/docs/pages/components/ui/link-button/index.md
 ---
 ---
 title: Link Button
+description: Style a link as a button.
 sidebar_position: 1
 ---
+
+Use the link button component to style a link as a button.
 
 <DocTab>
     <div slot='preview'>
@@ -19098,16 +19267,17 @@ evidence/sites/docs/pages/components/ui/download-data/index.md
 ---
 ---
 title: Download Data
+description: Display a standalone button to download a specified dataset as a CSV file.
 sidebar_position: 1
 ---
+
+Display a standalone button to download a specified dataset as a CSV file. Note that this component is not visible on small screen widths.
 
 ```categories
 select category, sum(sales) as sales from needful_things.orders
 group by all
 order by sales desc
 ```
-
-The Download Data component allows you to place a link on your page to download a specified dataset to CSV.
 
 <DocTab>
     <div slot='preview'>
@@ -19191,8 +19361,11 @@ evidence/sites/docs/pages/components/ui/big-link/index.md
 ---
 ---
 title: Big Link
+description: Display a url link in a styled container.
 sidebar_position: 1
 ---
+
+Use big links to display a url link in a styled container. To style links like Buttons, use a [Link Button](/components/ui/link-button).
 
 <DocTab>
     <div slot='preview'>
@@ -19219,6 +19392,7 @@ evidence/sites/docs/pages/components/ui/modal/index.md
 ---
 ---
 title: Modal
+description: Display a pop-up dialog when a button is clicked.
 sidebar_position: 1
 ---
 
@@ -19325,8 +19499,11 @@ evidence/sites/docs/pages/components/ui/tabs/index.md
 ---
 ---
 title: Tabs
+description: Organize content across multiple panes.
 sidebar_position: 1
 ---
+
+Use Tabs to organize content across multiple panes.
 
 <DocTab>
   <div slot='preview'>
@@ -19365,6 +19542,58 @@ sidebar_position: 1
 
 ## Examples
 
+### Full Width
+
+<DocTab>
+  <div slot='preview'>
+    <Tabs fullWidth=true>
+        <Tab label="First Tab">
+            Content of the First Tab
+        </Tab>
+        <Tab label="Second Tab">
+            Content of the Second Tab
+        </Tab>
+    </Tabs>
+  </div>
+
+```markdown
+<Tabs fullWidth=true>
+    <Tab label="First Tab">
+        Content of the First Tab
+    </Tab>
+    <Tab label="Second Tab">
+        Content of the Second Tab
+    </Tab>
+</Tabs>
+```
+</DocTab>
+
+### Theme Color
+
+<DocTab>
+  <div slot='preview'>
+    <Tabs color=primary>
+        <Tab label="Primary Tabs">
+            Content of the First Tab
+        </Tab>
+        <Tab label="Second Tab">
+            Content of the Second Tab
+        </Tab>
+    </Tabs>
+  </div>
+
+```markdown
+<Tabs color=primary>
+    <Tab label="Primary Tabs">
+        Content of the First Tab
+    </Tab>
+    <Tab label="Second Tab">
+        Content of the Second Tab
+    </Tab>
+</Tabs>
+```
+</DocTab>
+
 ### Custom Color
 
 <DocTab>
@@ -19390,6 +19619,34 @@ sidebar_position: 1
 </Tabs>
 ```
 </DocTab>
+
+
+### Background Color
+
+<DocTab>
+  <div slot='preview'>
+    <Tabs background=true>
+        <Tab label="First Tab">
+            Content of the First Tab
+        </Tab>
+        <Tab label="Second Tab">
+            Content of the Second Tab
+        </Tab>
+    </Tabs>
+  </div>
+
+```markdown
+<Tabs background=true>
+    <Tab label="First Tab">
+        Content of the First Tab
+    </Tab>
+    <Tab label="Second Tab">
+        Content of the Second Tab
+    </Tab>
+</Tabs>
+```
+</DocTab>
+
 
 ### Persist Selected Tab to URL
 
@@ -19432,10 +19689,28 @@ Unique Id for this set of tabs. When set, the selected tab is included in the UR
 <PropListing
     name="color"
     options="Any valid hex, rgb, or hsl string"
-    defaultValue="blue"
+    defaultValue="base-content"
 >
 
-Color for the active tab.
+Color for the active tab. Accepts [theme tokens](/core-concepts/themes#colors)
+
+</PropListing>
+<PropListing
+    name="fullWidth"
+    options={[true, false]}
+    defaultValue="false"
+>
+
+Tabs take up full width of page
+
+</PropListing>
+<PropListing
+    name="background"
+    options={[true, false]}
+    defaultValue="false"
+>
+
+Include background color on active tab. Color is automatically determined based on `color` prop
 
 </PropListing>
 
@@ -19464,6 +19739,7 @@ evidence/sites/docs/pages/components/ui/last-refreshed/index.md
 ---
 ---
 title: Last Refreshed
+description: Display text indicating the last time the data was refreshed.
 sidebar_position: 1
 ---
 
@@ -19507,6 +19783,7 @@ evidence/sites/docs/pages/components/ui/print-format-components/index.md
 ---
 ---
 title: Print Format Components
+description: Format your report content for PDF export or printing.
 sidebar_position: 1
 ---
 
@@ -19561,13 +19838,13 @@ The purple line chart in this section will print on a new page.
 - Offers a `hidden` prop. If `true`, the content within the PrintGroup will not be printed
 
 ```html
-    <PrintGroup>
+<PrintGroup>
 
-        The 2 heatmaps below will be printed on the same page if possible
+    The 2 heatmaps below will be printed on the same page if possible
 
-        <Heatmap data={item_channel} x=channel y=item value=orders/>
-        <Heatmap data={item_channel} x=channel y=item value=orders/>
-    </PrintGroup>
+    <Heatmap data={item_channel} x=channel y=item value=orders/>
+    <Heatmap data={item_channel} x=channel y=item value=orders/>
+</PrintGroup>
 ```
 
 ### `hidden=true`
@@ -19608,8 +19885,11 @@ evidence/sites/docs/pages/components/ui/alert/index.md
 ---
 ---
 title: Alert
+description: Display a message in a styled container on the page.
 sidebar_position: 1
 ---
+
+Use alerts to display a message in a styled container on the page.
 
 <DocTab>
     <div slot='preview'>
@@ -19673,8 +19953,11 @@ evidence/sites/docs/pages/components/ui/accordion/index.md
 ---
 ---
 title: Accordion
+description: Organize content into collapsible sections.
 sidebar_position: 1
 ---
+
+Use accordions to organize content into collapsible sections.
 
 <DocTab>
   <div slot='preview'>
@@ -19882,8 +20165,11 @@ evidence/sites/docs/pages/components/ui/grid/index.md
 ---
 ---
 title: Grid
+description: Arrange components in a grid with a specified number of columns.
 sidebar_position: 1
 ---
+
+Use the grid component to arrange components in a grid with a specified number of columns. On smaller screen widths, the grid will stack the components vertically to maintain readability.
 
 ```sql orders_by_category
 select order_month, count(1) as orders from needful_things.orders
@@ -19962,9 +20248,7 @@ evidence/sites/docs/pages/motivation/index.md
 ---
 sidebar_position: 2
 title: Motivation
-description: It's still too difficult to build high quality data products. We give you the tools to deliver production-quality data products that feel more like the New York Times' data journalism than a drag-and-drop dashboard.
-og:
-  image: /img/how-it-works.png
+description: It's still too difficult to build high quality data products.
 ---
 
 We think it's still too difficult to build high quality data products. Businesses are stuck with BI software that delivers slow and clunky outputs, and analysts are stuck manually configuring reports.
@@ -21325,7 +21609,7 @@ To use sql file queries, you need to place them in the `queries` directory, and 
 
 An example setup could be:
 
-```
+```bash
 my-evidence-project/
   pages/
     my_page.md
@@ -22007,7 +22291,7 @@ evidence/sites/docs/pages/core-concepts/syntax/index.md
 ---
 ---
 title: Syntax
-description: Extended markdown with additional functionality.
+description: Evidence extends markdown with additional functionality to run queries and create charts.
 sidebar_position: 1
 ---
 
@@ -22311,7 +22595,7 @@ group by 1
 
 Creating folders with parameters can be useful when nesting inside templated pages:
 
-```
+```bash
 pages/
 `-- customers/
     `-- [customer]/
@@ -22898,7 +23182,7 @@ evidence/sites/docs/pages/plugins/create-source-plugin/index.md
 ---
 ---
 title: Create Data Source Plugin
-description: Walkthrough on how to create a data source plugin for Evidence
+description: How to create a data source plugin for Evidence
 sidebar_position: 4
 ---
 
@@ -23202,6 +23486,7 @@ If you are building a plugin for other Evidence users, [let us know in Slack](ht
 evidence/sites/docs/pages/reference/index.md
 ---
 ---
+title: Reference
 sidebar_position: 5
 sidebar_link: false
 ---
@@ -23285,7 +23570,7 @@ _Italic_ text is wrapped in single asterisks
 
 Evidence looks for images in the `/static` folder in the root of your project. Create it if it doesn't exist.
 
-```
+```bash
 +-- pages/
 |   `-- index.md
 `-- static/
@@ -24978,6 +25263,7 @@ If you want your site to update on a regular schedule, you can use GitHub Action
 evidence/sites/docs/pages/deployment/configuration/index.md
 ---
 ---
+title: Configuration
 sidebar_position: 99
 sidebar_link: false
 ---
@@ -24989,6 +25275,7 @@ evidence/sites/docs/pages/deployment/configuration/environments/index.md
 sidebar_position: 7
 hide_table_of_contents: false
 title: Environments
+description: Configure multiple environments for developing and testing your app, using different database credentials if needed.
 ---
 
 ## What are environments?
@@ -25033,6 +25320,7 @@ evidence/sites/docs/pages/deployment/configuration/rendering-modes/index.md
 sidebar_position: 5
 hide_table_of_contents: false
 title: Rendering Modes
+description: Evidence supports rendering using Static Site Generation (Default) or Single Page App (SPA) mode.
 ---
 
 Evidence supports two rendering modes:
