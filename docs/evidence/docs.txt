@@ -2317,6 +2317,22 @@ Number of rows to show in the table before paginating results. Use `rows=all` to
 
 </PropListing>
 <PropListing
+    name=title
+    options="string"
+>
+
+Title for the table
+
+</PropListing>
+<PropListing
+    name=subtitle
+    options="string"
+>
+
+Subtitle - appears under the title
+
+</PropListing>
+<PropListing
     name=headerColor
     required=false
     options="Hex color code | css color name"
@@ -6032,7 +6048,7 @@ group by all
 
 <DocTab>
     <div slot='preview'>
-        <DimensionGrid data={orders} metric='sum(sales)' name=selected_dimensions /> 
+        <DimensionGrid data={orders} metric='sum(sales)' name=selected_dimensions/> 
 
         <LineChart data={monthly_sales} handleMissing=zero/> 
     </div>
@@ -6142,6 +6158,22 @@ SQL aggregate which could be applied to `data` e.g. 'sum(sales)'
 >
 
 Name of the dimension grid, used to reference the selected value elsewhere as `{inputs.name}`
+
+</PropListing>
+<PropListing
+    name=title
+    options="string"
+>
+
+Title for the dimension grid
+
+</PropListing>
+<PropListing
+    name=subtitle
+    options="string"
+>
+
+Subtitle - appears under the title
 
 </PropListing>
 <PropListing 
@@ -14455,9 +14487,9 @@ group by all
         <LineChart 
             data={orders_by_month}
             x=month
-            y=sales_usd0k 
+            y=sales_usd0k
             yAxisTitle="Sales per Month"
-        />
+        />        
     </div>
 
 ```svelte
@@ -16173,6 +16205,22 @@ options="column name"
 >
 Column containing the names/labels of the points - by default, this is shown as the title of the tooltip.
 </PropListing>
+<PropListing
+    name=title
+    options="string"
+>
+
+Title for the map
+
+</PropListing>
+<PropListing
+    name=subtitle
+    options="string"
+>
+
+Subtitle - appears under the title
+
+</PropListing>
 
 ### Color Scale
 
@@ -16742,6 +16790,22 @@ options="pixel value"
 defaultValue="300"
 >
 Height of the map in pixels.
+</PropListing>
+<PropListing
+    name=title
+    options="string"
+>
+
+Title for the map
+
+</PropListing>
+<PropListing
+    name=subtitle
+    options="string"
+>
+
+Subtitle - appears under the title
+
 </PropListing>
 
 ## Layer Options
@@ -18029,6 +18093,22 @@ options="column name"
 >
 Column containing the names/labels of the points - by default, this is shown as the title of the tooltip.
 </PropListing>
+<PropListing
+    name=title
+    options="string"
+>
+
+Title for the map
+
+</PropListing>
+<PropListing
+    name=subtitle
+    options="string"
+>
+
+Subtitle - appears under the title
+
+</PropListing>
 
 ### Color Scale
 
@@ -18868,6 +18948,22 @@ name="valueFmt"
 options="format string"
 >
 Format string for displaying the value.
+</PropListing>
+<PropListing
+    name=title
+    options="string"
+>
+
+Title for the map
+
+</PropListing>
+<PropListing
+    name=subtitle
+    options="string"
+>
+
+Subtitle - appears under the title
+
 </PropListing>
 
 ### Color Scale
@@ -23728,6 +23824,38 @@ E.g.
 `breadcrumb: &quot;select customer_name as breadcrumb from customers_table where customer_id = $&#123params.customer_id&#125&quot;`
 
 </PropListing>
+<PropListing
+    name="hide_header"
+    description="If true, header will not be shown on the page"
+    options={['true', 'false']}
+/>
+<PropListing
+    name="hide_toc"
+    description="If true, table of contents will not be shown on the page"
+    options={['true', 'false']}
+/>
+<PropListing
+    name="hide_breadcrumbs"
+    description="If true, breadcrumbs will not be shown on the page"
+    options={['true', 'false']}
+/>
+<PropListing
+    name="full_width"
+    description="Sets the width of the app content to the full width of the screen."
+    options={['true', 'false']}
+/>
+<PropListing
+    name="max_width"
+    options="Any number"
+    defaultValue=""
+>
+
+Sets the width of the app content in pixels. The default layout is about 1,280 px wide.
+
+</PropListing>
+
+
+
 
 Anything outside of these values won't do anything on their own, but they will be accessible as [variables](/core-concepts/syntax#expressions) on the page.
 
@@ -23777,7 +23905,7 @@ Evidence will use any `+layout.svelte` file in the `/pages` directory to overrid
 <Alert status=info>
 <b>Creating a Custom Layout</b>
 
-The recommended approach is to copy and edit the default layout file
+The recommended approach is to copy and edit the default layout file. You can do this with the `Add Custom Layout` command in VS Code or with the CLI command below:
 
 ```bash
 cp .evidence/template/src/pages/+layout.svelte pages
@@ -24438,6 +24566,17 @@ GitHub Pages is a static site hosting service that publishes a website from HTML
 
 1. Adjust the [base path](/deployment/configuration/base-paths) for your app to match the name of your GitHub repository. 
     - If your repo is stored at `https://github.com/username/my-evidence-app`, your base path should be `/my-evidence-app`.
+    ```yaml
+    # evidence.config.yaml
+    deployment:
+      basePath: /my-evidence-app
+    ```
+    ```json
+    // package.json
+    "scripts": {
+      "build": "EVIDENCE_BUILD_DIR=./build/my-evidence-app evidence build",
+    }
+    ```
 1. Add secrets to your GitHub repo: Settings > Secrets and variables > Actions
     - With your Evidence dev server running, go to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and copy each of the environment variables
     - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory. The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
