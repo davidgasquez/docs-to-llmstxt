@@ -421,7 +421,7 @@ DuckDB offers the following security levels for extensions.
 |-----|---|---|
 | `core` | Extensions can only be loaded if signed from a `core` key. | `SET allow_community_extensions = false` |
 | `core` and `community` | Extensions can only be loaded if signed from a `core` or `community` key. | This is the default security level. |
-| any extension incl. unsigned | Any extensions can be loaded. | `SET allow_unsigned_extensions = true` |
+| Any extension including unsigned | Any extensions can be loaded. | `SET allow_unsigned_extensions = true` |
 
 Security-related configuration settings [lock themselves]({% link docs/operations_manual/securing_duckdb/overview.md %}#locking-configurations), i.e., it is only possible to restrict capabilities in the current process.
 
@@ -827,19 +827,19 @@ FROM sniff_csv('my_file.csv', sample_size = 1000);
 ```
 
 | Column name | Description | Example |
-|----|-----|-------|
-| `Delimiter` | delimiter | `,` |
-| `Quote` | quote character | `"` |
-| `Escape` | escape | `\` |
-| `NewLineDelimiter` | new-line delimiter | `\r\n` |
-| `Comment` | comment character | `#` |
-| `SkipRows` | number of rows skipped | 1 |
-| `HasHeader` | whether the CSV has a header | `true` |
-| `Columns` | column types encoded as a `LIST` of `STRUCT`s | `({'name': 'VARCHAR', 'age': 'BIGINT'})` |
-| `DateFormat` | date Format | `%d/%m/%Y` |
-| `TimestampFormat` | timestamp Format | `%Y-%m-%dT%H:%M:%S.%f` |
-| `UserArguments` | arguments used to invoke `sniff_csv` | `sample_size = 1000` |
-| `Prompt` | prompt ready to be used to read the CSV | `FROM read_csv('my_file.csv', auto_detect=false, delim=',', ...)` |
+|--------------------|-----------------------------------------------|-------------------------------------------------------------------|
+| `Delimiter` | Delimiter | `,` |
+| `Quote` | Quote character | `"` |
+| `Escape` | Escape | `\` |
+| `NewLineDelimiter` | New-line delimiter | `\r\n` |
+| `Comment` | Comment character | `#` |
+| `SkipRows` | Number of rows skipped | 1 |
+| `HasHeader` | Whether the CSV has a header | `true` |
+| `Columns` | Column types encoded as a `LIST` of `STRUCT`s | `({'name': 'VARCHAR', 'age': 'BIGINT'})` |
+| `DateFormat` | Date format | `%d/%m/%Y` |
+| `TimestampFormat` | Timestamp Format | `%Y-%m-%dT%H:%M:%S.%f` |
+| `UserArguments` | Arguments used to invoke `sniff_csv` | `sample_size = 1000` |
+| `Prompt` | Prompt ready to be used to read the CSV | `FROM read_csv('my_file.csv', auto_detect=false, delim=',', ...)` |
 
 ### Prompt
 
@@ -2593,7 +2593,7 @@ With `'unstructured'`, the top-level JSON is read, e.g. for `birds.json`:
 ```
 
 ```sql
-FROM read_json('birds.json', format = 'unstructured');
+FROM read_json_objects('birds.json', format = 'unstructured');
 ```
 
 will result in two objects being read:
@@ -2686,7 +2686,7 @@ Besides the `maximum_object_size`, `format`, `ignore_errors` and `compression`, 
 | `timestampformat` | Specifies the date format to use when parsing timestamps. See [Date Format]({% link docs/sql/functions/dateformat.md %}) | `VARCHAR` | `'iso'`|
 | `union_by_name` | Whether the schema's of multiple JSON files should be [unified]({% link docs/data/multiple_files/combining_schemas.md %}) | `BOOL` | `false` |
 | `map_inference_threshold` | Controls the threshold for number of columns whose schema will be auto-detected; if JSON schema auto-detection would infer a `STRUCT` type for a field that has _more_ than this threshold number of subfields, it infers a `MAP` type instead. Set to `-1` to disable `MAP` inference. | `BIGINT` | `200` |
-| `field_appearance_threshold` | The JSON reader divides the number of appearances of each JSON field by the auto-detection sample size. If the average over the fields of an object is less than this threshold, it will default to using a `MAP` type with value type of merged field types. | `0.1` |
+| `field_appearance_threshold` | The JSON reader divides the number of appearances of each JSON field by the auto-detection sample size. If the average over the fields of an object is less than this threshold, it will default to using a `MAP` type with value type of merged field types. | `DOUBLE` | `0.1` |
 
 Note that DuckDB can convert JSON arrays directly to its internal `LIST` type, and missing keys become `NULL`:
 
@@ -3281,11 +3281,11 @@ Any file name input to the `read_parquet` function can either be an exact filena
 
 | Wildcard | Description |
 |------------|-----------------------------------------------------------|
-| `*` | matches any number of any characters (including none) |
-| `**` | matches any number of subdirectories (including none) |
-| `?` | matches any single character |
-| `[abc]` | matches one character given in the bracket |
-| `[a-z]` | matches one character from the range given in the bracket |
+| `*` | Matches any number of any characters (including none) |
+| `**` | Matches any number of subdirectories (including none) |
+| `?` | Matches any single character |
+| `[abc]` | Matches one character given in the bracket |
+| `[a-z]` | Matches one character from the range given in the bracket |
 
 Note that the `?` wildcard in globs is not supported for reads over S3 due to HTTP encoding issues.
 
@@ -4081,11 +4081,11 @@ For more information, see the [â€œProfilingâ€�]({% link docs/configurat
 
 | Setting | Description | Default | Options |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------|-----------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| [`enable_profiling`]({% link docs/configuration/pragmas.md %}#enable_profiling), [`enable_profile`]({% link docs/configuration/pragmas.md %}#enable_profiling) | Turn on profiling. | `query_tree` | `query_tree`, `json`, `query_tree_optimizer`, `no_output` |
-| [`profiling_output`]({% link docs/configuration/pragmas.md %}#profiling_output) | Set a profiling output file. | Console | A filepath. |
-| [`profiling_mode`]({% link docs/configuration/pragmas.md %}#profiling_mode) | Toggle additional optimizer and planner metrics. | `standard` | `standard`, `detailed` |
-| [`custom_profiling_settings`]({% link docs/configuration/pragmas.md %}#custom_profiling_metrics) | Enable or disable specific metrics. | All metrics except those activated by detailed profiling. | A JSON object that matches the following: `{"METRIC_NAME": "boolean", ...}`. See the [metrics](#metrics) section below. |
-| [`disable_profiling`]({% link docs/configuration/pragmas.md %}#disable_profiling), [`disable_profile`]({% link docs/configuration/pragmas.md %}#disable_profiling) | Turn off profiling. | | |
+| [`enable_profiling`]({% link docs/configuration/pragmas.md %}#enable_profiling), [`enable_profile`]({% link docs/configuration/pragmas.md %}#enable_profiling) | Turn on profiling | `query_tree` | `query_tree`, `json`, `query_tree_optimizer`, `no_output` |
+| [`profiling_output`]({% link docs/configuration/pragmas.md %}#profiling_output) | Set a profiling output file | Console | A filepath |
+| [`profiling_mode`]({% link docs/configuration/pragmas.md %}#profiling_mode) | Toggle additional optimizer and planner metrics | `standard` | `standard`, `detailed` |
+| [`custom_profiling_settings`]({% link docs/configuration/pragmas.md %}#custom_profiling_metrics) | Enable or disable specific metrics | All metrics except those activated by detailed profiling | A JSON object that matches the following: `{"METRIC_NAME": "boolean", ...}`. See the [metrics](#metrics) section below. |
+| [`disable_profiling`]({% link docs/configuration/pragmas.md %}#disable_profiling), [`disable_profile`]({% link docs/configuration/pragmas.md %}#disable_profiling) | Turn off profiling | | |
 
 ## Metrics
 
@@ -4099,16 +4099,16 @@ Other than `QUERY_NAME` and `OPERATOR_TYPE`, it is possible to turn all metrics 
 
 | Metric | Return type | Unit | Query | Operator | Description |
 |-------------------------|-------------|----------|:-----:|:--------:|-------------------------------------------------------------------------------------------------------------------------------|
-| `BLOCKED_THREAD_TIME` | `double` | seconds | âœ… | | The total time threads are blocked. |
-| `EXTRA_INFO` | `string` | | âœ… | âœ… | Unique operator metrics. |
-| `LATENCY` | `double` | seconds | âœ… | | The total elapsed query execution time. |
-| `OPERATOR_CARDINALITY` | `uint64` | absolute | | âœ… | The cardinality of each operator, i.e., the number of rows it returns to its parent. Operator equivalent of `ROWS_RETURNED`. |
-| `OPERATOR_ROWS_SCANNED` | `uint64` | absolute | | âœ… | The total rows scanned by each operator. |
-| `OPERATOR_TIMING` | `double` | seconds | | âœ… | The time taken by each operator. Operator equivalent of `LATENCY`. |
-| `OPERATOR_TYPE` | `string` | | | âœ… | The name of each operator. |
-| `QUERY_NAME` | `string` | | âœ… | | The query string. |
-| `RESULT_SET_SIZE` | `uint64` | bytes | âœ… | âœ… | The size of the result. |
-| `ROWS_RETURNED` | `uint64` | absolute | âœ… | | The number of rows returned by the query. |
+| `BLOCKED_THREAD_TIME` | `double` | seconds | âœ… | | The total time threads are blocked |
+| `EXTRA_INFO` | `string` | | âœ… | âœ… | Unique operator metrics |
+| `LATENCY` | `double` | seconds | âœ… | | The total elapsed query execution time |
+| `OPERATOR_CARDINALITY` | `uint64` | absolute | | âœ… | The cardinality of each operator, i.e., the number of rows it returns to its parent. Operator equivalent of `ROWS_RETURNED` |
+| `OPERATOR_ROWS_SCANNED` | `uint64` | absolute | | âœ… | The total rows scanned by each operator |
+| `OPERATOR_TIMING` | `double` | seconds | | âœ… | The time taken by each operator. Operator equivalent of `LATENCY` |
+| `OPERATOR_TYPE` | `string` | | | âœ… | The name of each operator |
+| `QUERY_NAME` | `string` | | âœ… | | The query string |
+| `RESULT_SET_SIZE` | `uint64` | bytes | âœ… | âœ… | The size of the result |
+| `ROWS_RETURNED` | `uint64` | absolute | âœ… | | The number of rows returned by the query |
 
 ### Cumulative Metrics
 
@@ -7445,38 +7445,25 @@ GROUP BY GROUPING SETS ((course, type), course, type, ());
 | NULL | Bachelor | 2 |
 | NULL | PhD | 1 |
 
-In the above query, we group across four different sets: `course, type`, `course`, `type` and `()` (the empty group). The result contains `NULL` for a group which is not in the grouping set for the result, i.e., the above query is equivalent to the following UNION statement:
-
-Group by course, type:
+In the above query, we group across four different sets: `course, type`, `course`, `type` and `()` (the empty group). The result contains `NULL` for a group which is not in the grouping set for the result, i.e., the above query is equivalent to the following statement of `UNION ALL` clauses:
 
 ```sql
+-- Group by course, type:
 SELECT course, type, count(*)
 FROM students
 GROUP BY course, type
 UNION ALL
-```
-
-Group by type:
-
-```sql
+-- Group by type:
 SELECT NULL AS course, type, count(*)
 FROM students
 GROUP BY type
 UNION ALL
-```
-
-Group by course:
-
-```sql
+-- Group by course:
 SELECT course, NULL AS type, count(*)
 FROM students
 GROUP BY course
 UNION ALL
-```
-
-Group by nothing:
-
-```sql
+-- Group by nothing:
 SELECT NULL AS course, NULL AS type, count(*)
 FROM students;
 ```
@@ -10248,10 +10235,10 @@ All [`LIST` functions]({% link docs/sql/functions/list.md %}) work with the [`AR
 | [`array_value(index)`](#array_valueindex) | Create an `ARRAY` containing the argument values. |
 | [`array_cross_product(array1, array2)`](#array_cross_productarray1-array2) | Compute the cross product of two arrays of size 3. The array elements can not be `NULL`. |
 | [`array_cosine_similarity(array1, array2)`](#array_cosine_similarityarray1-array2) | Compute the cosine similarity between two arrays of the same size. The array elements can not be `NULL`. The arrays can have any size as long as the size is the same for both arguments. |
-[`array_cosine_distance(array1, array2)`](#array_cosine_distancearray1-array2) | Compute the cosine distance between two arrays of the same size. The array elements can not be `NULL`. The arrays can have any size as long as the size is the same for both arguments. This is equivalent to `1.0 - array_cosine_similarity` |
+| [`array_cosine_distance(array1, array2)`](#array_cosine_distancearray1-array2) | Compute the cosine distance between two arrays of the same size. The array elements can not be `NULL`. The arrays can have any size as long as the size is the same for both arguments. This is equivalent to `1.0 - array_cosine_similarity`. |
 | [`array_distance(array1, array2)`](#array_distancearray1-array2) | Compute the distance between two arrays of the same size. The array elements can not be `NULL`. The arrays can have any size as long as the size is the same for both arguments. |
 | [`array_inner_product(array1, array2)`](#array_inner_productarray1-array2) | Compute the inner product between two arrays of the same size. The array elements can not be `NULL`. The arrays can have any size as long as the size is the same for both arguments. |
-| [`array_negative_inner_product(array1, array2)`](#array_negative_inner_productarray1-array2) | Compute the negative inner product between two arrays of the same size. The array elements can not be `NULL`. The arrays can have any size as long as the size is the same for both arguments. This is equivalent to `-array_inner_product` |
+| [`array_negative_inner_product(array1, array2)`](#array_negative_inner_productarray1-array2) | Compute the negative inner product between two arrays of the same size. The array elements can not be `NULL`. The arrays can have any size as long as the size is the same for both arguments. This is equivalent to `-array_inner_product`. |
 | [`array_dot_product(array1, array2)`](#array_dot_productarray1-array2) | Alias for `array_inner_product(array1, array2)`. |
 | [`array_negative_dot_product(array1, array2)`](#array_negative_dot_productarray1-array2) | Alias for `array_negative_inner_product(array1, array2)`. |
 
@@ -12421,14 +12408,14 @@ The table below shows the available mathematical operators for `INTERVAL` types.
 
 | Operator | Description | Example | Result |
 |:-|:--|:----|:--|
-| `+` | addition of an `INTERVAL` | `INTERVAL 1 HOUR + INTERVAL 5 HOUR` | `INTERVAL 6 HOUR` |
-| `+` | addition to a `DATE` | `DATE '1992-03-22' + INTERVAL 5 DAY` | `1992-03-27` |
-| `+` | addition to a `TIMESTAMP` | `TIMESTAMP '1992-03-22 01:02:03' + INTERVAL 5 DAY` | `1992-03-27 01:02:03` |
-| `+` | addition to a `TIME` | `TIME '01:02:03' + INTERVAL 5 HOUR` | `06:02:03` |
-| `-` | subtraction of an `INTERVAL` | `INTERVAL 5 HOUR - INTERVAL 1 HOUR` | `INTERVAL 4 HOUR` |
-| `-` | subtraction from a `DATE` | `DATE '1992-03-27' - INTERVAL 5 DAY` | `1992-03-22` |
-| `-` | subtraction from a `TIMESTAMP` | `TIMESTAMP '1992-03-27 01:02:03' - INTERVAL 5 DAY` | `1992-03-22 01:02:03` |
-| `-` | subtraction from a `TIME` | `TIME '06:02:03' - INTERVAL 5 HOUR` | `01:02:03` |
+| `+` | Addition of an `INTERVAL` | `INTERVAL 1 HOUR + INTERVAL 5 HOUR` | `INTERVAL 6 HOUR` |
+| `+` | Addition to a `DATE` | `DATE '1992-03-22' + INTERVAL 5 DAY` | `1992-03-27` |
+| `+` | Addition to a `TIMESTAMP` | `TIMESTAMP '1992-03-22 01:02:03' + INTERVAL 5 DAY` | `1992-03-27 01:02:03` |
+| `+` | Addition to a `TIME` | `TIME '01:02:03' + INTERVAL 5 HOUR` | `06:02:03` |
+| `-` | Subtraction of an `INTERVAL` | `INTERVAL 5 HOUR - INTERVAL 1 HOUR` | `INTERVAL 4 HOUR` |
+| `-` | Subtraction from a `DATE` | `DATE '1992-03-27' - INTERVAL 5 DAY` | `1992-03-22` |
+| `-` | Subtraction from a `TIMESTAMP` | `TIMESTAMP '1992-03-27 01:02:03' - INTERVAL 5 DAY` | `1992-03-22 01:02:03` |
+| `-` | Subtraction from a `TIME` | `TIME '06:02:03' - INTERVAL 5 HOUR` | `01:02:03` |
 
 ## Interval Functions
 
@@ -12443,7 +12430,7 @@ The table below shows the available scalar functions for `INTERVAL` types.
 | [`to_centuries(integer)`](#to_centuriesinteger) | Construct a century interval. |
 | [`to_days(integer)`](#to_daysinteger) | Construct a day interval. |
 | [`to_decades(integer)`](#to_decadesinteger) | Construct a decade interval. |
-| [`to_hours(integer)`](#to_hoursinteger) | Construct a hour interval. |
+| [`to_hours(integer)`](#to_hoursinteger) | Construct an hour interval. |
 | [`to_microseconds(integer)`](#to_microsecondsinteger) | Construct a microsecond interval. |
 | [`to_millennia(integer)`](#to_millenniainteger) | Construct a millennium interval. |
 | [`to_milliseconds(integer)`](#to_millisecondsinteger) | Construct a millisecond interval. |
@@ -12515,7 +12502,7 @@ The table below shows the available scalar functions for `INTERVAL` types.
 
 
 
-| **Description** | Construct a hour interval. |
+| **Description** | Construct an hour interval. |
 | **Example** | `to_hours(5)` |
 | **Result** | `INTERVAL 5 HOUR` |
 
@@ -13952,20 +13939,20 @@ The table below shows the available mathematical operators for [numeric types]({
 
 | Operator | Description | Example | Result |
 |-|-----|--|-|
-| `+` | addition | `2 + 3` | `5` |
-| `-` | subtraction | `2 - 3` | `-1` |
-| `*` | multiplication | `2 * 3` | `6` |
-| `/` | float division | `5 / 2` | `2.5` |
-| `//` | division | `5 // 2` | `2` |
-| `%` | modulo (remainder) | `5 % 4` | `1` |
-| `**` | exponent | `3 ** 4` | `81` |
-| `^` | exponent (alias for `**`) | `3 ^ 4` | `81` |
-| `&` | bitwise AND | `91 & 15` | `11` |
-| `|` | bitwise OR | `32 | 3` | `35` |
-| `<<` | bitwise shift left | `1 << 4` | `16` |
-| `>>` | bitwise shift right | `8 >> 2` | `2` |
-| `~` | bitwise negation | `~15` | `-16` |
-| `!` | factorial of `x` | `4!` | `24` |
+| `+` | Addition | `2 + 3` | `5` |
+| `-` | Subtraction | `2 - 3` | `-1` |
+| `*` | Multiplication | `2 * 3` | `6` |
+| `/` | Float division | `5 / 2` | `2.5` |
+| `//` | Division | `5 // 2` | `2` |
+| `%` | Modulo (remainder) | `5 % 4` | `1` |
+| `**` | Exponent | `3 ** 4` | `81` |
+| `^` | Exponent (alias for `**`) | `3 ^ 4` | `81` |
+| `&` | Bitwise AND | `91 & 15` | `11` |
+| `|` | Bitwise OR | `32 | 3` | `35` |
+| `<<` | Bitwise shift left | `1 << 4` | `16` |
+| `>>` | Bitwise shift right | `8 >> 2` | `2` |
+| `~` | Bitwise negation | `~15` | `-16` |
+| `!` | Factorial of `x` | `4!` | `24` |
 
 
 
@@ -14614,12 +14601,12 @@ There are also alternative characters that can be used as keywords in place of `
 
 
 
-| LIKE-style | PostgreSQL-style |
-|:---|:---|
-| LIKE | ~~ |
-| NOT LIKE | !~~ |
-| ILIKE | ~~* |
-| NOT ILIKE | !~~* |
+| `LIKE`-style | PostgreSQL-style |
+|:-------------|:-----------------|
+| `LIKE` | `~~` |
+| `NOT LIKE` | `!~~` |
+| `ILIKE` | `~~*` |
+| `NOT ILIKE` | `!~~*` |
 
 ## `SIMILAR TO`
 
@@ -14644,9 +14631,9 @@ There are also alternative characters that can be used as keywords in place of `
 
 
 | `SIMILAR TO`-style | POSIX-style |
-|:---|:---|
-| SIMILAR TO | ~ |
-| NOT SIMILAR TO | !~ |
+|:-------------------|:------------|
+| `SIMILAR TO` | `~` |
+| `NOT SIMILAR TO` | `!~` |
 
 ## Globbing
 
@@ -14693,7 +14680,7 @@ SELECT NOT 'best.txt' GLOB '*.txt'; -- false
 Three tildes (`~~~`) may also be used in place of the `GLOB` keyword.
 
 | GLOB-style | Symbolic-style |
-|:---|:---|
+|:-----------|:---------------|
 | `GLOB` | `~~~` |
 
 ### Glob Function to Find Filenames
@@ -14875,12 +14862,12 @@ The regex functions support the following `options`.
 
 | Option | Description |
 |:---|:---|
-| `'c'` | case-sensitive matching |
-| `'i'` | case-insensitive matching |
-| `'l'` | match literals instead of regular expression tokens |
-| `'m'`, `'n'`, `'p'` | newline sensitive matching |
-| `'g'` | global replace, only available for `regexp_replace` |
-| `'s'` | non-newline sensitive matching |
+| `'c'` | Case-sensitive matching |
+| `'i'` | Case-insensitive matching |
+| `'l'` | Match literals instead of regular expression tokens |
+| `'m'`, `'n'`, `'p'` | Newline sensitive matching |
+| `'g'` | Global replace, only available for `regexp_replace` |
+| `'s'` | Non-newline sensitive matching |
 
 For example:
 
@@ -17400,22 +17387,26 @@ The following logical operators are available: `AND`, `OR` and `NOT`. SQL uses a
 
 ### Binary Operators: `AND` and `OR`
 
+
+
 | `a` | `b` | `a AND b` | `a OR b` |
 |:---|:---|:---|:---|
-| `true` | `true` | `true` | `true` |
-| `true` | `false` | `false` | `true` |
-| `true` | `NULL` | `NULL` | `true` |
-| `false` | `false` | `false` | `false` |
-| `false` | `NULL` | `false` | `NULL` |
-| `NULL` | `NULL` | `NULL` | `NULL`|
+| true | true | true | true |
+| true | false | false | true |
+| true | NULL | NULL | true |
+| false | false | false | false |
+| false | NULL | false | NULL |
+| NULL | NULL | NULL | NULL|
 
-### Unary Operator: `NOT`
+### Unary Operator: NOT
+
+
 
 | `a` | `NOT a` |
 |:---|:---|
-| `true` | `false` |
-| `false` | `true` |
-| `NULL` | `NULL` |
+| true | false |
+| false | true |
+| NULL | NULL |
 
 The operators `AND` and `OR` are commutative, that is, you can switch the left and right operand without affecting the result.
 
@@ -18389,7 +18380,7 @@ SELECT 'Infinity'::FLOAT - 1.0 AS x;
 
 
 | Expression | PostgreSQL | DuckDB | IEEE 754 |
-| :---------------------- | ---------: | --------: | --------: |
+|:------------------------|-----------:|----------:|----------:|
 | 1.0 / 0.0 | error | Infinity | Infinity |
 | 0.0 / 0.0 | error | NaN | NaN |
 | -1.0 / 0.0 | error | -Infinity | -Infinity |
@@ -18446,10 +18437,10 @@ ERROR: UNION types boolean and integer cannot be matched
 
 DuckDB performs an enforced cast, therefore, it completes the query and returns the following:
 
-| x |
-| ---: |
-| 1 |
-| 2 |
+| x|
+|---:|
+| 1|
+| 2|
 
 ## Case Sensitivity for Quoted Identifiers
 
@@ -18493,7 +18484,7 @@ SELECT table_name FROM duckdb_tables();
 
 
 | table_name |
-| ------------- |
+|---------------|
 | MyTaBLe |
 | PreservedCase |
 
@@ -18508,7 +18499,7 @@ SELECT table_name FROM duckdb_tables();
 
 
 | table_name |
-| ---------- |
+|------------|
 | mytable |
 
 However, the case insensitive matching in the system for identifiers cannot be turned off.
@@ -18526,7 +18517,7 @@ DuckDB returns:
 
 
 | t |
-| ---: |
+|-----:|
 | true |
 
 Postgres returns:
@@ -18815,7 +18806,7 @@ blurb: The bitstring type are strings of 1s and 0s.
 
 | Name | Aliases | Description |
 |:---|:---|:---|
-| `BITSTRING` | `BIT` | variable-length strings of 1s and 0s |
+| `BITSTRING` | `BIT` | Variable-length strings of 1s and 0s |
 
 Bitstrings are strings of 1s and 0s. The bit type data is of variable length. A bitstring value requires 1 byte for each group of 8 bits, plus a fixed amount to store some metadata.
 
@@ -18873,7 +18864,7 @@ blurb: The blob (Binary Large OBject) type represents an arbitrary binary object
 
 | Name | Aliases | Description |
 |:---|:---|:---|
-| `BLOB` | `BYTEA`, `BINARY`, `VARBINARY` | variable-length binary data |
+| `BLOB` | `BYTEA`, `BINARY`, `VARBINARY` | Variable-length binary data |
 
 The blob (**B**inary **L**arge **OB**ject) type represents an arbitrary binary object stored in the database system. The blob type can contain any type of binary data with no restrictions. What the actual bytes represent is opaque to the database system.
 
@@ -18912,7 +18903,7 @@ blurb: The BOOLEAN type represents a statement of truth (â€œtrueâ€� or 
 
 | Name | Aliases | Description |
 |:---|:---|:---|
-| `BOOLEAN` | `BOOL` | Logical Boolean (`true`/`false`) |
+| `BOOLEAN` | `BOOL` | Logical Boolean (`true` / `false`) |
 
 The `BOOLEAN` type represents a statement of truth (â€œtrueâ€� or â€œfalseâ€�). In SQL, the `BOOLEAN` field can also have a third state â€œunknownâ€� which is represented by the SQL `NULL` value.
 
@@ -18949,7 +18940,9 @@ The `AND`/`OR` conjunctions can be used to combine Boolean values.
 
 Below is the truth table for the `AND` conjunction (i.e., `x AND y`).
 
-| X | X AND true | X AND false | X AND NULL |
+
+
+| `X` | `X AND true` | `X AND false` | `X AND NULL` |
 |-------|-------|-------|-------|
 | true | true | false | NULL |
 | false | false | false | false |
@@ -18957,7 +18950,9 @@ Below is the truth table for the `AND` conjunction (i.e., `x AND y`).
 
 Below is the truth table for the `OR` conjunction (i.e., `x OR y`).
 
-| X | X OR true | X OR false | X OR NULL |
+
+
+| `X` | `X OR true` | `X OR false` | `X OR NULL` |
 |-------|------|-------|------|
 | true | true | true | true |
 | false | true | false | NULL |
@@ -18978,7 +18973,7 @@ blurb: A date specifies a combination of year, month and day.
 
 | Name | Aliases | Description |
 |:-------|:--------|:--------------------------------|
-| `DATE` | | calendar date (year, month day) |
+| `DATE` | | Calendar date (year, month day) |
 
 A date specifies a combination of year, month and day. DuckDB follows the SQL standard's lead by counting dates exclusively in the Gregorian calendar, even for years before that calendar was in use. Dates can be created using the `DATE` keyword, where the data must be formatted according to the ISO 8601 format (`YYYY-MM-DD`).
 
@@ -18993,8 +18988,8 @@ There are also three special date values that can be used on input:
 | Input string | Description |
 |:-------------|:----------------------------------|
 | epoch | 1970-01-01 (Unix system day zero) |
-| infinity | later than all other dates |
-| -infinity | earlier than all other dates |
+| infinity | Later than all other dates |
+| -infinity | Earlier than all other dates |
 
 The values `infinity` and `-infinity` are specially represented inside the system and will be displayed unchanged;
 but `epoch` is simply a notational shorthand that will be converted to the date value when read.
@@ -19025,7 +19020,7 @@ blurb: The Enum type represents a dictionary data structure with all possible un
 
 | Name | Description |
 |:--|:-----|
-| enum | Dictionary Encoding representing all possible string values of a column. |
+| `ENUM` | Dictionary representing all possible string values of a column |
 
 The enum type represents a dictionary data structure with all possible unique values of a column. For example, a column storing the days of the week can be an enum holding all possible days. Enums are particularly interesting for string columns with low cardinality (i.e., fewer distinct values). This is because the column only stores a numerical reference to the string in the enum dictionary, resulting in immense savings in disk storage and faster query performance.
 
@@ -19075,9 +19070,7 @@ Create an enum from a select statement. First create an example table of values:
 
 ```sql
 CREATE TABLE my_inputs AS
-SELECT 'duck' AS my_varchar UNION ALL
-SELECT 'duck' AS my_varchar UNION ALL
-SELECT 'goose' AS my_varchar;
+FROM (VALUES ('duck'), ('duck'), ('goose')) t(my_varchar);
 ```
 
 Create an enum using the unique string values in the `my_varchar` column:
@@ -19269,11 +19262,14 @@ INTERVAL '1 month 1 day', -- string type necessary for multiple units; stored as
 '48:00:00'::INTERVAL, -- HH::MM::SS string supported; stored as (48 * 60 * 60 * 1e6 microseconds)
 ;
 ```
+
 > Warning Decimal values can be used in strings but are rounded to integers.
+>
 > ```sql
 > SELECT INTERVAL '1.5' YEARS;
 > -- Returns 12 months; equivalent to `to_years(CAST(trunc(1.5) AS INTEGER))`
 > ```
+>
 > For more precision, use a more granular unit; e.g., `18 MONTHS` instead of `'1.5' YEARS`.
 
 Three basis units are necessary because a month does not correspond to a fixed amount of days (February has fewer days than March) and a day doesn't correspond to a fixed amount of microseconds.
@@ -19317,6 +19313,7 @@ datepart('decade', INTERVAL 12 YEARS), -- returns 1
 datepart('year', INTERVAL 12 YEARS), -- returns 12
 datepart('second', INTERVAL 1_234 MILLISECONDS), -- returns 1
 datepart('microsecond', INTERVAL 1_234 MILLISECONDS), -- returns 1_234_000
+;
 ```
 
 ## Arithmetic with Timestamps, Dates and Intervals
@@ -19345,6 +19342,7 @@ TIMESTAMP '2000-02-01' + (TIMESTAMP '2000-02-01' - TIMESTAMP '2000-01-01'), -- '
 Subtracting two `DATE`s from one another does not create an `INTERVAL` but rather returns the number of days between the given dates as integer value.
 
 > Warning Extracting a component of the `INTERVAL` difference between two `TIMESTAMP`s is not equivalent to computing the number of partition boundaries between the two `TIMESTAMP`s for the corresponding unit, as computed by the `datediff` function:
+>
 > ```sql
 > SELECT
 > datediff('day', TIMESTAMP '2020-01-01 01:00:00', TIMESTAMP '2020-01-02 00:00:00'), -- 1
@@ -19694,6 +19692,26 @@ SELECT $$The price is $9.95$$ AS msg;
 |--------------------|
 | The price is $9.95 |
 
+Even more, you can insert alphanumeric tags in the double-dollar symbols to allow for the use of regular double-dollar symbols *within* the string literal:
+
+```sql
+SELECT $tag$ this string can contain newlines,
+'single quotes',
+"double quotes",
+and $$dollar quotes$$ $tag$ AS msg;
+```
+
+
+
+```text
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ msg â”‚
+â”‚ varchar â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ this string can contain newlines,\n'single quotes',\n"double quotes",\nand $$dollar quotes$$ â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
 [Implicit concatenation](#implicit-string-literal-concatenation) only works for single-quoted string literals, not with dollar-quoted ones.
 
 ---
@@ -19946,14 +19964,14 @@ The types `TINYINT`, `SMALLINT`, `INTEGER`, `BIGINT` and `HUGEINT` store whole n
 The types `UTINYINT`, `USMALLINT`, `UINTEGER`, `UBIGINT` and `UHUGEINT` store whole unsigned numbers. Attempts to store negative numbers or values outside of the allowed range will result in an error.
 
 | Name | Aliases | Min | Max |
-|:--|:--|----:|----:|
+| :---------- | :------------------------------- | ---------------------------------------: | --------------------------------------: |
 | `TINYINT` | `INT1` | -128 | 127 |
 | `SMALLINT` | `INT2`, `INT16` `SHORT` | -32768 | 32767 |
 | `INTEGER` | `INT4`, `INT32`, `INT`, `SIGNED` | -2147483648 | 2147483647 |
 | `BIGINT` | `INT8`, `INT64` `LONG` | -9223372036854775808 | 9223372036854775807 |
 | `HUGEINT` | `INT128` | -170141183460469231731687303715884105728 | 170141183460469231731687303715884105727 |
 | `UTINYINT` | - | 0 | 255 |
-| `USMALLINT` | -| 0 | 65535 |
+| `USMALLINT` | - | 0 | 65535 |
 | `UINTEGER` | - | 0 | 4294967295 |
 | `UBIGINT` | - | 0 | 18446744073709551615 |
 | `UHUGEINT` | - | 0 | 340282366920938463463374607431768211455 |
@@ -19971,7 +19989,7 @@ Division of fixed-point decimals does not typically produce numbers with finite 
 Internally, decimals are represented as integers depending on their specified `WIDTH`.
 
 | Width | Internal | Size (bytes) |
-|:---|:---|---:|
+| :---- | :------- | -----------: |
 | 1-4 | `INT16` | 2 |
 | 5-9 | `INT32` | 4 |
 | 10-18 | `INT64` | 8 |
@@ -19984,9 +20002,9 @@ Performance can be impacted by using too large decimals when not required. In pa
 The data types `FLOAT` and `DOUBLE` precision are variable-precision numeric types. In practice, these types are usually implementations of IEEE Standard 754 for Binary Floating-Point Arithmetic (single and double precision, respectively), to the extent that the underlying processor, operating system, and compiler support it.
 
 | Name | Aliases | Description |
-|:--|:--|:--------|
-| `FLOAT` | `FLOAT4`, `REAL` | single precision floating-point number (4 bytes) |
-| `DOUBLE` | `FLOAT8` | double precision floating-point number (8 bytes) |
+| :------- | :--------------- | :----------------------------------------------- |
+| `FLOAT` | `FLOAT4`, `REAL` | Single precision floating-point number (4 bytes) |
+| `DOUBLE` | `FLOAT8` | Double precision floating-point number (8 bytes) |
 
 Like for fixed-point data types, conversion from literals or casts from other datatypes to floating-point types stores inputs that cannot be represented exactly as approximations. However, it can be harder to predict what inputs are affected by this. For example, it is not surprising that `1.3::DECIMAL(1, 0) - 0.7::DECIMAL(1, 0) != 0.6::DECIMAL(1, 0)` but it may he surprising that `1.3::FLOAT - 0.7::FLOAT != 0.6::FLOAT`.
 
@@ -19996,34 +20014,34 @@ For more complex mathematical operations, however, floating-point arithmetic is 
 
 In general, we advise that:
 
-* If you require exact storage of numbers with a known number of decimal digits and require exact additions, subtractions, and multiplications (such as for monetary amounts), use the [`DECIMAL` data type](#fixed-point-decimals) or its `NUMERIC` alias instead.
-* If you want to do fast or complicated calculations, the floating-point data types may be more appropriate. However, if you use the results for anything important, you should evaluate your implementation carefully for corner cases (ranges, infinities, underflows, invalid operations) that may be handled differently from what you expect and you should familiarize yourself with common floating-point pitfalls. The article [â€œWhat Every Computer Scientist Should Know About Floating-Point Arithmeticâ€� by David Goldberg](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html) and the [floating point series on Bruce Dawson's blog](https://randomascii.wordpress.com/2017/06/19/sometimes-floating-point-math-is-perfect/) provide excellent starting points.
+- If you require exact storage of numbers with a known number of decimal digits and require exact additions, subtractions, and multiplications (such as for monetary amounts), use the [`DECIMAL` data type](#fixed-point-decimals) or its `NUMERIC` alias instead.
+- If you want to do fast or complicated calculations, the floating-point data types may be more appropriate. However, if you use the results for anything important, you should evaluate your implementation carefully for corner cases (ranges, infinities, underflows, invalid operations) that may be handled differently from what you expect and you should familiarize yourself with common floating-point pitfalls. The article [â€œWhat Every Computer Scientist Should Know About Floating-Point Arithmeticâ€� by David Goldberg](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html) and the [floating point series on Bruce Dawson's blog](https://randomascii.wordpress.com/2017/06/19/sometimes-floating-point-math-is-perfect/) provide excellent starting points.
 
 On most platforms, the `FLOAT` type has a range of at least 1E-37 to 1E+37 with a precision of at least 6 decimal digits. The `DOUBLE` type typically has a range of around 1E-307 to 1E+308 with a precision of at least 15 digits. Positive numbers outside of these ranges (and negative numbers ourside the mirrored ranges) may cause errors on some platforms but will usually be converted to zero or infinity, respectively.
 
 In addition to ordinary numeric values, the floating-point types have several special values representing IEEE 754 special values:
 
-* `Infinity`: infinity
-* `-Infinity`: negative infinity
-* `NaN`: not a number
+- `Infinity`: infinity
+- `-Infinity`: negative infinity
+- `NaN`: not a number
 
 On machines with the required CPU/FPU support, DuckDB follows the IEEE 754 specification regarding these special values, with two exceptions:
 
-* `NaN` compares equal to `NaN` and greater than any other floating point number.
-* Some floating point functions, like `sqrt` / `sin` / `asin` throw errors rather than return `NaN` for values outside their ranges of definition.
+- `NaN` compares equal to `NaN` and greater than any other floating point number.
+- Some floating point functions, like `sqrt` / `sin` / `asin` throw errors rather than return `NaN` for values outside their ranges of definition.
 
 To insert these values as literals in a SQL command, you must put quotes around them, you may abbreviate `Infinity` as `Inf`, and you may use any capitalization. For example:
 
 ```sql
 SELECT
 sqrt(2) > '-inf',
-'nan' > sqrt(2)
+'nan' > sqrt(2);
 ```
 
 
 
 | (sqrt(2) > '-inf') | ('nan' > sqrt(2)) |
-|-------------------:|------------------:|
+| -----------------: | ----------------: |
 | true | true |
 
 ## Universally Unique Identifiers (`UUID`s)
@@ -20051,31 +20069,31 @@ blurb: The table below shows all the built-in general-purpose data types.
 The table below shows all the built-in general-purpose data types. The alternatives listed in the aliases column can be used to refer to these types as well, however, note that the aliases are not part of the SQL standard and hence might not be accepted by other database engines.
 
 | Name | Aliases | Description |
-|:--|:--|:----|
-| `BIGINT` | `INT8`, `LONG` | signed eight-byte integer |
-| `BIT` | `BITSTRING` | string of 1s and 0s |
-| `BLOB` | `BYTEA`, `BINARY,` `VARBINARY` | variable-length binary data |
-| `BOOLEAN` | `BOOL`, `LOGICAL` | logical Boolean (true/false) |
-| `DATE` | | calendar date (year, month day) |
-| `DECIMAL(prec, scale)` | `NUMERIC(prec, scale)` | fixed-precision number with the given width (precision) and scale, defaults to `prec = 18` and `scale = 3` |
-| `DOUBLE` | `FLOAT8`, | double precision floating-point number (8 bytes) |
-| `FLOAT` | `FLOAT4`, `REAL` | single precision floating-point number (4 bytes)|
-| `HUGEINT` | | signed sixteen-byte integer|
-| `INTEGER` | `INT4`, `INT`, `SIGNED` | signed four-byte integer |
-| `INTERVAL` | | date / time delta |
+| :------------------------- | :--------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| `BIGINT` | `INT8`, `LONG` | Signed eight-byte integer |
+| `BIT` | `BITSTRING` | String of 1s and 0s |
+| `BLOB` | `BYTEA`, `BINARY,` `VARBINARY` | Variable-length binary data |
+| `BOOLEAN` | `BOOL`, `LOGICAL` | Logical Boolean (`true` / `false`) |
+| `DATE` | | Calendar date (year, month day) |
+| `DECIMAL(prec, scale)` | `NUMERIC(prec, scale)` | Fixed-precision number with the given width (precision) and scale, defaults to `prec = 18` and `scale = 3` |
+| `DOUBLE` | `FLOAT8`, | Double precision floating-point number (8 bytes) |
+| `FLOAT` | `FLOAT4`, `REAL` | Single precision floating-point number (4 bytes) |
+| `HUGEINT` | | Signed sixteen-byte integer |
+| `INTEGER` | `INT4`, `INT`, `SIGNED` | Signed four-byte integer |
+| `INTERVAL` | | Date / time delta |
 | `JSON` | | JSON object (via the [`json` extension]({% link docs/data/json/overview.md %})) |
-| `SMALLINT` | `INT2`, `SHORT` | signed two-byte integer|
-| `TIME` | | time of day (no time zone) |
-| `TIMESTAMP WITH TIME ZONE` | `TIMESTAMPTZ` | combination of time and date that uses the current time zone |
-| `TIMESTAMP` | `DATETIME` | combination of time and date |
-| `TINYINT` | `INT1` | signed one-byte integer|
-| `UBIGINT` | | unsigned eight-byte integer |
-| `UHUGEINT` | | unsigned sixteen-byte integer |
-| `UINTEGER` | | unsigned four-byte integer |
-| `USMALLINT` | | unsigned two-byte integer |
-| `UTINYINT` | | unsigned one-byte integer |
+| `SMALLINT` | `INT2`, `SHORT` | Signed two-byte integer |
+| `TIME` | | Time of day (no time zone) |
+| `TIMESTAMP WITH TIME ZONE` | `TIMESTAMPTZ` | Combination of time and date that uses the current time zone |
+| `TIMESTAMP` | `DATETIME` | Combination of time and date |
+| `TINYINT` | `INT1` | Signed one-byte integer |
+| `UBIGINT` | | Unsigned eight-byte integer |
+| `UHUGEINT` | | Unsigned sixteen-byte integer |
+| `UINTEGER` | | Unsigned four-byte integer |
+| `USMALLINT` | | Unsigned two-byte integer |
+| `UTINYINT` | | Unsigned one-byte integer |
 | `UUID` | | UUID data type |
-| `VARCHAR` | `CHAR`, `BPCHAR`, `TEXT`, `STRING` | variable-length character string |
+| `VARCHAR` | `CHAR`, `BPCHAR`, `TEXT`, `STRING` | Variable-length character string |
 
 Implicit and explicit typecasting is possible between numerous types, see the [Typecasting]({% link docs/sql/data_types/typecasting.md %}) page for details.
 
@@ -20254,7 +20272,7 @@ FROM (SELECT {'x': 1, 'y': 2, 'z': 3} AS a);
 ```
 
 | x | y | z |
-|:---|:---|:---|
+|--:|--:|--:|
 | 1 | 2 | 3 |
 
 ### Dot Notation Order of Operations
@@ -20437,8 +20455,8 @@ The field allows storage of Unicode characters. Internally, the data is encoded 
 
 | Name | Aliases | Description |
 |:---|:---|:---|
-| `VARCHAR` | `CHAR`, `BPCHAR`, `STRING`, `TEXT` | Variable-length character string. |
-| `VARCHAR(n)` | `CHAR(n)`, `BPCHAR(n)`, `STRING(n)`, `TEXT(n)` | Variable-length character string. The maximum length `n` has no effect and is only provided for compatibility. |
+| `VARCHAR` | `CHAR`, `BPCHAR`, `STRING`, `TEXT` | Variable-length character string |
+| `VARCHAR(n)` | `CHAR(n)`, `BPCHAR(n)`, `STRING(n)`, `TEXT(n)` | Variable-length character string. The maximum length `n` has no effect and is only provided for compatibility |
 
 ## Specifying a Length Limit
 
@@ -20499,8 +20517,8 @@ The `TIME` and `TIMETZ` types specify the hour, minute, second, microsecond of a
 
 | Name | Aliases | Description |
 | :------- | :----------------------- | :------------------------------ |
-| `TIME` | `TIME WITHOUT TIME ZONE` | time of day (ignores time zone) |
-| `TIMETZ` | `TIME WITH TIME ZONE` | time of day (uses time zone) |
+| `TIME` | `TIME WITHOUT TIME ZONE` | Time of day (ignores time zone) |
+| `TIMETZ` | `TIME WITH TIME ZONE` | Time of day (uses time zone) |
 
 Instances can be created using the type names as a keyword, where the data must be formatted according to the ISO 8601 format (`hh:mm:ss[.zzzzzz][+-TT[:tt]]`).
 
@@ -20555,11 +20573,11 @@ They can be created using the type name followed by a string formatted according
 
 | Name | Aliases | Description |
 |:---|:---|:---|
-| `TIMESTAMP_NS` | | naive timestamp with nanosecond precision |
-| `TIMESTAMP` | `DATETIME`, `TIMESTAMP WITHOUT TIME ZONE` | naive timestamp with microsecond precision |
-| `TIMESTAMP_MS` | | naive timestamp with millisecond precision |
-| `TIMESTAMP_S` | | naive timestamp with second precision |
-| `TIMESTAMPTZ` | `TIMESTAMP WITH TIME ZONE` | time zone aware timestamp with microsecond precision |
+| `TIMESTAMP_NS` | | Naive timestamp with nanosecond precision |
+| `TIMESTAMP` | `DATETIME`, `TIMESTAMP WITHOUT TIME ZONE` | Naive timestamp with microsecond precision |
+| `TIMESTAMP_MS` | | Naive timestamp with millisecond precision |
+| `TIMESTAMP_S` | | Naive timestamp with second precision |
+| `TIMESTAMPTZ` | `TIMESTAMP WITH TIME ZONE` | Time zone aware timestamp with microsecond precision |
 
 > Warning Since there is not currently a `TIMESTAMP_NS WITH TIME ZONE` data type, external columns with nanosecond precision and `WITH TIME ZONE` semantics, e.g., [Parquet timestamp columns with `isAdjustedToUTC=true`](https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#instant-semantics-timestamps-normalized-to-utc), are converted to `TIMESTAMP WITH TIME ZONE` and thus lose precision when read using DuckDB.
 
@@ -20650,8 +20668,8 @@ Three special strings can be used to create timestamps:
 | Input string | Description |
 |:-------------|:-------------------------------------------------|
 | `epoch` | 1970-01-01 00:00:00[+00] (Unix system time zero) |
-| `infinity` | later than all other timestamps |
-| `-infinity` | earlier than all other timestamps |
+| `infinity` | Later than all other timestamps |
+| `-infinity` | Earlier than all other timestamps |
 
 The values `infinity` and `-infinity` are special cased and are displayed unchanged, whereas the value `epoch` is simply a notational shorthand that is converted to the corresponding timestamp value when read.
 
@@ -20795,6 +20813,8 @@ FROM pg_timezone_names()
 ORDER BY name;
 ```
 
+
+
 | name | abbrev |
 |----------------------------------|----------------------------------|
 | ACT | ACT |
@@ -20876,7 +20896,7 @@ ORDER BY name;
 | America/Argentina/Ushuaia | America/Argentina/Ushuaia |
 | America/Aruba | PRT |
 | America/Asuncion | America/Asuncion |
-| America/Atikokan | America/Atikokan |
+| America/Atikokan | EST |
 | America/Atka | America/Atka |
 | America/Bahia | America/Bahia |
 | America/Bahia_Banderas | America/Bahia_Banderas |
@@ -20894,14 +20914,14 @@ ORDER BY name;
 | America/Caracas | America/Caracas |
 | America/Catamarca | America/Catamarca |
 | America/Cayenne | America/Cayenne |
-| America/Cayman | America/Cayman |
+| America/Cayman | EST |
 | America/Chicago | CST |
 | America/Chihuahua | America/Chihuahua |
 | America/Ciudad_Juarez | America/Ciudad_Juarez |
-| America/Coral_Harbour | America/Coral_Harbour |
+| America/Coral_Harbour | EST |
 | America/Cordoba | America/Cordoba |
 | America/Costa_Rica | America/Costa_Rica |
-| America/Creston | PNT |
+| America/Creston | MST |
 | America/Cuiaba | America/Cuiaba |
 | America/Curacao | PRT |
 | America/Danmarkshavn | America/Danmarkshavn |
@@ -20971,7 +20991,7 @@ ORDER BY name;
 | America/Montreal | America/Montreal |
 | America/Montserrat | PRT |
 | America/Nassau | America/Nassau |
-| America/New_York | America/New_York |
+| America/New_York | EST5EDT |
 | America/Nipigon | America/Nipigon |
 | America/Nome | America/Nome |
 | America/Noronha | America/Noronha |
@@ -20980,10 +21000,10 @@ ORDER BY name;
 | America/North_Dakota/New_Salem | America/North_Dakota/New_Salem |
 | America/Nuuk | America/Nuuk |
 | America/Ojinaga | America/Ojinaga |
-| America/Panama | America/Panama |
+| America/Panama | EST |
 | America/Pangnirtung | America/Pangnirtung |
 | America/Paramaribo | America/Paramaribo |
-| America/Phoenix | PNT |
+| America/Phoenix | MST |
 | America/Port-au-Prince | America/Port-au-Prince |
 | America/Port_of_Spain | PRT |
 | America/Porto_Acre | America/Porto_Acre |
@@ -21181,7 +21201,7 @@ ORDER BY name;
 | CET | CET |
 | CNT | CNT |
 | CST | CST |
-| CST6CDT | CST6CDT |
+| CST6CDT | CST |
 | CTT | CTT |
 | Canada/Atlantic | Canada/Atlantic |
 | Canada/Central | Canada/Central |
@@ -21237,15 +21257,15 @@ ORDER BY name;
 | Etc/UTC | UCT |
 | Etc/Universal | UCT |
 | Etc/Zulu | UCT |
-| Europe/Amsterdam | Europe/Amsterdam |
+| Europe/Amsterdam | CET |
 | Europe/Andorra | Europe/Andorra |
 | Europe/Astrakhan | Europe/Astrakhan |
-| Europe/Athens | Europe/Athens |
+| Europe/Athens | EET |
 | Europe/Belfast | GB |
 | Europe/Belgrade | Europe/Belgrade |
 | Europe/Berlin | Europe/Berlin |
 | Europe/Bratislava | Europe/Bratislava |
-| Europe/Brussels | Europe/Brussels |
+| Europe/Brussels | CET |
 | Europe/Bucharest | Europe/Bucharest |
 | Europe/Budapest | Europe/Budapest |
 | Europe/Busingen | Europe/Busingen |
@@ -21262,10 +21282,10 @@ ORDER BY name;
 | Europe/Kiev | Europe/Kiev |
 | Europe/Kirov | Europe/Kirov |
 | Europe/Kyiv | Europe/Kyiv |
-| Europe/Lisbon | Portugal |
+| Europe/Lisbon | WET |
 | Europe/Ljubljana | Europe/Ljubljana |
 | Europe/London | GB |
-| Europe/Luxembourg | Europe/Luxembourg |
+| Europe/Luxembourg | CET |
 | Europe/Madrid | Europe/Madrid |
 | Europe/Malta | Europe/Malta |
 | Europe/Mariehamn | Europe/Mariehamn |
@@ -21332,10 +21352,10 @@ ORDER BY name;
 | Japan | JST |
 | Kwajalein | Kwajalein |
 | Libya | Libya |
-| MET | MET |
+| MET | CET |
 | MIT | MIT |
 | MST | MST |
-| MST7MDT | MST7MDT |
+| MST7MDT | Navajo |
 | Mexico/BajaNorte | Mexico/BajaNorte |
 | Mexico/BajaSur | Mexico/BajaSur |
 | Mexico/General | Mexico/General |
@@ -21345,11 +21365,11 @@ ORDER BY name;
 | NZ-CHAT | NZ-CHAT |
 | Navajo | Navajo |
 | PLT | PLT |
-| PNT | PNT |
+| PNT | MST |
 | PRC | CTT |
 | PRT | PRT |
 | PST | PST |
-| PST8PDT | PST8PDT |
+| PST8PDT | PST |
 | Pacific/Apia | MIT |
 | Pacific/Auckland | NZ |
 | Pacific/Bougainville | Pacific/Bougainville |
@@ -21365,8 +21385,8 @@ ORDER BY name;
 | Pacific/Gambier | Pacific/Gambier |
 | Pacific/Guadalcanal | SST |
 | Pacific/Guam | Pacific/Guam |
-| Pacific/Honolulu | Pacific/Honolulu |
-| Pacific/Johnston | Pacific/Johnston |
+| Pacific/Honolulu | HST |
+| Pacific/Johnston | HST |
 | Pacific/Kanton | Pacific/Kanton |
 | Pacific/Kiritimati | Pacific/Kiritimati |
 | Pacific/Kosrae | Pacific/Kosrae |
@@ -21395,7 +21415,7 @@ ORDER BY name;
 | Pacific/Wallis | Pacific/Wallis |
 | Pacific/Yap | Pacific/Yap |
 | Poland | Poland |
-| Portugal | Portugal |
+| Portugal | WET |
 | ROC | ROC |
 | ROK | ROK |
 | SST | SST |
@@ -21417,11 +21437,11 @@ ORDER BY name;
 | UCT | UCT |
 | US/Alaska | AST |
 | US/Aleutian | US/Aleutian |
-| US/Arizona | PNT |
+| US/Arizona | MST |
 | US/Central | CST |
 | US/East-Indiana | IET |
-| US/Eastern | US/Eastern |
-| US/Hawaii | US/Hawaii |
+| US/Eastern | EST5EDT |
+| US/Hawaii | HST |
 | US/Indiana-Starke | US/Indiana-Starke |
 | US/Michigan | US/Michigan |
 | US/Mountain | Navajo |
@@ -22039,7 +22059,7 @@ USE memory_db;
 
 | Name | Description | Type | Default value |
 |-----------------------------|-----------------------------------------------------------------------------------------------------------------------------|-----------|---------------|
-| `access_mode` | Access mode of the database (**AUTOMATIC**, **READ_ONLY**, or **READ_WRITE**) | `VARCHAR` | `automatic` |
+| `access_mode` | Access mode of the database (**AUTOMATIC**, **READ_ONLY**, or **READ_WRITE**). | `VARCHAR` | `automatic` |
 | `type` | The file type (**DUCKDB** or **SQLITE**), or deduced from the input string literal (MySQL, PostgreSQL). | `VARCHAR` | `DUCKDB` |
 | `block_size` | The block size of a new database file. Must be a power of two and within [16384, 262144]. Cannot be set for existing files. | `UBIGINT` | `262144` |
 
@@ -26213,19 +26233,36 @@ The environment where DuckDB is run has an obvious impact on performance. This p
 
 ## Hardware Configuration
 
-### CPU and Memory
+### CPU
 
-As a rule of thumb, DuckDB requires a **minimum** of 125 MB of memory per thread.
-For example, if you use 8 threads, you need at least 1 GB of memory.
-For ideal performance, aggregation-heavy workloads require approx. 5 GB memory per thread and join-heavy workloads require approximately 10 GB memory per thread.
+DuckDB works efficiently on both AMD64 (x86_64) and ARM64 (AArch64) CPU architectures.
+
+### Memory
 
 > Bestpractice Aim for 5-10 GB memory per thread.
 
-> Tip If you have a limited amount of memory, try to [limit the number of threads]({% link docs/configuration/pragmas.md %}#threads), e.g., by issuing `SET threads = 4;`.
+#### Minimum Required Memory
 
-### Disk
+As a rule of thumb, DuckDB requires a _minimum_ of 125 MB of memory per thread.
+For example, if you use 8 threads, you need at least 1 GB of memory.
+If you are working in a memory-constained environment, consider [limiting the number of threads]({% link docs/configuration/pragmas.md %}#threads), e.g., by issuing:
 
-DuckDB is capable of operating both as an in-memory and as a disk-based database system. In both cases, it can spill to disk to process larger-than-memory workloads (a.k.a. out-of-core processing) for which a fast disk is highly beneficial. However, if the workload fits in memory, the disk speed only has a limited effect on performance.
+```sql
+SET threads = 4;
+```
+
+#### Memory for Ideal Performance
+
+The amount of memory required for ideal performance depends on several factors, including the data set size and the queries to execute.
+Maybe surprisingly, the _queries_ have a larger effect on the memory requirement.
+Workloads containing large joins over many-to-many tables yield large intermediate datasets and thus require more memory for their evaluation to fully fit into the memory.
+As an approximation, aggregation-heavy workloads require 5 GB memory per thread and join-heavy workloads require 10 GB memory per thread.
+
+#### Larger-than-Memory Workloads
+
+DuckDB can process larger-than-memory workloads by spilling to disk.
+This is possible thanks to _out-of-core_ support for grouping, joining, sorting and windowing operators.
+Note that larger-than-memory workloads can be processed both in persistent mode and in in-memory mode as DuckDB still spills to disk in both modes.
 
 ### Local Disk
 
@@ -26405,10 +26442,10 @@ These are called _blocking operators_ as they require their entire input to be b
 and are the most memory-intensive operators in relational database systems.
 The main blocking operators are the following:
 
-* _sorting:_ [`ORDER BY`]({% link docs/sql/query_syntax/orderby.md %})
 * _grouping:_ [`GROUP BY`]({% link docs/sql/query_syntax/groupby.md %})
-* _windowing:_ [`OVER ... (PARTITION BY ... ORDER BY ...)`]({% link docs/sql/functions/window_functions.md %})
 * _joining:_ [`JOIN`]({% link docs/sql/query_syntax/from.md %}#joins)
+* _sorting:_ [`ORDER BY`]({% link docs/sql/query_syntax/orderby.md %})
+* _windowing:_ [`OVER ... (PARTITION BY ... ORDER BY ...)`]({% link docs/sql/functions/window_functions.md %})
 
 DuckDB supports larger-than-memory processing for all of these operators.
 
@@ -26637,7 +26674,8 @@ This way, DuckDB builds a left-deep join tree following the order of `JOIN` clau
 SELECT â€¦
 FROM â€¦
 JOIN â€¦ -- this join is performed first
-JOIN â€¦ -- this join is performed second
+JOIN â€¦; -- this join is performed second
+
 ```
 
 Once the query in question has been executed, turn back the optimizers with the following command:
@@ -27136,8 +27174,8 @@ We ran two experiments on a `c7gd.12xlarge` instance using the [LDBC SF300 Comme
 
 | Experiment | File size | Runtime |
 |:-----|--:|--:|
-| Loading only from Parquet | 4.1 GB | 3.5s |
-| Creating local table from Parquet | 4.1 GB | 5.1s |
+| Loading only from Parquet | 4.1 GB | 3.5 s |
+| Creating local table from Parquet | 4.1 GB | 5.1 s |
 
 The â€œloading onlyâ€� variant is running the load as part of an [`EXPLAIN ANALYZE`]({% link docs/guides/meta/explain_analyze.md %}) statement to measure the runtime without account creating a local table, while the â€œcreating local tableâ€� variant uses [`CREATE TABLE ... AS SELECT`]({% link docs/sql/statements/create_table.md %}#create-table--as-select-ctas) to create a persistent table on the local disk.
 
@@ -29366,7 +29404,6 @@ It is possible to describe remote tables via the [`httpfs` extension]({% link do
 
 ```sql
 DESCRIBE TABLE 'https://blobs.duckdb.org/data/Star_Trek-Season_1.csv';
-```
 
 | column_name | column_type | null | key | default | extra |
 |-----------------------------------------|-------------|------|------|---------|-------|
@@ -29618,13 +29655,13 @@ All functions in ODBC return a code which represents the success or failure of t
 
 | Return code | Description |
 |-------------------------|----------------------------------------------------|
-| `SQL_SUCCESS` | The function completed successfully. |
-| `SQL_SUCCESS_WITH_INFO` | The function completed successfully, but additional information is available, including a warning |
-| `SQL_ERROR` | The function failed. |
-| `SQL_INVALID_HANDLE` | The handle provided was invalid, indicating a programming error, i.e., when a handle is not allocated before it is used, or is the wrong type. |
-| `SQL_NO_DATA` | The function completed successfully, but no more data is available |
-| `SQL_NEED_DATA` | More data is needed, such as when a parameter data is sent at execution time, or additional connection information is required. |
-| `SQL_STILL_EXECUTING` | A function that was asynchronously executed is still executing. |
+| `SQL_SUCCESS` | The function completed successfully |
+| `SQL_SUCCESS_WITH_INFO` | The function completed successfully, but additional information is available, including a warnin |
+| `SQL_ERROR` | The function failed |
+| `SQL_INVALID_HANDLE` | The handle provided was invalid, indicating a programming error, i.e., when a handle is not allocated before it is used, or is the wrong type |
+| `SQL_NO_DATA` | The function completed successfully, but no more data is availabl |
+| `SQL_NEED_DATA` | More data is needed, such as when a parameter data is sent at execution time, or additional connection information is required |
+| `SQL_STILL_EXECUTING` | A function that was asynchronously executed is still executing |
 
 ### Buffers and Binding
 
@@ -30944,7 +30981,7 @@ a special function to load the AWS credentials in the [legacy authentication met
 
 | Function | Type | Description |
 |---|---|-------|
-| `load_aws_credentials` | `PRAGMA` function | Loads the AWS credentials through the [AWS Default Credentials Provider Chain](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials-chain.html). |
+| `load_aws_credentials` | `PRAGMA` function | Loads the AWS credentials through the [AWS Default Credentials Provider Chain](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials-chain.html) |
 
 ### Load AWS Credentials (Legacy)
 
@@ -31367,7 +31404,7 @@ redirect_from:
 ## List of Core Extensions
 
 | Name | GitHub | Description | Autoloadable | Aliases |
-|:-----------------------------|----------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------|:--------------|:------------------------|
+|:-----------------------------------------------------------|--------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------|:--------------|:------------------------|
 | [arrow]({% link docs/extensions/arrow.md %}) | [GitHub](https://github.com/duckdb/arrow) | A zero-copy data integration between Apache Arrow and DuckDB | no | |
 | [autocomplete]({% link docs/extensions/autocomplete.md %}) | | Adds support for autocomplete in the shell | yes | |
 | [aws]({% link docs/extensions/aws.md %}) | [GitHub](https://github.com/duckdb/duckdb-aws) | Provides features that depend on the AWS SDK | yes | |
@@ -31553,8 +31590,8 @@ LOAD excel;
 
 | Function | Description |
 |:--|:---|
-| `excel_text(number, format_string)`| Format the given `number` per the rules given in the `format_string`. |
-| `text(number, format_string)` | Alias for `excel_text`. |
+| `excel_text(number, format_string)`| Format the given `number` per the rules given in the `format_string` |
+| `text(number, format_string)` | Alias for `excel_text` |
 
 ## Examples
 
@@ -32226,13 +32263,13 @@ The [`ssl` connection parameters](https://dev.mysql.com/doc/refman/8.4/en/using-
 | Setting | Description |
 |-------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | ssl_mode | The security state to use for the connection to the server: `disabled, required, verify_ca, verify_identity or preferred` (default: `preferred`) |
-| ssl_ca | The path name of the Certificate Authority (CA) certificate file. |
-| ssl_capath | The path name of the directory that contains trusted SSL CA certificate files. |
-| ssl_cert | The path name of the client public key certificate file. |
-| ssl_cipher | The list of permissible ciphers for SSL encryption. |
-| ssl_crl | The path name of the file containing certificate revocation lists. |
-| ssl_crlpath | The path name of the directory that contains files containing certificate revocation lists. |
-| ssl_key | The path name of the client private key file. |
+| ssl_ca | The path name of the Certificate Authority (CA) certificate file |
+| ssl_capath | The path name of the directory that contains trusted SSL CA certificate files |
+| ssl_cert | The path name of the client public key certificate file |
+| ssl_cipher | The list of permissible ciphers for SSL encryption |
+| ssl_crl | The path name of the file containing certificate revocation lists |
+| ssl_crlpath | The path name of the directory that contains files containing certificate revocation lists |
+| ssl_key | The path name of the client private key file |
 
 ### Reading MySQL Tables
 
@@ -33654,7 +33691,7 @@ Additionally, when the generation is done in a single step, it requires a large 
 The following table gives an estimate on the resources required to produce DuckDB database files containing the generated TPC-H data set using 128 threads.
 
 | Scale factor | Database size | Data generation time | Generator's memory usage |
-| -----------: | ------------: | -------------------: | -----------------------: |
+|-------------:|--------------:|---------------------:|-------------------------:|
 | 100 | 26 GB | 17 minutes | 71 GB |
 | 300 | 78 GB | 51 minutes | 211 GB |
 | 1000 | 265 GB | 2h 53 minutes | 647 GB |
@@ -33911,7 +33948,7 @@ WITH (metric = 'cosine');
 The following table shows the supported distance metrics and their corresponding DuckDB functions
 
 | Metric | Function | Description |
-| -------- | ------------------------- | ------------------ |
+|----------|--------------------------------|----------------------------|
 | `l2sq` | `array_distance` | Euclidean distance |
 | `cosine` | `array_cosine_distance` | Cosine similarity distance |
 | `ip` | `array_negative_inner_product` | Negative inner product |
@@ -34033,10 +34070,10 @@ All official extensions are distributed for the following platforms.
 |--------------------|------------------|-----------------|--------------------------------|----------------------------|
 | `linux_amd64` | Linux | x86_64 (AMD64) | | Node.js packages, etc. |
 | `linux_amd64_gcc4` | Linux | x86_64 (AMD64) | | Python packages, CLI, etc. |
-| `linux_arm64` | Linux | AArch64 (ARM64) | AWS Graviton, Snapdragon, etc. | all packages |
-| `osx_amd64` | macOS | x86_64 (AMD64) | Intel | all packages |
-| `osx_arm64` | macOS | AArch64 (ARM64) | Apple Silicon M1, M2, etc. | all packages |
-| `windows_amd64` | Windows | x86_64 (AMD64) | Intel, AMD, etc. | all packages |
+| `linux_arm64` | Linux | AArch64 (ARM64) | AWS Graviton, Snapdragon, etc. | All packages |
+| `osx_amd64` | macOS | x86_64 (AMD64) | Intel | All packages |
+| `osx_arm64` | macOS | AArch64 (ARM64) | Apple Silicon M1, M2, etc. | All packages |
+| `windows_amd64` | Windows | x86_64 (AMD64) | Intel, AMD, etc. | All packages |
 
 > For some Linux ARM distributions (e.g., Python), two different binaries are distributed. These target either the `linux_arm64` or `linux_arm64_gcc4` platforms. Note that extension binaries are distributed for the first, but not the second. Effectively that means that on these platforms your glibc version needs to be 2.28 or higher to use the distributed extension binaries.
 
@@ -36830,9 +36867,9 @@ Depending on you specific workload, you might want to experiment with the `max_n
 The following options can be passed to the `WITH` clause when creating an R-tree index: (e.g., `CREATE INDEX my_idx ON my_table USING RTREE (geom) WITH (âŸ¨optionâŸ© = âŸ¨valueâŸ©);`)
 
 | Option | Description | Default |
-|----------------------|-----------------------------------------------------------------------------------------------|---------------------------|
-| `max_node_capacity` | The maximum number of entries per node in the R-tree. | `128` |
-| `min_node_capacity` | The minimum number of entries per node in the R-tree. | `0.4 * max_node_capacity` |
+|---------------------|------------------------------------------------------|---------------------------|
+| `max_node_capacity` | The maximum number of entries per node in the R-tree | `128` |
+| `min_node_capacity` | The minimum number of entries per node in the R-tree | `0.4 * max_node_capacity` |
 
 *Should a node fall under the minimum number of entries after a deletion, the node will be dissolved and all the entries reinserted from the top of the tree. This is a common operation in R-tree implementations to prevent the tree from becoming too unbalanced.
 
@@ -36841,10 +36878,10 @@ The following options can be passed to the `WITH` clause when creating an R-tree
 The `rtree_index_dump(VARCHAR)` table function can be used to return all the nodes within an R-tree index which might come on handy when debugging, profiling or otherwise just inspecting the structure of the index. The function takes the name of the R-tree index as an argument and returns a table with the following columns:
 
 | Column name | Type | Description |
-|-------------|------|-------------|
-| `level` | `INTEGER` | The level of the node in the R-tree. The root node has level 0. |
-| `bounds` | `BOX_2DF` | The bounding box of the node. |
-| `row_id` | `ROW_TYPE` | If this is a leaf node, the `rowid` of the row in the table, otherwise `NULL`. |
+|-------------|------------|-------------------------------------------------------------------------------|
+| `level` | `INTEGER` | The level of the node in the R-tree. The root node has level 0 |
+| `bounds` | `BOX_2DF` | The bounding box of the node |
+| `row_id` | `ROW_TYPE` | If this is a leaf node, the `rowid` of the row in the table, otherwise `NULL` |
 
 Example:
 
@@ -40515,12 +40552,12 @@ The Expression class also contains many operations that can be applied to any Ex
 
 | Operation | Description |
 |--------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `.alias(name: str)` | Applies an alias to the expression. |
-| `.cast(type: DuckDBPyType)` | Applies a cast to the provided type on the expression. |
-| `.isin(*exprs: Expression)` | Creates an [`IN` expression]({% link docs/sql/expressions/in.md %}#in) against the provided expressions as the list. |
-| `.isnotin(*exprs: Expression)` | Creates a [`NOT IN` expression]({% link docs/sql/expressions/in.md %}#not-in) against the provided expressions as the list. |
-| `.isnotnull()` | Checks whether the expression is not `NULL`. |
-| `.isnull()` | Checks whether the expression is `NULL`. |
+| `.alias(name: str)` | Applies an alias to the expression |
+| `.cast(type: DuckDBPyType)` | Applies a cast to the provided type on the expression |
+| `.isin(*exprs: Expression)` | Creates an [`IN` expression]({% link docs/sql/expressions/in.md %}#in) against the provided expressions as the list |
+| `.isnotin(*exprs: Expression)` | Creates a [`NOT IN` expression]({% link docs/sql/expressions/in.md %}#not-in) against the provided expressions as the list |
+| `.isnotnull()` | Checks whether the expression is not `NULL` |
+| `.isnull()` | Checks whether the expression is `NULL` |
 
 ### Order Operations
 
@@ -40528,10 +40565,10 @@ When expressions are provided to `DuckDBPyRelation.order()`, the following order
 
 | Operation | Description |
 |--------------------------------|------------------------------------------------------------------------------------|
-| `.asc()` | Indicates that this expression should be sorted in ascending order. |
-| `.desc()` | Indicates that this expression should be sorted in descending order. |
-| `.nulls_first()` | Indicates that the nulls in this expression should precede the non-null values. |
-| `.nulls_last()` | Indicates that the nulls in this expression should come after the non-null values. |
+| `.asc()` | Indicates that this expression should be sorted in ascending order |
+| `.desc()` | Indicates that this expression should be sorted in descending order |
+| `.nulls_first()` | Indicates that the nulls in this expression should precede the non-null values |
+| `.nulls_last()` | Indicates that the nulls in this expression should come after the non-null values |
 
 ---
 duckdb/docs/api/python/function.md
@@ -60011,20 +60048,20 @@ This call returns the following information for the given table:
 
 | Name | Type | Description |
 |----------------|-----------|-------------------------------------------------------|
-| `row_group_id` | `BIGINT` ||
-| `column_name` | `VARCHAR` ||
-| `column_id` | `BIGINT` ||
-| `column_path` | `VARCHAR` ||
-| `segment_id` | `BIGINT` ||
-| `segment_type` | `VARCHAR` ||
+| `row_group_id` | `BIGINT` | |
+| `column_name` | `VARCHAR` | |
+| `column_id` | `BIGINT` | |
+| `column_path` | `VARCHAR` | |
+| `segment_id` | `BIGINT` | |
+| `segment_type` | `VARCHAR` | |
 | `start` | `BIGINT` | The start row id of this chunk |
 | `count` | `BIGINT` | The amount of entries in this storage chunk |
 | `compression` | `VARCHAR` | Compression type used for this column â€“ see the [â€œLightweight Compression in DuckDBâ€� blog post]({% post_url 2022-10-28-lightweight-compression %}) |
-| `stats` | `VARCHAR` ||
-| `has_updates` | `BOOLEAN` ||
+| `stats` | `VARCHAR` | |
+| `has_updates` | `BOOLEAN` | |
 | `persistent` | `BOOLEAN` | `false` if temporary table |
-| `block_id` | `BIGINT` | empty unless persistent |
-| `block_offset` | `BIGINT` | empty unless persistent |
+| `block_id` | `BIGINT` | Empty unless persistent |
+| `block_offset` | `BIGINT` | Empty unless persistent |
 
 See [Storage]({% link docs/internals/storage.md %}) for more information.
 
