@@ -952,7 +952,7 @@ The "Atmosphere" is the term we use to describe the ecosystem around the [AT Pro
 
 ## AT Protocol
 
-The AT Protocol stands for "Authenticated Transfer Protocol." This name is in reference to the fact that all user-data is signed by the authoring users, which makes it possible to broadcast the data through many services and prove it's real without having to speak directly to the originating server.
+The AT Protocol stands for "Authenticated Transfer Protocol," and is frequently shortened to "atproto." The name is in reference to the fact that all user-data is signed by the authoring users, which makes it possible to broadcast the data through many services and prove it's real without having to speak directly to the originating server.
 
 The name is also a play on the "@" symbol, aka the "at" symbol, since atproto is designed for social systems.
 
@@ -1008,7 +1008,7 @@ Blobs are unstructured data stored inside a [repo](#data-repo). They are most co
 
 ## Label
 
-Labels are metadata objects which are attached to [repos](#data-repo) and [records](#record). They are typically referenced by their values, such as "nudity" or "graphic-media," which identify the meaning of the label. Labels are primarily used by applications for moderation, but they can be used for other purposes.
+Labels are metadata objects which are attached to accounts ([DIDs](#did-decentralized-id)) and [records](#record). They are typically referenced by their values, such as "nudity" or "graphic-media," which identify the meaning of the label. Labels are primarily used by applications for moderation, but they can be used for other purposes.
 
 - [Labels spec](/specs/label)
 
@@ -1071,25 +1071,25 @@ export const metadata = {
 
 The atproto identity system has a number of requirements:
 
-* **ID provision.** Users should be able to create global IDs which are stable across services. These IDs should rarely change to ensure that links to their content are stable.
-* **Public key distribution.** Distributed systems rely on cryptography to prove the authenticity of data and provide end-to-end privacy. The identity system must publish their public keys with strong security.
+* **ID provision.** Users should be able to create global IDs which are stable across services. These IDs should never change, to ensure that links to their content are stable.
+* **Public key distribution.** Distributed systems rely on cryptography to prove the authenticity of data. The identity system must publish their public keys with strong security.
 * **Key rotation.** Users must be able to rotate their key material without disrupting their identity.
-* **Service discovery.** To interact with users, applications must be able to discover the services in use by a given user.
+* **Service discovery.** Applications must be able to discover the services in use by a given user.
 * **Usability.** Users should have human-readable and memorable names.
 * **Portability.** Identities should be portable across services. Changing a provider should not cause a user to lose their identity, social graph, or content.
 
-Adopting this system should give applications the tools for end-to-end encryption, signed user data, service sign in, and general interoperation.
+Using the atproto identity system gives applications the tools for end-to-end encryption, signed user data, service sign-in, and general interoperation.
 
 ## Identifiers
 
-We use two interrelated forms of identifiers: the _handle_ and the _DID_. Handles are DNS names while DIDs are an [emerging W3C standard](https://www.w3.org/TR/did-core/) which act as secure & stable IDs.
+We use two interrelated forms of identifiers: _handles_ and _DIDs_. Handles are DNS names while DIDs are a [W3C standard](https://www.w3.org/TR/did-core/) with multiple implementations which provide secure & stable IDs. AT Protocol supports the DID PLC and DID Web variants.
 
 The following are all valid user identifiers:
 
 ```
 alice.host.com
 at://alice.host.com
-at://did:plc:bv6ggog3tya2z3vxsub7hnal
+did:plc:bv6ggog3tya2z3vxsub7hnal
 ```
 
 The relationship between them can be visualized as:
@@ -1109,13 +1109,13 @@ The relationship between them can be visualized as:
                                     └───────────────┘
 ```
 
-The DNS handle is a user-facing identifier — it should be shown in UIs and promoted as a way to find users. Applications resolve handles to DIDs and then use the DID as the stable canonical identifier. The DID can then be securely resolved to a DID document which includes public keys and user services.
+The DNS handle is a user-facing identifier — it should be displayed in user interfaces and promoted as a way to find users. Applications resolve handles to DIDs and then use the DID as the canonical identifier for accounts. Any DID can be rapidly resolved to a DID document which includes public keys and user services.
 
 <DescriptionList>
-  <Description title="Handles">Handles are DNS names. They are resolved using the `com.atproto.identity.resolveHandle` XRPC method and should be confirmed by a matching entry in the DID document. Details in the <a href="/specs/handle">Handle specification</a>.</Description>
-  <Description title="DIDs">DIDs are an emerging <a href="https://www.w3.org/TR/did-core/">W3C standard</a> for providing stable & secure IDs. They are used as stable, canonical IDs of users. Details of how they are used in AT Protocol in the <a href="/specs/did">DID specification</a>.</Description>
+  <Description title="Handles">Handles are DNS names. They are resolved using DNS TXT records or an HTTP well-known endpoint, and must be confirmed by a matching entry in the DID document. Details in the <a href="/specs/handle">Handle specification</a>.</Description>
+  <Description title="DIDs">DIDs are a <a href="https://www.w3.org/TR/did-core/">W3C standard</a> for providing stable & secure IDs. They are used as stable, canonical IDs of users. Details of how they are used in AT Protocol in the <a href="/specs/did">DID specification</a>.</Description>
   <Description title="DID Documents">
-    DID Documents are standardized objects which are hosted by DID registries. They include the following information:
+    DID Documents are standardized JSON objects which are returned by the DID resolution process. They include the following information:
     <ul>
       <li>The handle associated with the DID.</li>
       <li>The signing key.</li>
@@ -1127,34 +1127,24 @@ The DNS handle is a user-facing identifier — it should be shown in UIs and pro
 
 ## DID Methods
 
-The [DID standard](https://www.w3.org/TR/did-core/) supports custom "methods" of publishing and resolving DIDs to the [DID Document](https://www.w3.org/TR/did-core/#core-properties). A variety of existing methods [have been published](https://w3c.github.io/did-spec-registries/#did-methods) so we must establish criteria for inclusion in this proposal:
+The [DID standard](https://www.w3.org/TR/did-core/) describes a framework for different "methods" of publishing and resolving DIDs to the [DID Document](https://www.w3.org/TR/did-core/#core-properties), instead of specifying a single mechanism. A variety of existing methods [have been registered](https://w3c.github.io/did-spec-registries/#did-methods), with different features and properties. We established the following criteria for use with atproto:
 
 - **Strong consistency.** For a given DID, a resolution query should produce only one valid document at any time. (In some networks, this may be subject to probabilistic transaction finality.)
 - **High availability**. Resolution queries must succeed reliably.
 - **Online API**. Clients must be able to publish new DID documents through a standard API.
-- **Secure**. The network must protect against attacks from its operators, a MITM, and other users.
+- **Secure**. The network must protect against attacks from its operators, a Man-in-the-Middle, and other users.
 - **Low cost**. Creating and updating DID documents must be affordable to services and users.
 - **Key rotation**. Users must be able to rotate keypairs without losing their identity.
 - **Decentralized governance**. The network should not be governed by a single stakeholder; it must be an open network or a consortium of providers.
 
-When we started the project, none of the DID methods met our standards fully. **Therefore, we chose to support [did-web](https://w3c-ccg.github.io/did-method-web/), and a novel method we've created called [DID PLC](https://github.com/bluesky-social/did-method-plc).**
+When we started the project, none of the existing DID methods met all of these criteria. Therefore, we chose to support both the existing [did-web](https://w3c-ccg.github.io/did-method-web/) method (which is simple), and a novel method we created called [DID PLC](https://github.com/bluesky-social/did-method-plc).
 
 ## Handle Resolution
 
-Handles in atproto are domain names which resolve to a DID, which in turn resolves to a DID Document containing the user's signing pubkey and hosting service.
+Handles in atproto are domain names which resolve to a DID, which in turn resolves to a DID Document containing the user's signing key and hosting service.
 
-Handle resolution uses the `com.atproto.identity.resolveHandle` XRPC method. The method call should be sent to the server identified by the handle, and the handle should be passed as a parameter.
+Handle resolution uses either a DNS TXT record, or an HTTPS well-known endpoint. Details can be found in the [Handle specification](/specs/handle).
 
-Here is the algorithm in pseudo-TypeScript:
-
-```typescript
-async function resolveHandle(handle: string) {
-  const origin = `https://${handle}`
-  const res = await xrpc(origin, 'com.atproto.identity.resolveHandle', {handle})
-  assert(typeof res?.did === 'string' && res.did.startsWith('did:'))
-  return res.did
-}
-```
 
 ### Example: Hosting service
 
@@ -1164,13 +1154,9 @@ Consider a scenario where a hosting service is using PLC and is providing the ha
 - The DID: `did:plc:12345`
 - The hosting service: `https://pds.com`
 
-At first, all we know is `alice.pds.com`, so we call `com.atproto.identity.resolveHandle()` on `alice.pds.com`. This tells us the DID.
+At first, all we know is `alice.pds.com`, so we look up the DNS TXT record `_atproto.alice.pds.com`. This tells us the DID: `did:plc:12345`.
 
-```typescript
-await xrpc.service('https://alice.pds.com').com.atproto.identity.resolveHandle() // => {did: 'did:plc:12345'}
-```
-
-Next we call the PLC resolution method on the returned DID so that we can learn the hosting service's endpoint and the user's key material.
+Next we query the PLC directory for the DID, so that we can learn the hosting service's endpoint and the user's key material.
 
 ```typescript
 await didPlc.resolve('did:plc:12345') /* => {
@@ -1182,33 +1168,6 @@ await didPlc.resolve('did:plc:12345') /* => {
 ```
 
 We can now communicate with `https://pds.com` to access Alice's data.
-
-### Example: Hosting service with separate domain name
-
-Suppose we have the same scenario as before, except the user has supplied their own domain name:
-
-- The handle: `alice.com` (this differs from before)
-- The DID: `did:plc:12345`
-- The hosting service: `https://pds.com`
-
-We call `com.atproto.identity.resolveHandle()` on `alice.com` to get the DID.
-
-```typescript
-await xrpc.service('https://alice.com').com.atproto.identity.resolveHandle() // => {did: 'did:plc:12345'}
-```
-
-Then we resolve the DID as before:
-
-```typescript
-await didPlc.resolve('did:plc:12345') /* => {
-  id: 'did:plc:12345',
-  alsoKnownAs: `https://alice.com`,
-  verificationMethod: [...],
-  service: [{serviceEndpoint: 'https://pds.com', ...}]
-}*/
-```
-
-We can now communicate with `https://pds.com` to access Alice's data. The `https://alice.com` endpoint only serves to handle the `com.atproto.identity.resolveHandle()` call. The actual user data lives on `pds.com`.
 
 ### Example: Self-hosted
 
@@ -1224,13 +1183,9 @@ However, **if the self-hoster is confident they will retain ownership of the dom
 - The DID: `did:web:alice.com`
 - The hosting service: `https://alice.com`
 
-We call `com.atproto.identity.resolveHandle()` on `alice.com` to get the DID.
+We can resolve the handle the same way, resolving `_atproto.alice.com`, which returns the DID: `did:web:alice.com`
 
-```typescript
-await xrpc.service('https://alice.com').com.atproto.identity.resolveHandle() // => {did: 'did:web:alice.com'}
-```
-
-We then resolve using `did:web`:
+Which we then resolve:
 
 ```typescript
 await didWeb.resolve('did:web:alice.com') /* => {
@@ -1255,18 +1210,18 @@ export const metadata = {
 
 Lexicon is a schema system used to define RPC methods and record types. Every Lexicon schema is written in JSON, in a format similar to [JSON-Schema](https://json-schema.org/) for defining constraints.
 
-The schemas are identified using [NSIDs](/specs/nsid) which are a reverse-DNS format. Here are some example methods:
+The schemas are identified using [NSIDs](/specs/nsid) which are a reverse-DNS format. Here are some example API endpoints:
 
-```typescript
-com.atproto.repo.getRecord()
-com.atproto.identity.resolveHandle()
-app.bsky.feed.getPostThread()
-app.bsky.notification.listNotifications()
+```
+com.atproto.repo.getRecord
+com.atproto.identity.resolveHandle
+app.bsky.feed.getPostThread
+app.bsky.notification.listNotifications
 ```
 
 And here are some example record types:
 
-```typescript
+```
 app.bsky.feed.post
 app.bsky.feed.like
 app.bsky.actor.profile
@@ -1283,9 +1238,7 @@ The schema types, definition language, and validation constraints are described 
 
 ## HTTP API methods
 
-The AT Protocol's API system, [XRPC](/specs/xrpc), is essentially a thin wrapper around HTTPS. Its purpose is to apply the Lexicon to HTTPS.
-
-For example, a call to:
+The AT Protocol's API system, [XRPC](/specs/xrpc), is essentially a thin wrapper around HTTPS. For example, a call to:
 
 ```typescript
 com.example.getProfile()
@@ -1303,20 +1256,28 @@ The schemas establish valid query parameters, request bodies, and response bodie
 {
   "lexicon": 1,
   "id": "com.example.getProfile",
-  "type": "query",
-  "parameters": {
-    "user": {"type": "string", "required": true}
-  },
-  "output": {
-    "encoding": "application/json",
-    "schema": {
-      "type": "object",
-      "required": ["did", "name"],
-      "properties": {
-        "did": {"type": "string"},
-        "name": {"type": "string"},
-        "displayName": {"type": "string", "maxLength": 64},
-        "description": {"type": "string", "maxLength": 256}
+  "defs": {
+    "main": {
+      "type": "query",
+      "parameters": {
+        "type": "params",
+        "required": ["user"],
+        "properties": {
+           "user": { "type": "string" }
+        },
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": ["did", "name"],
+          "properties": {
+            "did": {"type": "string"},
+            "name": {"type": "string"},
+            "displayName": {"type": "string", "maxLength": 64},
+            "description": {"type": "string", "maxLength": 256}
+          }
+        }
       }
     }
   }
@@ -1356,14 +1317,18 @@ at://bob.com/com.example.follow/12345
 {
   "lexicon": 1,
   "id": "com.example.follow",
-  "type": "record",
-  "description": "A social follow",
-  "record": {
-    "type": "object",
-    "required": ["subject", "createdAt"],
-    "properties": {
-      "subject": { "type": "string" },
-      "createdAt": {"type": "string", "format": "datetime"}
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "A social follow",
+      "record": {
+        "type": "object",
+        "required": ["subject", "createdAt"],
+        "properties": {
+          "subject": { "type": "string" },
+          "createdAt": {"type": "string", "format": "datetime"}
+        }
+      }
     }
   }
 }
@@ -1379,12 +1344,16 @@ Let's say a record schema wanted to specify three possible states for a traffic 
 {
   "lexicon": 1,
   "id": "com.example.trafficLight",
-  "type": "record",
-  "record": {
-    "type": "object",
-    "required": ["state"],
-    "properties": {
-      "state": { "type": "string", "enum": ["red", "yellow", "green"] },
+  "defs": {
+    "main": {
+      "type": "record",
+      "record": {
+        "type": "object",
+        "required": ["state"],
+        "properties": {
+          "state": { "type": "string", "enum": ["red", "yellow", "green"] },
+        }
+      }
     }
   }
 }
@@ -1398,15 +1367,19 @@ To add flexibility, you could remove the enum constraint and just document the p
 {
   "lexicon": 1,
   "id": "com.example.trafficLight",
-  "type": "record",
-  "record": {
-    "type": "object",
-    "required": ["state"],
-    "properties": {
-      "state": {
-        "type": "string",
-        "description": "Suggested values: red, yellow, green"
-      },
+  "defs": {
+    "main": {
+      "type": "record",
+      "record": {
+        "type": "object",
+        "required": ["state"],
+        "properties": {
+          "state": {
+            "type": "string",
+            "description": "Suggested values: red, yellow, green"
+          }
+        }
+      }
     }
   }
 }
@@ -1420,20 +1393,32 @@ Instead, you can define Lexicon tokens for the values you use:
 {
   "lexicon": 1,
   "id": "com.example.green",
-  "type": "token",
-  "description": "Traffic light state representing 'Go!'.",
+  "defs": {
+    "main": {
+      "type": "token",
+      "description": "Traffic light state representing 'Go!'.",
+    }
+  }
 }
 {
   "lexicon": 1,
   "id": "com.example.yellow",
-  "type": "token",
-  "description": "Traffic light state representing 'Stop Soon!'.",
+  "defs": {
+    "main": {
+      "type": "token",
+      "description": "Traffic light state representing 'Stop Soon!'.",
+    }
+  }
 }
 {
   "lexicon": 1,
   "id": "com.example.red",
-  "type": "token",
-  "description": "Traffic light state representing 'Stop!'.",
+  "defs": {
+    "main": {
+      "type": "token",
+      "description": "Traffic light state representing 'Stop!'.",
+    }
+  }
 }
 ```
 
@@ -1443,19 +1428,23 @@ This gives us unambiguous values to use in our trafficLight state. The final sch
 {
   "lexicon": 1,
   "id": "com.example.trafficLight",
-  "type": "record",
-  "record": {
-    "type": "object",
-    "required": ["state"],
-    "properties": {
-      "state": {
-        "type": "string",
-        "knownValues": [
-          "com.example.green",
-          "com.example.yellow",
-          "com.example.red"
-        ]
-      },
+  "defs": {
+    "main": {
+      "type": "record",
+      "record": {
+        "type": "object",
+        "required": ["state"],
+        "properties": {
+          "state": {
+            "type": "string",
+            "knownValues": [
+              "com.example.green",
+              "com.example.yellow",
+              "com.example.red"
+            ]
+          }
+        }
+      }
     }
   }
 }
@@ -1483,21 +1472,21 @@ export const metadata = {
 
 # Protocol Overview
 
-The **Authenticated Transfer Protocol**, aka **atproto**, is a federated protocol for large-scale distributed social applications. This document will introduce you to the ideas behind the AT Protocol.
+The **Authenticated Transfer Protocol**, aka **atproto**, is a decentralized protocol for large-scale social web applications. This document will introduce you to the ideas behind the AT Protocol.
 
 ## Identity
 
-Users are identified by domain names on the AT Protocol. These domains map to cryptographic URLs which secure the user's account and its data.
+Users in AT Protocol have permanent decentralized identifiers (DIDs) for their accounts. They also have a configurable domain name, which acts as a human-readable handle. Identities include a reference to the user's current hosting provider and cryptographic keys.
 
-## Data repositories
+## Data Repositories
 
-User data is exchanged in [signed data repositories](/guides/data-repos). These repositories are collections of records which include posts, comments, likes, follows, media blobs, etc.
+User data is exchanged in [signed data repositories](/guides/data-repos). These repositories are collections of records which include posts, comments, likes, follows, etc.
 
-## Federation
+## Network Architecture
 
-The AT Protocol syncs the repositories in a federated networking model. Federation was chosen to ensure the network is convenient to use and reliably available. Repository data is synchronized between servers over standard web technologies ([HTTP](/specs/xrpc) and [WebSockets](/specs/event-stream)).
+The AT Protocol has a federated network architecture, meaning that account data is stored on host servers, as opposed to a peer-to-peer model between end devices. Federation was chosen to ensure the network is convenient to use and reliably available. Repository data is synchronized between servers over standard web technologies ([HTTP](/specs/xrpc) and [WebSockets](/specs/event-stream)).
 
-The three core services in our network are Personal Data Servers (PDS), Relays, and App Views. We're also working on feed generators and labelers.
+The three core services in our network are Personal Data Servers (PDS), Relays, and App Views. There are also supporting services such as feed generators and labelers.
 
 The lower-level primitives that can get stacked together differently are the repositories, lexicons, and DIDs. We published an overview of our technical decisions around federation architecture [on our blog](https://bsky.social/about/blog/5-5-2023-federation-architecture).
 
@@ -1505,38 +1494,40 @@ The lower-level primitives that can get stacked together differently are the rep
 
 A global schemas network called [Lexicon](/specs/lexicon) is used to unify the names and behaviors of the calls across the servers. Servers implement "lexicons" to support featuresets, including the core `com.atproto.*` lexicons for syncing user repositories and the `app.bsky.*` lexicons to provide basic social behaviors.
 
-While the Web exchanges documents, the AT Protocol exchanges schematic and semantic information, enabling the software from different orgs to understand each others' data. This gives atproto clients freedom to produce user interfaces independently of the servers, and removes the need to exchange rendering code (HTML/JS/CSS) while browsing content.
+While the Web exchanges documents, the AT Protocol exchanges schematic and semantic information, enabling the software from different organizations to understand each others' data. This gives atproto clients freedom to produce user interfaces independently of the servers, and removes the need to exchange rendering code (HTML/JS/CSS) while browsing content.
 
-## Achieving scale
+## Achieving Scale
 
-Personal data servers are your home in the cloud. They host your data, distribute it, manage your identity, and orchestrate requests to other services to give you your views.
+Personal Data Servers are your home in the cloud. They host your data, distribute it, manage your identity, and orchestrate requests to other services to give you your views.
 
-Relays handle all of your events, like retrieving large-scale metrics (likes, reposts, followers), content discovery (algorithms), and user search.
+Relays collect data updates from many servers in to a single firehose.
 
-This distinction is intended to achieve scale as well as a high degree of user-choice.
+App Views provide aggregated application data for the entire network. They support large-scale metrics (likes, reposts, followers), content discovery (algorithms), and user search.
+
+This separation of roles is intended to provide users with choice between multiple interoperable providers, while also scaling to large network sizes.
 
 ## Algorithmic choice
 
-As with Web search engines, users are free to select their aggregators. Feeds, App Views, and search indices can be provided by independent third parties, with requests routed by the PDS based on user configuration.
+As with Web search engines, users are free to select their aggregators. Feeds, labelers, and search indices can be provided by independent third parties, with requests routed by the PDS, based on client app configuration. Client apps may be tied to specific services, such as App Views or mandatory labelers.
 
 ## Account portability
 
 We assume that a Personal Data Server may fail at any time, either by going offline in its entirety, or by ceasing service for specific users. The goal of the AT Protocol is to ensure that a user can migrate their account to a new PDS without the server's involvement.
 
-User data is stored in [signed data repositories](/guides/data-repos) and verified by [DIDs](/guides/identity). Signed data repositories are like Git repos but for database records, and DIDs are essentially registries of user certificates, similar in some ways to the TLS certificate system. They are expected to be secure, reliable, and independent of the user's PDS.
+User data is stored in [signed data repositories](/guides/data-repos) and authenticated by [DIDs](/guides/identity). Signed data repositories are like Git repos but for database records, and DIDs provide a directory of cryptographic keys, similar in some ways to the TLS certificate system. Identities are expected to be secure, reliable, and independent of the user's PDS.
 
-Each DID document publishes two public keys: a signing key and a recovery key.
+Most DID documents publish two types public keys: a signing key and rotation keys.
 
-* **Signing key**: Asserts changes to the DID Document *and* to the user's data repository.
-* **Recovery key**: Asserts changes to the DID Document; may override the signing key within a 72-hour window.
+* **Signing key**: Validates the user's data repository. All DIDs include such a key.
+* **Rotation keys**: Asserts changes to the DID Document itself. The PLC DID method includes this, while the DID Web method does not.
 
-The signing key is entrusted to the PDS so that it can manage the user's data, but the recovery key is saved by the user, e.g. as a paper key. This makes it possible for the user to update their account to a new PDS without the original host's help.
+The signing key is entrusted to the PDS so that it can manage the user's data, but rotation keys can be controlled by the user, e.g. as a paper key. This makes it possible for the user to update their account to a new PDS without the original host's help.
 
-A backup of the user’s data will be persistently synced to their client as a backup (contingent on the disk space available). Should a PDS disappear without notice, the user should be able to migrate to a new provider by updating their DID Document and uploading the backup.
+A backup of the user’s data could be persistently synced to a user's own device as a backup (contingent on the disk space available), or mirrored by a third-party service. In the event their PDS disappears without notice, the user should be able to migrate to a new provider by updating their DID Document and uploading their data backup.
 
 ## Speech, reach, and moderation
 
-Atproto's model is that _speech_ and _reach_ should be two separate layers, built to work with each other. The “speech” layer should remain permissive, distributing authority and designed to ensure everyone has a voice. The “reach” layer lives on top, built for flexibility and designed to scale.
+AT Protocol's model is that _speech_ and _reach_ should be two separate layers, built to work with each other. The “speech” layer should remain permissive, distributing authority and designed to ensure everyone has a voice. The “reach” layer lives on top, built for flexibility and designed to scale.
 
 The base layer of atproto (personal data repositories and federated networking) creates a common space for speech where everyone is free to participate, analogous to the Web where anyone can put up a website. The indexing services then enable reach by aggregating content from the network, analogous to a search engine.
 
@@ -1551,19 +1542,16 @@ Some of the primary specifications comprising the initial version of the AT Prot
 - [HTTP API (XRPC)](/specs/xrpc) and [Event Streams](/specs/event-stream)
 
 
-From here, you can continue reading the [guides and specs](/).
-
-
 ---
 atproto/src/app/[locale]/guides/self-hosting/en.mdx
 ---
 export const metadata = {
-  title: 'Self-hosting',
+  title: 'PDS Self-Hosting',
   description:
     'Self-hosting a Bluesky PDS means running your own Personal Data Server that is capable of federating with the wider ATProto network.',
 }
 
-# Self-hosting
+# PDS Self-hosting
 
 Self-hosting a Bluesky PDS means running your own Personal Data Server that is capable of federating with the wider ATProto network. {{className: 'lead'}}
 
@@ -1726,5 +1714,6 @@ sudo pdsadmin update
 
 - [Visit the GitHub](https://github.com/bluesky-social/pds) for issues and discussions.
 - [Join the AT Protocol PDS Admins Discord](https://discord.gg/e7hpHxRfBP) to chat with other folks hosting instances and get important updates about the PDS distribution.
+
 
 ---
