@@ -385,6 +385,11 @@ SET max_temp_directory_size = '4GB';
 DuckDB has a powerful extension mechanism, which have the same privileges as the user running DuckDB's (parent) process.
 This introduces security considerations. Therefore, we recommend reviewing the configuration options for [securing extensions]({% link docs/operations_manual/securing_duckdb/securing_extensions.md %}).
 
+## Privileges
+
+Avoid running DuckDB as a root user (e.g., using `sudo`).
+There is no good reason to run DuckDB as root.
+
 ## Generic Solutions
 
 Securing DuckDB can also be supported via proven means, for example:
@@ -19963,6 +19968,8 @@ blurb: Numeric types are used to store numbers, and come in different shapes and
 The types `TINYINT`, `SMALLINT`, `INTEGER`, `BIGINT` and `HUGEINT` store whole numbers, that is, numbers without fractional components, of various ranges. Attempts to store values outside of the allowed range will result in an error.
 The types `UTINYINT`, `USMALLINT`, `UINTEGER`, `UBIGINT` and `UHUGEINT` store whole unsigned numbers. Attempts to store negative numbers or values outside of the allowed range will result in an error.
 
+
+
 | Name | Aliases | Min | Max |
 | :---------- | :------------------------------- | ---------------------------------------: | --------------------------------------: |
 | `TINYINT` | `INT1` | -128 | 127 |
@@ -20040,8 +20047,8 @@ sqrt(2) > '-inf',
 
 
 
-| (sqrt(2) > '-inf') | ('nan' > sqrt(2)) |
-| -----------------: | ----------------: |
+| `(sqrt(2) > '-inf')` | `('nan' > sqrt(2))` |
+|---------------------:|----------------- -: |
 | true | true |
 
 ## Universally Unique Identifiers (`UUID`s)
@@ -20049,7 +20056,7 @@ sqrt(2) > '-inf',
 DuckDB supports universally unique identifiers (UUIDs) through the `UUID` type. These use 128 bits and are represented internally as `HUGEINT` values.
 When printed, they are shown with lowercase hexadecimal characters, separated by dashes as follows: `âŸ¨8 charactersâŸ©-âŸ¨4 charactersâŸ©-âŸ¨4 charactersâŸ©-âŸ¨4 charactersâŸ©-âŸ¨12 charactersâŸ©` (using 36 characters in total including the dashes). For example, `4ac7a9e9-607c-4c8a-84f3-843f0191e3fd` is a valid UUID.
 
-To generate a new UUID, use the [`uuid()` utility function]({% link docs/sql/functions/utility.md %}#utility-functions).
+To generate a new UUID, use the [`uuid()` utility function]({% link docs/sql/functions/utility.md %}#uuid).
 
 ## Functions
 
