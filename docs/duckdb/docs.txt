@@ -1158,7 +1158,7 @@ DESCRIBE ontime;
 SELECT * FROM read_csv('flights.csv', sample_size = 20_000);
 ```
 
-If we set `delim`/`sep`, `quote`, `escape`, or `header` explicitly, we can bypass the automatic detection of this particular parameter:
+If we set `delim` / `sep`, `quote`, `escape`, or `header` explicitly, we can bypass the automatic detection of this particular parameter:
 
 ```sql
 SELECT * FROM read_csv('flights.csv', header = true);
@@ -4459,7 +4459,7 @@ DeleteDatabase(storage_database);
 }
 ```
 
-The test uses the `TEST_CASE` wrapper to create each test. The database is created and queried using the C++ API. Results are checked using either `REQUIRE_FAIL`/`REQUIRE_NO_FAIL` (corresponding to statement ok and statement error) or `REQUIRE(CHECK_COLUMN(...))` (corresponding to query with a result check). Every test that is created in this way needs to be added to the corresponding `CMakeLists.txt`.
+The test uses the `TEST_CASE` wrapper to create each test. The database is created and queried using the C++ API. Results are checked using either `REQUIRE_FAIL` / `REQUIRE_NO_FAIL` (corresponding to statement ok and statement error) or `REQUIRE(CHECK_COLUMN(...))` (corresponding to query with a result check). Every test that is created in this way needs to be added to the corresponding `CMakeLists.txt`.
 
 ---
 duckdb/docs/dev/sqllogictest/debugging.md
@@ -5162,13 +5162,19 @@ cmake \
 
 ## Building the CLI in Termux
 
-To build the [command line client]({% link docs/api/cli/overview.md %}) in the [Termux application](https://termux.dev/), install the following packages:
+1. To build the [command line client]({% link docs/api/cli/overview.md %}) in the [Termux application](https://termux.dev/), install the following packages:
 
 ```batch
 pkg install -y git ninja clang cmake python3
 ```
 
-Clone the DuckDB repository and build it as follows:
+1. Set the list of DuckDB extensions to build. These will be statically linked in the binary. For example:
+
+```batch
+DUCKDB_EXTENSIONS="icu;json"
+```
+
+1. Build DuckDB as follows:
 
 ```batch
 mkdir build
@@ -5176,14 +5182,14 @@ cd build
 export LDFLAGS="-llog"
 cmake \
 -G "Ninja" \
--DBUILD_EXTENSIONS="" \
+-DBUILD_EXTENSIONS="${DUCKDB_EXTENSIONS}" \
 -DDUCKDB_EXPLICIT_PLATFORM=linux_arm64_android \
 -DCMAKE_BUILD_TYPE=Release \
 ..
 cmake --build . --config Release
 ```
 
-Note that you can also use the Python client:
+Note that you can also use the Python client on Termux:
 
 ```batch
 pip install --pre --upgrade duckdb
@@ -5203,7 +5209,7 @@ ld.lld: error: undefined symbol: __android_log_write
 **Solution:**
 Make sure the log library is linked:
 
-```bash
+```batch
 export LDFLAGS="-llog"
 ```
 
@@ -18452,7 +18458,7 @@ DuckDB performs an enforced cast, therefore, it completes the query and returns 
 PostgreSQL is case-insensitive. The way PostgreSQL achieves case insensitivity is by lowercasing unquoted identifiers within SQL, whereas quoting preserves case, e.g., the following command creates a table named `mytable` but tries to query for `MyTaBLe` because quotes preserve the case.
 
 ```sql
-CREATE TABLE MyTaBLe(x INT);
+CREATE TABLE MyTaBLe(x INTEGER);
 SELECT * FROM "MyTaBLe";
 ```
 
@@ -18463,7 +18469,7 @@ ERROR: relation "MyTaBLe" does not exist
 PostgreSQL does not only treat quoted identifiers as case-sensitive, PostgreSQL treats all identifiers as case-sensitive, e.g., this also does not work:
 
 ```sql
-CREATE TABLE "PreservedCase"(x INT);
+CREATE TABLE "PreservedCase"(x INTEGER);
 SELECT * FROM PreservedCase;
 ```
 
@@ -18479,9 +18485,9 @@ Therefore, DuckDB achieves case insensitivity by making identifiers fully case i
 In DuckDB, the scripts above complete successfully:
 
 ```sql
-CREATE TABLE MyTaBLe(x INT);
+CREATE TABLE MyTaBLe(x INTEGER);
 SELECT * FROM "MyTaBLe";
-CREATE TABLE "PreservedCase"(x INT);
+CREATE TABLE "PreservedCase"(x INTEGER);
 SELECT * FROM PreservedCase;
 SELECT table_name FROM duckdb_tables();
 ```
@@ -18497,7 +18503,7 @@ PostgreSQL's behavior of lowercasing identifiers is accessible using the [`prese
 
 ```sql
 SET preserve_identifier_case = false;
-CREATE TABLE MyTaBLe(x INT);
+CREATE TABLE MyTaBLe(x INTEGER);
 SELECT table_name FROM duckdb_tables();
 ```
 
@@ -18640,7 +18646,7 @@ To comply with standard SQL, one-based indexing is used almost everywhere, e.g.,
 
 ### `NaN` Values
 
-`'NaN'::FLOAT = 'NaN'::FLOAT` and `'NaN'::FLOAT > 3` violate IEEE-754 but mean floating point data types have a total order, like all other datatypes (beware the consequences for `greatest`/`least`)
+`'NaN'::FLOAT = 'NaN'::FLOAT` and `'NaN'::FLOAT > 3` violate IEEE-754 but mean floating point data types have a total order, like all other data types (beware the consequences for `greatest` / `least`).
 
 ### `age` Function
 
@@ -18941,7 +18947,7 @@ In this case 5 and `NULL` are filtered out (`5 > 10` is `false` and `NULL > 10` 
 
 ## Conjunctions
 
-The `AND`/`OR` conjunctions can be used to combine Boolean values.
+The `AND` / `OR` conjunctions can be used to combine Boolean values.
 
 Below is the truth table for the `AND` conjunction (i.e., `x AND y`).
 
@@ -19925,7 +19931,7 @@ SELECT ifnull(1, 'default_string');
 
 ## `NULL` and Conjunctions
 
-`NULL` values have special semantics in `AND`/`OR` conjunctions. For the ternary logic truth tables, see the [Boolean Type documentation]({% link docs/sql/data_types/boolean.md %}).
+`NULL` values have special semantics in `AND` / `OR` conjunctions. For the ternary logic truth tables, see the [Boolean Type documentation]({% link docs/sql/data_types/boolean.md %}).
 
 ## `NULL` and Aggregate Functions
 
@@ -29321,7 +29327,7 @@ As such, they are not as powerful (or dangerous) as a generic `eval`.
 These functions are conceptually simple, but enable powerful and more dynamic SQL. For example, they allow passing in a table name as a prepared statement parameter:
 
 ```sql
-CREATE TABLE my_table(i INT);
+CREATE TABLE my_table(i INTEGER);
 INSERT INTO my_table VALUES (42);
 
 PREPARE select_from_table AS SELECT * FROM query_table($1);
@@ -32569,7 +32575,7 @@ to `LOAD` the spatial extension (again ignoring the statement if it is already l
 
 #### Extension Repository
 
-Optionally a repository can be provided where the extension should be installed from, by appending `FROM ` to the `INSTALL`/`FORCE INSTALL` command.
+Optionally a repository can be provided where the extension should be installed from, by appending `FROM âŸ¨repositoryâŸ©` to the `INSTALL` / `FORCE INSTALL` command.
 This repository can either be an alias, such as [`community`]({% link community_extensions/index.md %}), or it can be a direct URL, provided as a single-quoted string.
 
 After installing/loading an extension, the [`duckdb_extensions` function](#listing-extensions) can be used to get more information.
@@ -44187,13 +44193,13 @@ Dot commands are available in the DuckDB CLI client. To use one of these command
 | `.fullschema ?--indent?` | Show schema and the content of `sqlite_stat` tables |
 | `.headers on|off` | Turn display of headers on or `off` |
 | `.help ?-all? ?PATTERN?` | Show help text for `PATTERN` |
-| `.highlight [on|off]` | Toggle syntax highlighting in the shell `on`/`off` |
+| `.highlight [on|off]` | Toggle syntax highlighting in the shell `on` / `off` |
 | `.import FILE TABLE` | Import data from `FILE` into `TABLE` |
 | `.indexes ?TABLE?` | Show names of indexes |
 | `.keyword ?COLOR?` | Sets the syntax highlighting color used for keywords |
 | `.keywordcode ?CODE?` | Sets the syntax highlighting terminal code used for keywords |
 | `.lint OPTIONS` | Report potential schema issues. |
-| `.log FILE|off` | Turn logging on or off. `FILE` can be `stderr`/`stdout` |
+| `.log FILE|off` | Turn logging on or off. `FILE` can be `stderr` / `stdout` |
 | `.maxrows COUNT` | Sets the maximum number of rows for display. Only for [duckbox mode]({% link docs/api/cli/output_formats.md %}) |
 | `.maxwidth COUNT` | Sets the maximum width in characters. 0 defaults to terminal width. Only for [duckbox mode]({% link docs/api/cli/output_formats.md %}) |
 | `.mode MODE ?TABLE?` | Set [output mode]({% link docs/api/cli/output_formats.md %}) |
