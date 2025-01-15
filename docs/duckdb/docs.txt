@@ -16687,6 +16687,20 @@ The table below shows the available general window functions.
 All [aggregate functions]({% link docs/sql/functions/aggregates.md %}) can be used in a windowing context, including the optional [`FILTER` clause]({% link docs/sql/query_syntax/filter.md %}).
 The `first` and `last` aggregate functions are shadowed by the respective general-purpose window functions, with the minor consequence that the `FILTER` clause is not available for these but `IGNORE NULLS` is.
 
+## DISTINCT Arguments
+
+All aggregate window functions support using a `DISTINCT` clause for the arguments. When the `DISTINCT` clause is
+provided, only distinct values are considered in the computation of the aggregate. This is typically used in combination
+with the `COUNT` aggregate to get the number of distinct elements; but it can be used together with any aggregate
+function in the system.
+
+```sql
+-- Count the number of distinct users at a given point in time
+SELECT count(DISTINCT name) OVER (ORDER BY time) FROM sales;
+-- Concatenate those distinct users into a list
+SELECT list(DISTINCT name) OVER (ORDER BY time) FROM sales;
+```
+
 ## Nulls
 
 All [general-purpose window functions](#general-purpose-window-functions) that accept `IGNORE NULLS` respect nulls by default. This default behavior can optionally be made explicit via `RESPECT NULLS`.
@@ -17101,6 +17115,8 @@ Collations provide rules for how text should be sorted or compared in the execut
 
 By default, the `BINARY` collation is used. That means that strings are ordered and compared based only on their binary contents. This makes sense for standard ASCII characters (i.e., the letters A-Z and numbers 0-9), but generally does not make much sense for special unicode characters. It is, however, by far the fastest method of performing ordering and comparisons. Hence it is recommended to stick with the `BINARY` collation unless required otherwise.
 
+> The `BINARY` collation is also available under the aliases `C` and `POSIX`.
+
 > Warning Collation support in DuckDB has [some known limitations](https://github.com/duckdb/duckdb/issues?q=is%3Aissue+is%3Aopen+collation+) and has [several planned improvements](https://github.com/duckdb/duckdb/issues/604).
 
 ## Using Collations
@@ -17238,22 +17254,15 @@ WHERE names.name COLLATE NOACCENT.NOCASE = other_names.name COLLATE NOACCENT.NOC
 
 The collations we have seen so far are not region-dependent, and do not follow any specific regional rules. If you wish to follow the rules of a specific region or language, you will need to use one of the ICU collations. For that, you need to [load the ICU extension]({% link docs/extensions/icu.md %}#installing-and-loading).
 
-If you are using the C++ API, you may find the extension in the `extension/icu` folder of the DuckDB project. Using the C++ API, the extension can be loaded as follows:
-
-```cpp
-DuckDB db;
-db.LoadExtension();
-```
-
 Loading this extension will add a number of language and region specific collations to your database. These can be queried using `PRAGMA collations` command, or by querying the `pragma_collations` function.
 
 ```sql
 PRAGMA collations;
-SELECT * FROM pragma_collations();
+SELECT list(collname) FROM pragma_collations();
 ```
 
 ```text
-[af, am, ar, as, az, be, bg, bn, bo, bs, bs, ca, ceb, chr, cs, cy, da, de, de_AT, dsb, dz, ee, el, en, en_US, en_US, eo, es, et, fa, fa_AF, fi, fil, fo, fr, fr_CA, ga, gl, gu, ha, haw, he, he_IL, hi, hr, hsb, hu, hy, id, id_ID, ig, is, it, ja, ka, kk, kl, km, kn, ko, kok, ku, ky, lb, lkt, ln, lo, lt, lv, mk, ml, mn, mr, ms, mt, my, nb, nb_NO, ne, nl, nn, om, or, pa, pa, pa_IN, pl, ps, pt, ro, ru, se, si, sk, sl, smn, sq, sr, sr, sr_BA, sr_ME, sr_RS, sr, sr_BA, sr_RS, sv, sw, ta, te, th, tk, to, tr, ug, uk, ur, uz, vi, wae, wo, xh, yi, yo, zh, zh, zh_CN, zh_SG, zh, zh_HK, zh_MO, zh_TW, zu]
+[af, am, ar, ar_sa, as, az, be, bg, bn, bo, br, bs, ca, ceb, chr, cs, cy, da, de, de_at, dsb, dz, ee, el, en, en_us, eo, es, et, fa, fa_af, ff, fi, fil, fo, fr, fr_ca, fy, ga, gl, gu, ha, haw, he, he_il, hi, hr, hsb, hu, hy, icu_noaccent, id, id_id, ig, is, it, ja, ka, kk, kl, km, kn, ko, kok, ku, ky, lb, lkt, ln, lo, lt, lv, mk, ml, mn, mr, ms, mt, my, nb, nb_no, ne, nfc, nl, nn, noaccent, nocase, om, or, pa, pa_in, pl, ps, pt, ro, ru, sa, se, si, sk, sl, smn, sq, sr, sr_ba, sr_me, sr_rs, sv, sw, ta, te, th, tk, to, tr, ug, uk, ur, uz, vi, wae, wo, xh, yi, yo, yue, yue_cn, zh, zh_cn, zh_hk, zh_mo, zh_sg, zh_tw, zu]
 ```
 
 These collations can then be used as the other collations would be used before. They can also be combined with the `NOCASE` collation. For example, to use the German collation rules you could use the following code snippet:
@@ -24381,6 +24390,18 @@ This fails with the following error:
 Constraint Error: NOT NULL constraint failed: t1.val2
 ```
 
+#### Composite Primary Key
+
+When multiple columns need to be part of the uniqueness constraint, use a single `PRIMARY KEY` clause including all relevant columns:
+
+```sql
+CREATE TABLE t1 (id1 INTEGER, id2 INTEGER, val1 DOUBLE, PRIMARY KEY(id1, id2));
+INSERT OR REPLACE INTO t1
+VALUES (1, 2, 3);
+INSERT OR REPLACE INTO t1
+VALUES (1, 2, 4);
+```
+
 ### Defining a Conflict Target
 
 A conflict target may be provided as `ON CONFLICT (conflict_target)`. This is a group of columns that an index or uniqueness/key constraint is defined on. If the conflict target is omitted, or `PRIMARY KEY` constraint(s) on the table are targeted.
@@ -26281,6 +26302,9 @@ Note that larger-than-memory workloads can be processed both in persistent mode 
 
 DuckDB's disk-based mode is designed to work best with SSD and NVMe disks. While HDDs are supported, they will result in low performance, especially for write operations.
 
+Counter-intuitively, using a disk-based DuckDB instance can be faster than an in-memory instance due to compression.
+Read more in the [â€œHow to Tune Workloadsâ€� page]({% link docs/guides/performance/how_to_tune_workloads.md %}#persistent-vs-in-memory-tables).
+
 ### Network-Attached Disks
 
 **Cloud disks.** DuckDB runs well on network-backed cloud disks such as [AWS EBS](https://aws.amazon.com/ebs/) for both read-only and read-write workloads.
@@ -26560,7 +26584,7 @@ DuckDB supports [lightweight compression techniques]({% post_url 2022-10-28-ligh
 
 DuckDB does not compress its in-memory tables. The reason for this is that compression is performed during checkpointing, and in-memory tables are not checkpointed.
 
-In rare cases, this can result in unintuitive performance results where queries are faster on on-disk tables compared to in-memory ones. For example, Q1 of the [TPC-H workload]({% link docs/extensions/tpch.md %}) is faster when running on-disk compared to the in-memory mode:
+In some cases, this can result in counter-intuitive performance results where queries are faster on on-disk tables compared to in-memory ones. For example, Q1 of the [TPC-H workload]({% link docs/extensions/tpch.md %}) is faster when running on-disk compared to the in-memory mode:
 
 ```sql
 INSTALL tpch;
