@@ -6873,7 +6873,7 @@ The table below shows the available mathematical operators for `TIME` types.
 | Operator | Description | Example | Result |
 |:-|:---|:----|:--|
 | `+` | addition of an `INTERVAL` | `TIME '01:02:03' + INTERVAL 5 HOUR` | `06:02:03` |
-| `-` | subtraction of an `INTERVAL` | `TIME '06:02:03' - INTERVAL 5 HOUR'` | `01:02:03` |
+| `-` | subtraction of an `INTERVAL` | `TIME '06:02:03' - INTERVAL 5 HOUR` | `01:02:03` |
 
 ## Time Functions
 
@@ -22467,7 +22467,7 @@ Below are parameters that can be passed to the CSV reader. These parameters are 
 | `delim` | Specifies the delimiter character that separates columns within each row (line) of the file. Alias for `sep`. | `VARCHAR` | `,` |
 | `escape` | Specifies the string that should appear before a data character sequence that matches the `quote` value. | `VARCHAR` | `"` |
 | `encoding` | Specifies the encoding used by the CSV file and ensures conversion from the source encoding to `UTF-8`. | `VARCHAR` | `utf-8` |
-| `filename` | Whether or not an extra `filename` column should be included in the result. | `BOOL` | `false` |
+| `filename` | Whether or not an extra `filename` column should be included in the result. Note that a string with the relative path will be returned, not just the filename. | `BOOL` | `false` |
 | `force_not_null` | Do not match the specified columns' values against the `NULL` string. In the default case where the `NULL` string is empty, this means that empty values will be read as zero-length strings rather than `NULL`s. | `VARCHAR[]` | `[]` |
 | `header` | Specifies that the file contains a header line with the names of each column in the file. | `BOOL` | `false` |
 | `hive_partitioning` | Whether or not to interpret the path as a [Hive partitioned path]({% link docs/data/partitioning/hive_partitioning.md %}). | `BOOL` | `false` |
@@ -60135,7 +60135,8 @@ On Linux, install the required packages with the package manager of your distrib
 ### Ubuntu and Debian
 
 ```batch
-sudo apt-get update && sudo apt-get install -y git g++ cmake ninja-build libssl-dev
+sudo apt-get update
+sudo apt-get install -y git g++ cmake ninja-build libssl-dev
 ```
 
 ### Fedora, CentOS, and Red Hat
@@ -60391,7 +60392,30 @@ layout: docu
 title: Raspberry Pi
 ---
 
-DuckDB can be built for Raspberry Pi.
+## Raspberry Pi (64-bit)
+
+DuckDB can be built for 64-bit Raspberry Pi boards. First, install the required build packages:
+
+```batch
+sudo apt-get update
+sudo apt-get install -y git g++ cmake ninja-build
+```
+
+Then, clone and build it as follows:
+
+```bash
+git clone https://github.com/duckdb/duckdb
+cd duckdb
+GEN=ninja CORE_EXTENSIONS="icu;json" make
+```
+
+Finally, run it:
+
+```batch
+build/release/duckdb
+```
+
+## Raspberry Pi 32-bit
 
 On 32-bit Raspberry Pi boards, you need to add the [`-latomic` link flag](https://github.com/duckdb/duckdb/issues/13855#issuecomment-2341539339).
 As extensions are not distributed for this platform, it's recommended to also include them in the build.
