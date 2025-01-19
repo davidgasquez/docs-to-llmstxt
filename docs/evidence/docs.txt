@@ -8625,6 +8625,14 @@ Override title of column
 
 </PropListing>
 <PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover
+
+</PropListing>
+<PropListing
     name=align
     options={['left', 'center', 'right']}
     defaultValue="left"
@@ -9361,6 +9369,14 @@ Used to navigate to other pages. Can be a full external link like `https://googl
     description="Group name to connect this sparkline to other charts for synchronized tooltip hovering. Charts with the same `connectGroup` name will become connected"
     options="string"
 />
+<PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover
+
+</PropListing>
 
 ---
 evidence/sites/docs/pages/components/data/value/index.md
@@ -9569,6 +9585,14 @@ Specifies the font color of the Value.
 >
 
 Conditionally sets the font color to red based on whether the selected value is less than 0
+
+</PropListing>
+<PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover
 
 </PropListing>
 
@@ -10310,9 +10334,14 @@ Name of the checkbox, used to reference the selected value elsewhere as `{inputs
 Value to use when checkbox is first loaded. True value for checked, false for unchecked
 
 </PropListing>
+<PropListing
+    name=description
+    options="string"
+>
 
+Adds an info icon with description tooltip on hover
 
-
+</PropListing>
 
 
 
@@ -10622,7 +10651,14 @@ Accepts preset in string format to apply default value in Date Input picker. **R
     options={["true", "false"]}
     default="true"
 />
+<PropListing
+    name=description
+    options="string"
+>
 
+Adds an info icon with description tooltip on hover
+
+</PropListing>
 
 ---
 evidence/sites/docs/pages/components/inputs/dropdown/index.md
@@ -11029,6 +11065,14 @@ Selected: {inputs.category_multi_selectAllByDefault.value}
     options={["true", "false"]}
     defaultValue="true"
 />
+<PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover
+
+</PropListing>
 
 # DropdownOption
 
@@ -11313,6 +11357,14 @@ Sets the length of the slider. Options are "medium", large" or "full". A empty s
     description="Sets format for the value (<a class=markdown href='/core-concepts/formatting'>see available formats<a/>)"
     options="Excel-style format | built-in format | custom format"
 />
+<PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover
+
+</PropListing>
 
 
 
@@ -11600,7 +11652,14 @@ Accepts preset in string format to apply default value in Date Range picker. **R
     options={["true", "false"]}
     default="true"
 />
+<PropListing
+    name=description
+    options="string"
+>
 
+Adds an info icon with description tooltip on hover
+
+</PropListing>
 
 ---
 evidence/sites/docs/pages/components/inputs/button-group/index.md
@@ -11909,6 +11968,14 @@ Selected: {inputs.button_tabs_hardcoded_options}
     options={['tabs', 'buttons']}
     defaultValue="buttons"
 />
+<PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover. Appears next to title.
+
+</PropListing>
 
 # ButtonGroupItem
 
@@ -12136,6 +12203,14 @@ Alternative placeholder text displayed in the text input
 Hide the component when the report is printed
 
 </PropListing>
+<PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover
+
+</PropListing>
 
 ---
 evidence/sites/docs/pages/components/ui/index.md
@@ -12145,6 +12220,112 @@ title: UI
 sidebar_link: false
 sidebar_position: 5
 ---
+
+---
+evidence/sites/docs/pages/components/ui/info/index.md
+---
+---
+sidebar_position: 1
+description: Display an info icon with descriptive tooltip
+title: Info
+---
+
+The Info component can be used on a standalone basis as shown on this page, or can be used as part of other components which support the `description` prop (including Column, BigValue, Value, and more).
+
+<DocTab>
+    <div slot='preview'>
+        Data was sourced from the World Bank <Info description="World Economic Indicators dataset from past 12 months" />
+    </div>
+
+```markdown
+Data was sourced from the World Bank <Info description="World Economic Indicators dataset from past 12 months" />
+```
+</DocTab>
+
+## Examples
+
+### Inline Usage
+
+<DocTab>
+
+<div slot=preview>
+Data was sourced from the World Bank <Info description="World Economic Indicators dataset from past 12 months" />
+</div>
+
+```markdown
+Data was sourced from the World Bank <Info description="World Economic Indicators dataset from past 12 months" />
+```
+
+</DocTab>
+
+
+### Theme Color
+
+<DocTab>
+
+<div slot=preview>
+Data was sourced from the World Bank <Info description="World Economic Indicators dataset from past 12 months" color="primary" />
+</div>
+
+```markdown
+Data was sourced from the World Bank <Info description="World Economic Indicators dataset from past 12 months" color="primary" />
+```
+
+</DocTab>
+
+
+### Custom Color
+
+<DocTab>
+
+<div slot=preview>
+Data was sourced from the World Bank <Info description="World Economic Indicators dataset from past 12 months" color="red" />
+</div>
+
+```markdown
+Data was sourced from the World Bank <Info description="World Economic Indicators dataset from past 12 months" color="red" />
+```
+
+</DocTab>
+
+## Options
+
+<PropListing
+    name=description
+    required
+    options="string"
+>
+
+Text content for the tooltip.
+
+</PropListing>
+<PropListing
+    name=color
+    options="string"
+    defaultValue="base-content-muted"
+>
+
+Color of the tooltip content.
+
+</PropListing>
+<PropListing
+    name=size
+    options="number"
+    defaultValue="4"
+>
+
+Size of the icon.
+
+</PropListing>
+<PropListing
+    name=className
+    options="string"
+>
+
+Custom class names for the tooltip trigger.
+
+</PropListing>
+
 
 ---
 evidence/sites/docs/pages/components/ui/accordion/index.md
@@ -12353,7 +12534,14 @@ Pass custom classes to control the styling of the accordion body. Supports [tail
 Pass custom classes to control the styling of an accordion item. Supports [tailwind classes](https://tailwindcss.com). 
 
 </PropListing> 
+<PropListing
+    name=description
+    options="string"
+>
 
+Adds an info icon with description tooltip on hover
+
+</PropListing>
 
 
 
@@ -12583,6 +12771,14 @@ This is a dangerous alert
 >
 
 Changes the color of the alert
+
+</PropListing>
+<PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover
 
 </PropListing>
 
@@ -13689,6 +13885,14 @@ Unique Id for this tab. Only needed if 2 tabs have the same label (not recommend
 >
 
 On print/PDF, the Tabs will repeat to show all content by default. Turn this off to leave the component collapsed in print.
+
+</PropListing>
+<PropListing
+    name=description
+    options="string"
+>
+
+Adds an info icon with description tooltip on hover
 
 </PropListing>
 
