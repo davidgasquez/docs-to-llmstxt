@@ -7,13 +7,11 @@ title: Documentation
 
 ## Connecting to DuckDB
 
-    DuckDB Connection Overview   
+    DuckDB connection overview   
 
 ## Client APIs
 
-    CLI (Command Line Interface)      Java      Python      R      WebAssembly   
-
-See all [client APIs]({% link docs/api/overview.md %}).
+    CLI (command line interface)      Java      Python      R      WebAssembly      All client APIs   
 
 ## SQL
 
@@ -21,7 +19,7 @@ See all [client APIs]({% link docs/api/overview.md %}).
 
 ## Other
 
-    Guides      Installation      Building DuckDB      Browsing Offline   
+    Guides      Installation      Building DuckDB      Browsing offline   
 
 ---
 duckdb/docs/search.md
