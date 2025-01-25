@@ -21666,7 +21666,7 @@ await conn.close();
 // Create a new connection
 const conn = await db.connect();
 // Prepare query
-const stmt = await conn.prepare(`SELECT v + ? FROM generate_series(0, 10000) AS t(v);`);
+const stmt = await conn.prepare(`SELECT v + ? FROM generate_series(0, 10_000) t(v);`);
 // ... and run the query with materialized results
 await stmt.query(234);
 // ... or result chunks
@@ -21704,7 +21704,7 @@ await conn.close();
 const conn = await db.connect();
 
 // Export Parquet
-conn.send(`COPY (SELECT * FROM tbl) TO 'result-snappy.parquet' (FORMAT 'parquet');`);
+conn.send(`COPY (SELECT * FROM tbl) TO 'result-snappy.parquet' (FORMAT PARQUET);`);
 const parquet_buffer = await this._db.copyFileToBuffer('result-snappy.parquet');
 
 // Generate a download link
@@ -23765,6 +23765,14 @@ build/release/duckdb
 
 For different build configurations (`debug`, `relassert`, etc.), please consult the [Build Configurations page]({% link docs/dev/building/build_configuration.md %}).
 
+### Building Using Extension Flags
+
+To build using extension flags, set the `CORE_EXTENSIONS` flag to the list of extensions that you want to be build. For example:
+
+```batch
+CORE_EXTENSIONS='autocomplete;httpfs;icu;json;tpch' GEN=ninja make
+```
+
 ## Troubleshooting
 
 ### R Package on Linux AArch64: `too many GOT entries` Build Error
@@ -23802,13 +23810,13 @@ OPENSSL_INCLUDE_DIR)
 **Solution:**
 Install the `libssl-dev` library.
 
-```bash
+```batch
 sudo apt-get install -y libssl-dev
 ```
 
 Then, build with:
 
-```bash
+```batch
 GEN=ninja CORE_EXTENSIONS="httpfs" make
 ```
 
@@ -24234,7 +24242,8 @@ CREATE TABLE tbl AS
 SELECT 'ABCDEFG'[floor(random() * 7 + 1)::INT] AS s, 3.7 AS x, i AS y
 FROM range(1, 1_000_000) r(i);
 
-SELECT s, stddev(x) AS standard_deviation, corr(x, y) AS correlation FROM tbl
+SELECT s, stddev(x) AS standard_deviation, corr(x, y) AS correlation
+FROM tbl
 GROUP BY s
 ORDER BY s;
 ```
@@ -37646,10 +37655,10 @@ The table below shows the available mathematical operators for `DATE` types.
 |:-|:--|:---|:--|
 | `+` | addition of days (integers) | `DATE '1992-03-22' + 5` | `1992-03-27` |
 | `+` | addition of an `INTERVAL` | `DATE '1992-03-22' + INTERVAL 5 DAY` | `1992-03-27 00:00:00` |
-| `+` | addition of a variable `INTERVAL` | `SELECT DATE '1992-03-22' + INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-27 00:00:00` and `1992-04-02 00:00:00` |
+| `+` | addition of a variable `INTERVAL` | `SELECT DATE '1992-03-22' + INTERVAL (d.days) DAY FROM (VALUES (5), (11)) d(days)` | `1992-03-27 00:00:00` and `1992-04-02 00:00:00` |
 | `-` | subtraction of `DATE`s | `DATE '1992-03-27' - DATE '1992-03-22'` | `5` |
 | `-` | subtraction of an `INTERVAL` | `DATE '1992-03-27' - INTERVAL 5 DAY` | `1992-03-22 00:00:00` |
-| `-` | subtraction of a variable `INTERVAL` | `SELECT DATE '1992-03-27' - INTERVAL (d.days) DAY FROM (VALUES (5), (11)) AS d(days)` | `1992-03-22 00:00:00` and `1992-03-16 00:00:00` |
+| `-` | subtraction of a variable `INTERVAL` | `SELECT DATE '1992-03-27' - INTERVAL (d.days) DAY FROM (VALUES (5), (11)) d(days)` | `1992-03-22 00:00:00` and `1992-03-16 00:00:00` |
 
 Adding to or subtracting from [infinite values]({% link docs/sql/data_types/date.md %}#special-values) produces the same infinite value.
 
@@ -47038,7 +47047,8 @@ Also note that implicit concatenation only works with single-quoted string liter
 For example, we can compare string literals with dates:
 
 ```sql
-SELECT d > '1992-01-01' AS result FROM (VALUES (DATE '1992-01-01')) t(d);
+SELECT d > '1992-01-01' AS result
+FROM (VALUES (DATE '1992-01-01')) t(d);
 ```
 
 | result |
@@ -47048,7 +47058,8 @@ SELECT d > '1992-01-01' AS result FROM (VALUES (DATE '1992-01-01')) t(d);
 However, we cannot compare `VARCHAR` values with dates.
 
 ```sql
-SELECT d > '1992-01-01'::VARCHAR FROM (VALUES (DATE '1992-01-01')) t(d);
+SELECT d > '1992-01-01'::VARCHAR
+FROM (VALUES (DATE '1992-01-01')) t(d);
 ```
 
 ```console
@@ -51883,7 +51894,8 @@ CREATE TABLE tbl (i INTEGER PRIMARY KEY, j INTEGER);
 INSERT INTO tbl
 VALUES (1, 42);
 INSERT INTO tbl
-SELECT DISTINCT ON(i) i, j FROM VALUES (1, 84), (1, 168) AS t (i, j)
+SELECT DISTINCT ON(i) i, j
+FROM VALUES (1, 84), (1, 168) AS t (i, j)
 ON CONFLICT DO UPDATE SET j = j + EXCLUDED.j;
 SELECT * FROM tbl;
 ```
@@ -56978,20 +56990,26 @@ INSTALL vss;
 LOAD vss;
 
 CREATE TABLE my_vector_table (vec FLOAT[3]);
-INSERT INTO my_vector_table SELECT array_value(a, b, c) FROM range(1, 10) ra(a), range(1, 10) rb(b), range(1, 10) rc(c);
+INSERT INTO my_vector_table
+SELECT array_value(a, b, c)
+FROM range(1, 10) ra(a), range(1, 10) rb(b), range(1, 10) rc(c);
 CREATE INDEX my_hnsw_index ON my_vector_table USING HNSW (vec);
 ```
 
 The index will then be used to accelerate queries that use a `ORDER BY` clause evaluating one of the supported distance metric functions against the indexed columns and a constant vector, followed by a `LIMIT` clause. For example:
 
 ```sql
-SELECT * FROM my_vector_table ORDER BY array_distance(vec, [1, 2, 3]::FLOAT[3]) LIMIT 3;
+SELECT *
+FROM my_vector_table
+ORDER BY array_distance(vec, [1, 2, 3]::FLOAT[3])
+LIMIT 3;
 ```
 
 Additionally, the overloaded `min_by(col, arg, n)` can also be accelerated with the `HNSW` index if the `arg` argument is a matching distance metric function. This can be used to do quick one-shot nearest neighbor searches. For example, to get the top 3 rows with the closest vectors to `[1, 2, 3]`:
 
 ```sql
-SELECT min_by(my_vector_table, array_distance(vec, [1, 2, 3]::FLOAT[3]), 3) AS result FROM my_vector_table;
+SELECT min_by(my_vector_table, array_distance(vec, [1, 2, 3]::FLOAT[3]), 3) AS result
+FROM my_vector_table;
 ---- [{'vec': [1.0, 2.0, 3.0]}, {'vec': [1.0, 2.0, 4.0]}, {'vec': [2.0, 2.0, 3.0]}]
 ```
 
@@ -57000,7 +57018,11 @@ Note how we pass the table name as the first argument to `min_by` to return a st
 We can verify that the index is being used by checking the `EXPLAIN` output and looking for the `HNSW_INDEX_SCAN` node in the plan:
 
 ```sql
-EXPLAIN SELECT * FROM my_vector_table ORDER BY array_distance(vec, [1, 2, 3]::FLOAT[3]) LIMIT 3;
+EXPLAIN
+SELECT *
+FROM my_vector_table
+ORDER BY array_distance(vec, [1, 2, 3]::FLOAT[3])
+LIMIT 3;
 ```
 
 ```text
@@ -57094,12 +57116,15 @@ These functions can be used as follows:
 CREATE TABLE haystack (id int, vec FLOAT[3]);
 CREATE TABLE needle (search_vec FLOAT[3]);
 
-INSERT INTO haystack SELECT row_number() OVER (), array_value(a,b,c)
+INSERT INTO haystack
+SELECT row_number() OVER (), array_value(a,b,c)
 FROM range(1, 10) ra(a), range(1, 10) rb(b), range(1, 10) rc(c);
 
-INSERT INTO needle VALUES ([5, 5, 5]), ([1, 1, 1]);
+INSERT INTO needle
+VALUES ([5, 5, 5]), ([1, 1, 1]);
 
-SELECT * FROM vss_join(needle, haystack, search_vec, vec, 3) AS res;
+SELECT *
+FROM vss_join(needle, haystack, search_vec, vec, 3) res;
 ```
 
 ```text
@@ -57122,7 +57147,8 @@ SELECT * FROM vss_join(needle, haystack, search_vec, vec, 3) AS res;
 -- Note that this requires us to specify the left table first, and then
 -- the vss_match macro which references the search column from the left
 -- table (in this case, `search_vec`).
-SELECT * FROM needle, vss_match(haystack, search_vec, vec, 3) AS res;
+SELECT *
+FROM needle, vss_match(haystack, search_vec, vec, 3) res;
 ```
 
 ```text
@@ -57253,7 +57279,8 @@ and version of the different extensions. For this reason, DuckDB keeps track of 
 ```sql
 INSTALL httpfs FROM core;
 INSTALL aws FROM core_nightly;
-SELECT extension_name, extension_version, installed_from, install_mode FROM duckdb_extensions();
+SELECT extension_name, extension_version, installed_from, install_mode
+FROM duckdb_extensions();
 ```
 
 This outputs:
