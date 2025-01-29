@@ -30136,7 +30136,7 @@ Below are parameters that can be passed to the [`read_csv` function](#csv-functi
 | `auto_type_candidates` | Types that the sniffer uses when detecting column types. The `VARCHAR` type is always included as a fallback option. See [example](#auto_type_candidates-details). | `TYPE[]` | [default types](#auto_type_candidates-details) |
 | `buffer_size` | Size of the buffers used to read files, in bytes. Must be large enough to hold four lines and can significantly impact performance. | `BIGINT` | `16 * max_line_size` |
 | `columns` | Column names and types, as a struct (e.g., `{'col1': 'INTEGER', 'col2': 'VARCHAR'}`). Using this option disables auto detection. | `STRUCT` | (empty) |
-| `comment` | Character used to initiate comments. Lines starting with a comment character (optionally preceded by space characters) are completely ignored; other lines containing a comment character are parsed only up to that point. | `VARCHAR` | `` |
+| `comment` | Character used to initiate comments. Lines starting with a comment character (optionally preceded by space characters) are completely ignored; other lines containing a comment character are parsed only up to that point. | `VARCHAR` | (empty) |
 | `compression` | Method used to compress CSV files. By default this is detected automatically from the file extension (e.g., `t.csv.gz` will use gzip, `t.csv` will use `none`). Options are `none`, `gzip`, `zstd`. | `VARCHAR` | `auto` |
 | `dateformat` | [Date format]({% link docs/sql/functions/dateformat.md %}) used when parsing and writing dates. | `VARCHAR` | (empty) |
 | `date_format` | Alias for `dateformat`; only available in the `COPY` statement. | `VARCHAR` | (empty) |
@@ -30161,7 +30161,6 @@ Below are parameters that can be passed to the [`read_csv` function](#csv-functi
 | `rejects_scan` | Name of the [temporary table where information on faulty scans is stored]({% link docs/data/csv/reading_faulty_csv_files.md %}#reject-scans). | `VARCHAR` | `reject_scans` |
 | `rejects_table` | Name of the [temporary table where information on faulty lines is stored]({% link docs/data/csv/reading_faulty_csv_files.md %}#reject-errors). | `VARCHAR` | `reject_errors` |
 | `rejects_limit` | Upper limit on the number of faulty lines per file that are recorded in the rejects table. Setting this to `0` means that no limit is applied. | `BIGINT` | `0` |
-| `rfc_4180` | Enforce the RFC 4180 standard. Setting this to `false` may allow the parser to read structurally incorrect files. | `BOOL` | `false` |
 | `sample_size` | Number of sample lines for [auto detection of parameters]({% link docs/data/csv/auto_detection.md %}). | `BIGINT` | 20480 |
 | `sep` | Delimiter character used to separate columns within each line. Alias for `delim`. | `VARCHAR` | `,` |
 | `skip` | Number of lines to skip at the start of each file. | `BIGINT` | 0 |
@@ -49941,6 +49940,8 @@ Copy the entire content of database `db1` to database `db2`:
 COPY FROM DATABASE db1 TO db2;
 ```
 
+> Currently, indexes do not work when using `COPY FROM DATABASE`. While they are copied to the other database, they are not used by the queries. Therefore, if your workload on the new database requires indexes, recreate them manually.
+
 Copy only the schema (catalog elements) but not any data:
 
 ```sql
@@ -50139,7 +50140,7 @@ The below options are applicable when writing CSV files.
 | Name | Description | Type | Default |
 |:--|:-----|:-|:-|
 | `COMPRESSION` | The compression type for the file. By default this will be detected automatically from the file extension (e.g., `file.csv.gz` will use `gzip`, `file.csv.zst` will use `zstd`, and `file.csv` will use `none`). Options are `none`, `gzip`, `zstd`. | `VARCHAR` | `auto` |
-| `DATEFORMAT` | Specifies the date format to use when writing dates. See [Date Format]({% link docs/sql/functions/dateformat.md %}) | `VARCHAR` | (empty) |
+| `DATEFORMAT` | Specifies the date format to use when writing dates. See [Date Format]({% link docs/sql/functions/dateformat.md %}). | `VARCHAR` | (empty) |
 | `DELIM` or `SEP` | The character that is written to separate columns within each row. | `VARCHAR` | `,` |
 | `ESCAPE` | The character that should appear before a character that matches the `quote` value. | `VARCHAR` | `"` |
 | `FORCE_QUOTE` | The list of columns to always add quotes to, even if not required. | `VARCHAR[]` | `[]` |
@@ -50148,7 +50149,7 @@ The below options are applicable when writing CSV files.
 | `PREFIX` | Prefixes the CSV file with a specified string. This option must be used in conjunction with `SUFFIX` and requires `HEADER` to be set to `false`.| `VARCHAR` | (empty) |
 | `SUFFIX` | Appends a specified string as a suffix to the CSV file. This option must be used in conjunction with `PREFIX` and requires `HEADER` to be set to `false`.| `VARCHAR` | (empty) |
 | `QUOTE` | The quoting character to be used when a data value is quoted. | `VARCHAR` | `"` |
-| `TIMESTAMPFORMAT` | Specifies the date format to use when writing timestamps. See [Date Format]({% link docs/sql/functions/dateformat.md %}) | `VARCHAR` | (empty) |
+| `TIMESTAMPFORMAT` | Specifies the date format to use when writing timestamps. See [Date Format]({% link docs/sql/functions/dateformat.md %}). | `VARCHAR` | (empty) |
 
 ### Parquet Options
 
@@ -50227,8 +50228,8 @@ The below options are applicable when writing `JSON` files.
 |:--|:-----|:-|:-|
 | `ARRAY` | Whether to write a JSON array. If `true`, a JSON array of records is written, if `false`, newline-delimited JSON is written | `BOOL` | `false` |
 | `COMPRESSION` | The compression type for the file. By default this will be detected automatically from the file extension (e.g., `file.json.gz` will use `gzip`, `file.json.zst` will use `zstd`, and `file.json` will use `none`). Options are `none`, `gzip`, `zstd`. | `VARCHAR` | `auto` |
-| `DATEFORMAT` | Specifies the date format to use when writing dates. See [Date Format]({% link docs/sql/functions/dateformat.md %}) | `VARCHAR` | (empty) |
-| `TIMESTAMPFORMAT` | Specifies the date format to use when writing timestamps. See [Date Format]({% link docs/sql/functions/dateformat.md %}) | `VARCHAR` | (empty) |
+| `DATEFORMAT` | Specifies the date format to use when writing dates. See [Date Format]({% link docs/sql/functions/dateformat.md %}). | `VARCHAR` | (empty) |
+| `TIMESTAMPFORMAT` | Specifies the date format to use when writing timestamps. See [Date Format]({% link docs/sql/functions/dateformat.md %}). | `VARCHAR` | (empty) |
 
 ## Limitations
 
