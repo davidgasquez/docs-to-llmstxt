@@ -231,21 +231,23 @@ Use big links to display a url link in a styled container. To style links like B
 
 <DocTab>
     <div slot='preview'>
-      <BigLink href='/components/ui/big-link'>My Big Link</BigLink> 
+      <BigLink url='/components/ui/big-link'>My Big Link</BigLink> 
     </div>
 
 ```markdown
-<BigLink href='/components/ui/big-link'>
-  My Big Link
-</BigLink>
+      <BigLink url='/components/ui/big-link'>My Big Link</BigLink> 
 ```
 </DocTab>
 
 ## Options
 
-<PropListing name="href" required options='string'>
+<PropListing name="url" required options='string'>
 
 Renders a link that, when clicked, navigates to the specified URL. It can accept either a full external link (e.g. `https://google.com`) or link to another page within your evidence app (e.g. `/sales/performance`).
+</PropListing>
+<PropListing name="href" options='string'>
+
+href deprecated, please use url
 </PropListing>
 
 
@@ -6085,12 +6087,12 @@ where day between '${inputs.range_filtering_a_query.start}' and '${inputs.range_
 
 <DocTab>
     <div slot='preview'>
-        <DateRange presetRanges={'Last 7 Days'}/>
+        <DateRange name="date_range_preset" presetRanges={'Last 7 Days'}/>
     </div>
 
 ```svelte
 <DateRange
-    name=name_of_date_range
+    name="date_range_preset"
     presetRanges={'Last 7 Days'}
 />
 ```
@@ -6100,12 +6102,12 @@ where day between '${inputs.range_filtering_a_query.start}' and '${inputs.range_
 
 <DocTab>
     <div slot='preview'>
-        <DateRange presetRanges={['Last 7 Days', 'Last 3 Months', 'Year to Date', 'All Time']}/>
+        <DateRange name="date_range_preset_2" presetRanges={['Last 7 Days', 'Last 3 Months', 'Year to Date', 'All Time']}/>
     </div>
 
 ````svelte
 <DateRange
-    name=name_of_date_range
+    name="date_range_preset_2"
     presetRanges={['Last 7 Days', 'Last 3 Months', 'Year to Date', 'All Time']}
 />
 ````
@@ -6115,12 +6117,12 @@ where day between '${inputs.range_filtering_a_query.start}' and '${inputs.range_
 
 <DocTab>
     <div slot='preview'>
-        <DateRange defaultValue={'Last 7 Days'}/>
+        <DateRange name="date_range_preset_3" defaultValue={'Last 7 Days'}/>
     </div>
 
 ````svelte
 <DateRange
-    name=name_of_date_range
+    name="date_range_preset_3"
     defaultValue={'Last 7 Days'}
 />
 ````
@@ -6360,34 +6362,68 @@ The default size of the slider can be altered with the size property using; medi
 
 ## Specifying Dynamic Columns
 
-Supply data with specified column names for minColumn, maxColumn, and/or defaultValue. The first row’s value in each of these columns will determine the minimum, maximum, or default value, respectively.
+Supply data with a specified column name to define the slider's min and max values. The slider's range will be calculated based on the column's minimum and maximum values.
 
+<DocTab>
+    <div slot="preview">
 <Slider
     title='data slider'
+    name='RangeSlider'
     size=large
     step=100
     data={flight_data}
-    maxColumn=max_fare
-    defaultValue=max_fare
+    range=fare
 />
+    </div>
 
 ````markdown
 <Slider
     title='data slider'
+    name='RangeSlider'
+    size=large
+    step=100
+    data={flight_data}
+    range=fare
+/>
+````
+</DocTab>
+
+Supply data with specified column names for minColumn, maxColumn, and/or defaultValue. The first row’s value in each of these columns will determine the minimum, maximum, or default value, respectively.
+
+<DocTab>
+    <div slot='preview'>
+<Slider
+    title='data slider'
+    name='MaxColSlider'
     size=large
     step=100
     data={flight_data}
     maxColumn=max_fare
+    min=0
+    defaultValue=max_fare
+/>
+    </div>
+
+````markdown
+<Slider
+    title='data slider'
+    name='MaxColSlider'
+    size=large
+    step=100
+    data={flight_data}
+    maxColumn=max_fare
+    min=0
     defaultValue=max_fare
 />
 ````
+</DocTab>
 
 # Slider
 
 ## Options
 
 <PropListing 
-    name="Name"
+    name="name"
     required
 >
 
@@ -6423,6 +6459,11 @@ Sets the maximum value on the slider. This value must be larger than the min.
     options="query name"
 />
 <PropListing
+    name="range"
+    description="Required for data - Take and sets the max and min values of a column"
+    options="string - column name"
+/>
+<PropListing
     name="maxColumn"
     description="Takes the first value of a column and assigns it to the max value"
     options="string - column name"
@@ -6450,11 +6491,10 @@ Hides or shows min and max value markers on slider.
 </PropListing>
 <PropListing 
     name="size"
-    size="string"
-    defaultValue=""
+    options="{["small", "medium", "large", "full"]}"
+    defaultValue="small"
 >
-
-Sets the length of the slider. Options are "medium", large" or "full". A empty string of any other strings will not result in default size.
+Sets the length of the slider
 </PropListing>
 <PropListing
     name="fmt"
@@ -6469,6 +6509,12 @@ Sets the length of the slider. Options are "medium", large" or "full". A empty s
 Adds an info icon with description tooltip on hover
 
 </PropListing>
+<PropListing 
+    name="hideDuringPrint"
+    description="Hide the component when the report is printed"
+    options={["true", "false"]}
+    default="true"
+/>
 
 
 
@@ -6852,7 +6898,7 @@ where day between '${inputs.range_filtering_a_query.start}' - '${inputs.range_fi
 
 <DocTab>
     <div slot='preview'>
-            <DateInput defaultValue={'Last 7 Days'} range/>
+            <DateInput name="date_range_1" defaultValue={'Last 7 Days'} range/>
     </div>
 
 ````svelte
@@ -6868,14 +6914,14 @@ where day between '${inputs.range_filtering_a_query.start}' - '${inputs.range_fi
 
 <DocTab>
     <div slot='preview'>
-            <DateInput presetRanges={'Last 7 Days'} range/>
+            <DateInput name="date_range_2" presetRanges={'Last 7 Days'} range/>
     </div>
 
 ```svelte
-<DateInput
-    name=name_of_date_range
+<DateInput 
+    name="date_range_2" 
+    presetRanges={'Last 7 Days'} 
     range
-    presetRanges={'Last 7 Days'}
 />
 ```
 </DocTab>
@@ -6884,12 +6930,12 @@ where day between '${inputs.range_filtering_a_query.start}' - '${inputs.range_fi
 
 <DocTab>
     <div slot='preview'>
-            <DateInput presetRanges={['Last 7 Days', 'Last 3 Months', 'Year to Date', 'All Time']} range/>
+            <DateInput name="date_range_3" presetRanges={['Last 7 Days', 'Last 3 Months', 'Year to Date', 'All Time']} range/>
     </div>
 
 ````svelte
 <DateInput
-    name=name_of_date_range
+    name="date_range_3"
     range
     presetRanges={['Last 7 Days', 'Last 3 Months', 'Year to Date', 'All Time']}
 />
@@ -7370,7 +7416,7 @@ Creates a checkbox with toggleable input. The Title and Name attributes can be d
 
 ### Checkbox using Default Value
 
-Defining the defaultValue property will set the initial checked value with true and false.
+Defining the checked property will set the initial checkbox value with true and false.
 
 <!-- <img src="/img/" alt="checkbox" width="300"/> -->
 
@@ -7379,7 +7425,7 @@ Defining the defaultValue property will set the initial checked value with true 
         <Checkbox
             title="Title of checkbox" 
             name=name_of_checkbox
-            defaultValue=true
+            checked=true
         />
 
         Selected Value: {inputs.name_of_checkbox}
@@ -7389,7 +7435,7 @@ Defining the defaultValue property will set the initial checked value with true 
 <Checkbox
     title="Title of checkbox" 
     name=name_of_checkbox
-    defaultValue=true
+    checked=true
 />
 
 Selected Value: {inputs.name_of_checkbox}
@@ -7459,12 +7505,20 @@ Name of the checkbox, used to reference the selected value elsewhere as `{inputs
 
 </PropListing>
 <PropListing 
-    name="defaultValue"
-    options="boolean"
-    defaultValue=false
+    name="title"
+    options='string'
 >
 
-Value to use when checkbox is first loaded. True value for checked, false for unchecked
+Label for the checkbox. If undefined, will default to small checkbox
+
+</PropListing>
+<PropListing 
+    name="checked"
+    options="boolean"
+    checked=false
+>
+
+Initial value for checkbox. True value for checked, false for unchecked
 
 </PropListing>
 <PropListing
