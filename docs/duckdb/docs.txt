@@ -23877,39 +23877,6 @@ To apply this change for your future terminal sessions, you can add the followin
 export MallocNanoZone=0
 ```
 
-### Python Package on macOS: Building the httpfs Extension Fails
-
-**Problem:**
-The build fails on macOS when both the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) and the Python package are included:
-
-```batch
-GEN=ninja BUILD_PYTHON=1 CORE_EXTENSIONS="httpfs" make
-```
-
-```console
-ld: library not found for -lcrypto
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-error: command '/usr/bin/clang++' failed with exit code 1
-ninja: build stopped: subcommand failed.
-make: *** [release] Error 1
-```
-
-**Solution:**
-If you would like to build DuckDB from source, avoid using the `BUILD_PYTHON=1` flag unless you are actively developing the Python library.
-Instead, first build the `httpfs` extension (if required), then build and install the Python package separately using pip:
-
-```batch
-GEN=ninja CORE_EXTENSIONS="httpfs" make
-python3 -m pip install tools/pythonpkg --use-pep517 --user
-```
-
-If the second line complains about pybind11 being missing, or `--use-pep517` not being supported, make sure you're using a modern version of pip and setuptools.
-The default `python3-pip` on your OS may not be modern, so you may need to update it using:
-
-```batch
-python3 -m pip install pip -U
-```
-
 ---
 duckdb/docs/dev/building/overview.md
 ---
@@ -23937,7 +23904,9 @@ This page explains the steps for building DuckDB.
 DuckDB needs CMake and a C++11-compliant compiler (e.g., GCC, Apple-Clang, MSVC).
 Additionally, we recommend using the [Ninja build system](https://ninja-build.org/), which automatically parallelizes the build process.
 
-## Supported Platforms
+## Platforms
+
+### Supported Platforms
 
 DuckDB fully supports Linux, macOS and Windows. Both AMD64 (x86_64) and ARM64 (AArch64) builds are available for these platforms.
 
@@ -23956,7 +23925,7 @@ For instructions to build from source, see:
 * [macOS]({% link docs/dev/building/macos.md %})
 * [Windows]({% link docs/dev/building/windows.md %})
 
-## Experimental Platforms
+### Experimental Platforms
 
 There are several additional platforms with varying levels of support.
 For some platforms, DuckDB binaries and extensions (or a [subset of extensions]({% link docs/extensions/working_with_extensions.md %}#platforms)) are distributed. For others, building from source is possible.
@@ -23988,6 +23957,114 @@ DuckDB can be built for end-of-life platforms such as [macOS 11](https://endofli
 
 32-bit architectures are officially not supported but it is possible to build DuckDB manually for some of these platforms, e.g., for [Raspberry Pi boards]({% link docs/dev/building/raspberry_pi.md %}).
 
+## Troubleshooting Guides
+
+We provide troubleshooting guides for building DuckDB:
+
+* [Generic issues]({% link docs/dev/building/troubleshooting.md %})
+* [Python]({% link docs/dev/building/python.md %})
+* [R]({% link docs/dev/building/r.md %})
+
+---
+duckdb/docs/dev/building/python.md
+---
+---
+layout: docu
+title: Python
+---
+
+In general, if you would like to build DuckDB from source, it's recommended to avoid using the `BUILD_PYTHON=1` flag unless you are actively developing the DuckDB Python client.
+
+## Python Package on macOS: Building the httpfs Extension Fails
+
+**Problem:**
+The build fails on macOS when both the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) and the Python package are included:
+
+```batch
+GEN=ninja BUILD_PYTHON=1 CORE_EXTENSIONS="httpfs" make
+```
+
+```console
+ld: library not found for -lcrypto
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+error: command '/usr/bin/clang++' failed with exit code 1
+ninja: build stopped: subcommand failed.
+make: *** [release] Error 1
+```
+
+**Solution:**
+As stated above, avoid using the `BUILD_PYTHON` flag.
+Instead, first build the `httpfs` extension (if required), then build and install the Python package separately using pip:
+
+```batch
+GEN=ninja CORE_EXTENSIONS="httpfs" make
+python3 -m pip install tools/pythonpkg --use-pep517 --user
+```
+
+If the second line complains about pybind11 being missing, or `--use-pep517` not being supported, make sure you're using a modern version of pip and setuptools.
+The default `python3-pip` on your OS may not be modern, so you may need to update it using:
+
+```batch
+python3 -m pip install pip -U
+```
+
+---
+duckdb/docs/dev/building/r.md
+---
+---
+layout: docu
+title: R
+---
+
+This page contains instructions for building the R client library.
+
+## R Package: The Build Only Uses a Single Thread
+
+**Problem:**
+By default, R compiles packages using a single thread, which causes the build to be slow.
+
+**Solution:**
+To parallelize the compilation, create or edit the `~/.R/Makevars` file, and add a line like the following:
+
+```ini
+MAKEFLAGS = -j8
+```
+
+The above will parallelize the compilation using 8 threads. On Linux/macOS, you can add the following to use all of the machine's threads:
+
+```ini
+MAKEFLAGS = -j$(nproc)
+```
+
+However, note that, the more threads that are used, the higher the RAM consumption. If the system runs out of RAM while compiling, then the R session will crash.
+
+## Python Package: `No module named 'duckdb.duckdb'` Build Error
+
+**Problem:**
+Building the Python package succeeds but the package cannot be imported:
+
+```batch
+cd tools/pythonpkg/
+python3 -m pip install .
+python3 -c "import duckdb"
+```
+
+This returns the following error message:
+
+```console
+Traceback (most recent call last):
+File "", line 1, in 
+File "/duckdb/tools/pythonpkg/duckdb/__init__.py", line 4, in 
+import duckdb.functional as functional
+File "/duckdb/tools/pythonpkg/duckdb/functional/__init__.py", line 1, in 
+from duckdb.duckdb.functional import (
+ModuleNotFoundError: No module named 'duckdb.duckdb'
+```
+
+**Solution:**
+The problem is caused by Python trying to import from the current working directory.
+To work around this, navigate to a different directory (e.g., `cd ..`) and try running Python import again.
+
 ---
 duckdb/docs/dev/building/raspberry_pi.md
 ---
@@ -24007,7 +24084,7 @@ sudo apt-get install -y git g++ cmake ninja-build
 
 Then, clone and build it as follows:
 
-```bash
+```batch
 git clone https://github.com/duckdb/duckdb
 cd duckdb
 GEN=ninja CORE_EXTENSIONS="icu;json" make
@@ -24056,53 +24133,6 @@ Avoid using Ninja by setting the Makefile generator to empty via `GEN=`:
 ```batch
 GEN= make
 ```
-
-## R Package: The Build Only Uses a Single Thread
-
-**Problem:**
-By default, R compiles packages using a single thread, which causes the build to be slow.
-
-**Solution:**
-To parallelize the compilation, create or edit the `~/.R/Makevars` file, and add a line like the following:
-
-```ini
-MAKEFLAGS = -j8
-```
-
-The above will parallelize the compilation using 8 threads. On Linux/macOS, you can add the following to use all of the machine's threads:
-
-```ini
-MAKEFLAGS = -j$(nproc)
-```
-
-However, note that, the more threads that are used, the higher the RAM consumption. If the system runs out of RAM while compiling, then the R session will crash.
-
-## Python Package: `No module named 'duckdb.duckdb'` Build Error
-
-**Problem:**
-Building the Python package succeeds but the package cannot be imported:
-
-```batch
-cd tools/pythonpkg/
-python3 -m pip install .
-python3 -c "import duckdb"
-```
-
-This returns the following error message:
-
-```console
-Traceback (most recent call last):
-File "", line 1, in 
-File "/duckdb/tools/pythonpkg/duckdb/__init__.py", line 4, in 
-import duckdb.functional as functional
-File "/duckdb/tools/pythonpkg/duckdb/functional/__init__.py", line 1, in 
-from duckdb.duckdb.functional import (
-ModuleNotFoundError: No module named 'duckdb.duckdb'
-```
-
-**Solution:**
-The problem is caused by Python trying to import from the current working directory.
-To work around this, navigate to a different directory (e.g., `cd ..`) and try running Python import again.
 
 ---
 duckdb/docs/dev/building/windows.md
