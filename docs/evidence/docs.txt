@@ -11909,7 +11909,6 @@ Bubble charts can include [annotations](/components/charts/annotations) using th
 ---
 evidence/sites/docs/pages/components/charts/mixed-type-charts/index.md
 ---
-
 ---
 title: Mixed-Type Charts
 description: Display multiple series types on the same chart, for example a bar for an amount, and a line for a related percentage.
@@ -12827,6 +12826,7 @@ Mixed type charts can include [annotations](/components/charts/annotations) usin
   <ReferenceArea xMin='2020-03-14' xMax='2020-05-01'/>
 </Chart>
 ```
+
 
 ---
 evidence/sites/docs/pages/components/charts/echarts-options/index.md
