@@ -18,10 +18,12 @@ determine the most efficient way to execute using its query optimizer.
 data to be in memory at the same time.
 - **Parallel**: Utilises the power of your machine by dividing the workload among the available CPU
 cores without any additional configuration.
-- **Vectorized Query Engine**: Using [Apache Arrow](https://arrow.apache.org/), a columnar data
-format, to process your queries in a vectorized manner and SIMD to optimize CPU usage.
+- **Vectorized Query Engine**
 - **GPU Support**: Optionally run queries on NVIDIA GPUs for maximum performance for in-memory
 workloads.
+- **[Apache Arrow support](https://arrow.apache.org/)**: Polars consume and produce Arrow data often
+zero-copy. Note that Polars is not build on a Pyarrow/Arrow implementation. Polars has written all
+compute and buffer implementations.
 
 
 
@@ -7148,7 +7150,8 @@ use for authentication. This can be done in a few ways:
 functionality. For example, `pl.CredentialProviderAWS` supports selecting AWS profiles, as well as
 assuming an IAM role:
 
-{{code_block('user-guide/io/cloud-storage','credential_provider_class',['scan_parquet'])}}
+{{code_block('user-guide/io/cloud-storage','credential_provider_class',['scan_parquet',
+'CredentialProviderAWS'])}}
 
 ### Using a custom `credential_provider` function
 
@@ -7156,6 +7159,11 @@ assuming an IAM role:
 cases a Python function can be provided for Polars to use to retrieve credentials:
 
 {{code_block('user-guide/io/cloud-storage','credential_provider_custom_func',['scan_parquet'])}}
+
+- Example for Azure:
+
+{{code_block('user-guide/io/cloud-storage','credential_provider_custom_func_azure',['scan_parquet',
+'CredentialProviderAzure'])}}
 
 ## Scanning with PyArrow
 
