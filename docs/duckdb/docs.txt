@@ -6562,7 +6562,7 @@ title: Python Client API
 
   duckdb.CoalesceOperator(*args) → duckdb.duckdb.Expression¶   
 
-  duckdb.ColumnExpression(name: str) → duckdb.duckdb.Expression¶   Create a column reference from the provided column name  
+  duckdb.ColumnExpression(*args) → duckdb.duckdb.Expression¶   Create a column reference from the provided column name  
 
   exception duckdb.ConnectionException¶   Bases: OperationalError  
 
@@ -6577,6 +6577,8 @@ title: Python Client API
   class duckdb.DateValue(object: Any)¶   Bases: Value  
 
   class duckdb.DecimalValue(object: Any, width: int, scale: int)¶   Bases: Value  
+
+  duckdb.DefaultExpression() → duckdb.duckdb.Expression¶   
 
   class duckdb.DoubleValue(object: Any)¶   Bases: Value  
 
@@ -6646,14 +6648,6 @@ title: Python Client API
 
   from_query(self: duckdb.duckdb.DuckDBPyConnection, query: object, *, alias: str = '', params: object = None) → duckdb.duckdb.DuckDBPyRelation¶   Run a SQL query. If it is a SELECT statement, create a relation object from the given SQL query, otherwise run the query as-is.  
 
-  from_substrait(self: duckdb.duckdb.DuckDBPyConnection, proto: bytes) → duckdb.duckdb.DuckDBPyRelation¶   Create a query object from protobuf plan  
-
-  from_substrait_json(self: duckdb.duckdb.DuckDBPyConnection, json: str) → duckdb.duckdb.DuckDBPyRelation¶   Create a query object from a JSON protobuf plan  
-
-  get_substrait(self: duckdb.duckdb.DuckDBPyConnection, query: str, *, enable_optimizer: bool = True) → duckdb.duckdb.DuckDBPyRelation¶   Serialize a query to protobuf  
-
-  get_substrait_json(self: duckdb.duckdb.DuckDBPyConnection, query: str, *, enable_optimizer: bool = True) → duckdb.duckdb.DuckDBPyRelation¶   Serialize a query to protobuf on the JSON format  
-
   get_table_names(self: duckdb.duckdb.DuckDBPyConnection, query: str) → set[str]¶   Extract the required table names from a query  
 
   install_extension(self: duckdb.duckdb.DuckDBPyConnection, extension: str, *, force_install: bool = False, repository: object = None, repository_url: object = None, version: object = None) → None¶   Install an extension by name, with an optional version and/or repository to get the extension from  
@@ -6714,7 +6708,7 @@ title: Python Client API
 
   unregister_filesystem(self: duckdb.duckdb.DuckDBPyConnection, name: str) → None¶   Unregister a filesystem  
 
-  values(self: duckdb.duckdb.DuckDBPyConnection, values: object) → duckdb.duckdb.DuckDBPyRelation¶   Create a relation object from the passed values  
+  values(self: duckdb.duckdb.DuckDBPyConnection, *args) → duckdb.duckdb.DuckDBPyRelation¶   Create a relation object from the passed values  
 
   view(self: duckdb.duckdb.DuckDBPyConnection, view_name: str) → duckdb.duckdb.DuckDBPyRelation¶   Create a relation object for the named view  
 
@@ -6758,11 +6752,13 @@ title: Python Client API
 
   create_view(self: duckdb.duckdb.DuckDBPyRelation, view_name: str, replace: bool = True) → duckdb.duckdb.DuckDBPyRelation¶   Creates a view named view_name that refers to the relation object  
 
+  cross(self: duckdb.duckdb.DuckDBPyRelation, other_rel: duckdb.duckdb.DuckDBPyRelation) → duckdb.duckdb.DuckDBPyRelation¶   Create cross/cartesian product of two relational objects  
+
   cume_dist(self: duckdb.duckdb.DuckDBPyRelation, window_spec: str, projected_columns: str = '') → duckdb.duckdb.DuckDBPyRelation¶   Computes the cumulative distribution within the partition  
 
   dense_rank(self: duckdb.duckdb.DuckDBPyRelation, window_spec: str, projected_columns: str = '') → duckdb.duckdb.DuckDBPyRelation¶   Computes the dense rank within the partition  
 
-  describe(self: duckdb.duckdb.DuckDBPyRelation) → duckdb.duckdb.DuckDBPyRelation¶   Gives basic statistics (e.g., min, max) and if `NULL` exists for each column of the relation.  
+  describe(self: duckdb.duckdb.DuckDBPyRelation) → duckdb.duckdb.DuckDBPyRelation¶   Gives basic statistics (e.g., min, max) and if NULL exists for each column of the relation.  
 
   property description¶   Return the description of the result  
 
@@ -6906,7 +6902,7 @@ title: Python Client API
 
   to_df(self: duckdb.duckdb.DuckDBPyRelation, *, date_as_object: bool = False) → pandas.DataFrame¶   Execute and fetch all rows as a pandas DataFrame  
 
-  to_parquet(self: duckdb.duckdb.DuckDBPyRelation, file_name: str, *, compression: object = None, field_ids: object = None, row_group_size_bytes: object = None, row_group_size: object = None) → None¶   Write the relation object to a Parquet file in ‘file_name’  
+  to_parquet(self: duckdb.duckdb.DuckDBPyRelation, file_name: str, *, compression: object = None, field_ids: object = None, row_group_size_bytes: object = None, row_group_size: object = None, overwrite: object = None, per_thread_output: object = None, use_tmp_file: object = None, partition_by: object = None, write_partition_columns: object = None, append: object = None) → None¶   Write the relation object to a Parquet file in ‘file_name’  
 
   to_table(self: duckdb.duckdb.DuckDBPyRelation, table_name: str) → None¶   Creates a new table named table_name with the contents of the relation object  
 
@@ -6922,6 +6918,8 @@ title: Python Client API
 
   unique(self: duckdb.duckdb.DuckDBPyRelation, unique_aggr: str) → duckdb.duckdb.DuckDBPyRelation¶   Number of distinct values in a column.  
 
+  update(self: duckdb.duckdb.DuckDBPyRelation, set: object, *, condition: object = None) → None¶   Update the given relation with the provided expressions  
+
   value_counts(self: duckdb.duckdb.DuckDBPyRelation, column: str, groups: str = '') → duckdb.duckdb.DuckDBPyRelation¶   Computes the number of elements present in a given column, also projecting the original column  
 
   var(self: duckdb.duckdb.DuckDBPyRelation, column: str, groups: str = '', window_spec: str = '', projected_columns: str = '') → duckdb.duckdb.DuckDBPyRelation¶   Computes the sample variance for a given column  
@@ -6934,7 +6932,7 @@ title: Python Client API
 
   write_csv(self: duckdb.duckdb.DuckDBPyRelation, file_name: str, *, sep: object = None, na_rep: object = None, header: object = None, quotechar: object = None, escapechar: object = None, date_format: object = None, timestamp_format: object = None, quoting: object = None, encoding: object = None, compression: object = None, overwrite: object = None, per_thread_output: object = None, use_tmp_file: object = None, partition_by: object = None, write_partition_columns: object = None) → None¶   Write the relation object to a CSV file in ‘file_name’  
 
-  write_parquet(self: duckdb.duckdb.DuckDBPyRelation, file_name: str, *, compression: object = None, field_ids: object = None, row_group_size_bytes: object = None, row_group_size: object = None) → None¶   Write the relation object to a Parquet file in ‘file_name’  
+  write_parquet(self: duckdb.duckdb.DuckDBPyRelation, file_name: str, *, compression: object = None, field_ids: object = None, row_group_size_bytes: object = None, row_group_size: object = None, overwrite: object = None, per_thread_output: object = None, use_tmp_file: object = None, partition_by: object = None, write_partition_columns: object = None, append: object = None) → None¶   Write the relation object to a Parquet file in ‘file_name’  
 
  
 
@@ -6954,9 +6952,15 @@ title: Python Client API
 
   asc(self: duckdb.duckdb.Expression) → duckdb.duckdb.Expression¶   Set the order by modifier to ASCENDING.  
 
+  between(self: duckdb.duckdb.Expression, lower: duckdb.duckdb.Expression, upper: duckdb.duckdb.Expression) → duckdb.duckdb.Expression¶   
+
   cast(self: duckdb.duckdb.Expression, type: duckdb.duckdb.typing.DuckDBPyType) → duckdb.duckdb.Expression¶   Create a CastExpression to type from self  Parameters:  type: The type to cast to  Returns:  CastExpression: self::type    
 
+  collate(self: duckdb.duckdb.Expression, collation: str) → duckdb.duckdb.Expression¶   
+
   desc(self: duckdb.duckdb.Expression) → duckdb.duckdb.Expression¶   Set the order by modifier to DESCENDING.  
+
+  get_name(self: duckdb.duckdb.Expression) → str¶   Return the stringified version of the expression.  Returns:  str: The string representation.    
 
   isin(self: duckdb.duckdb.Expression, *args) → duckdb.duckdb.Expression¶   Return an IN expression comparing self to the input arguments.  Returns:  DuckDBPyExpression: The compare IN expression    
 
@@ -7014,6 +7018,8 @@ value: The value to use if the condition is met.  Returns:  CaseExpression: self
   exception duckdb.InvalidInputException¶   Bases: ProgrammingError  
 
   exception duckdb.InvalidTypeException¶   Bases: ProgrammingError  
+
+  duckdb.LambdaExpression(lhs: object, rhs: duckdb.duckdb.Expression) → duckdb.duckdb.Expression¶   
 
   class duckdb.LongValue(object: Any)¶   Bases: Value  
 
@@ -7115,6 +7121,8 @@ value: The value to use if the condition is met.  Returns:  CaseExpression: self
 
   duckdb.decimal_type(width: int, scale: int, *, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.typing.DuckDBPyType¶   Create a decimal type with ‘width’ and ‘scale’  
 
+  duckdb.default_connection() → duckdb.DuckDBPyConnection¶   Retrieve the connection currently registered as the default to be used by the module  
+
   duckdb.description(*, connection: duckdb.DuckDBPyConnection = None) → Optional[list]¶   Get result set attributes, mainly column names  
 
   duckdb.df(*args, **kwargs)¶   Overloaded function.  df(*, date_as_object: bool = False, connection: duckdb.DuckDBPyConnection = None) -> pandas.DataFrame  Fetch a result as DataFrame following execute()  df(*, date_as_object: bool = False, connection: duckdb.DuckDBPyConnection = None) -> pandas.DataFrame  Fetch a result as DataFrame following execute()  df(df: pandas.DataFrame, *, connection: duckdb.DuckDBPyConnection = None) -> duckdb.duckdb.DuckDBPyRelation  Create a relation object from the DataFrame df  
@@ -7165,14 +7173,6 @@ value: The value to use if the condition is met.  Returns:  CaseExpression: self
 
   duckdb.from_query(query: object, *, alias: str = '', params: object = None, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Run a SQL query. If it is a SELECT statement, create a relation object from the given SQL query, otherwise run the query as-is.  
 
-  duckdb.from_substrait(proto: bytes, *, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Create a query object from protobuf plan  
-
-  duckdb.from_substrait_json(json: str, *, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Create a query object from a JSON protobuf plan  
-
-  duckdb.get_substrait(query: str, *, enable_optimizer: bool = True, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Serialize a query to protobuf  
-
-  duckdb.get_substrait_json(query: str, *, enable_optimizer: bool = True, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Serialize a query to protobuf on the JSON format  
-
   duckdb.get_table_names(query: str, *, connection: duckdb.DuckDBPyConnection = None) → set[str]¶   Extract the required table names from a query  
 
   duckdb.install_extension(extension: str, *, force_install: bool = False, repository: object = None, repository_url: object = None, version: object = None, connection: duckdb.DuckDBPyConnection = None) → None¶   Install an extension by name, with an optional version and/or repository to get the extension from  
@@ -7216,6 +7216,8 @@ value: The value to use if the condition is met.  Returns:  CaseExpression: self
   duckdb.row_type(fields: object, *, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.typing.DuckDBPyType¶   Create a struct type object from ‘fields’  
 
   duckdb.rowcount(*, connection: duckdb.DuckDBPyConnection = None) → int¶   Get result set row count  
+
+  duckdb.set_default_connection(connection: duckdb.DuckDBPyConnection) → None¶   Register the provided connection as the default to be used by the module  
 
   duckdb.sql(query: object, *, alias: str = '', params: object = None, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Run a SQL query. If it is a SELECT statement, create a relation object from the given SQL query, otherwise run the query as-is.  
 
@@ -7261,7 +7263,7 @@ value: The value to use if the condition is met.  Returns:  CaseExpression: self
 
   duckdb.unregister_filesystem(name: str, *, connection: duckdb.DuckDBPyConnection = None) → None¶   Unregister a filesystem  
 
-  duckdb.values(values: object, *, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Create a relation object from the passed values  
+  duckdb.values(*args, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Create a relation object from the passed values  
 
   duckdb.view(view_name: str, *, connection: duckdb.DuckDBPyConnection = None) → duckdb.duckdb.DuckDBPyRelation¶   Create a relation object for the named view  
 
@@ -7289,6 +7291,9 @@ This page contains the reference for DuckDB's C API.
 
 ### Open Connect
 
+duckdb_instance_cache duckdb_create_instance_cache();
+duckdb_state duckdb_get_or_create_from_cache(duckdb_instance_cache instance_cache, const char *path, duckdb_database *out_database, duckdb_config config, char **out_error);
+void duckdb_destroy_instance_cache(duckdb_instance_cache *instance_cache);
 duckdb_state duckdb_open(const char *path, duckdb_database *out_database);
 duckdb_state duckdb_open_ext(const char *path, duckdb_database *out_database, duckdb_config config, char **out_error);
 void duckdb_close(duckdb_database *database);
@@ -7383,6 +7388,9 @@ duckdb_time duckdb_to_time(duckdb_time_struct time);
 duckdb_timestamp_struct duckdb_from_timestamp(duckdb_timestamp ts);
 duckdb_timestamp duckdb_to_timestamp(duckdb_timestamp_struct ts);
 bool duckdb_is_finite_timestamp(duckdb_timestamp ts);
+bool duckdb_is_finite_timestamp_s(duckdb_timestamp_s ts);
+bool duckdb_is_finite_timestamp_ms(duckdb_timestamp_ms ts);
+bool duckdb_is_finite_timestamp_ns(duckdb_timestamp_ns ts);
 
 
 ### Hugeint Helpers
@@ -7411,6 +7419,7 @@ const char *duckdb_prepare_error(duckdb_prepared_statement prepared_statement);
 idx_t duckdb_nparams(duckdb_prepared_statement prepared_statement);
 const char *duckdb_parameter_name(duckdb_prepared_statement prepared_statement, idx_t index);
 duckdb_type duckdb_param_type(duckdb_prepared_statement prepared_statement, idx_t param_idx);
+duckdb_logical_type duckdb_param_logical_type(duckdb_prepared_statement prepared_statement, idx_t param_idx);
 duckdb_state duckdb_clear_bindings(duckdb_prepared_statement prepared_statement);
 duckdb_statement_type duckdb_prepared_statement_type(duckdb_prepared_statement statement);
 
@@ -7486,14 +7495,22 @@ duckdb_value duckdb_create_uint64(uint64_t input);
 duckdb_value duckdb_create_int64(int64_t val);
 duckdb_value duckdb_create_hugeint(duckdb_hugeint input);
 duckdb_value duckdb_create_uhugeint(duckdb_uhugeint input);
+duckdb_value duckdb_create_varint(duckdb_varint input);
+duckdb_value duckdb_create_decimal(duckdb_decimal input);
 duckdb_value duckdb_create_float(float input);
 duckdb_value duckdb_create_double(double input);
 duckdb_value duckdb_create_date(duckdb_date input);
 duckdb_value duckdb_create_time(duckdb_time input);
 duckdb_value duckdb_create_time_tz_value(duckdb_time_tz value);
 duckdb_value duckdb_create_timestamp(duckdb_timestamp input);
+duckdb_value duckdb_create_timestamp_tz(duckdb_timestamp input);
+duckdb_value duckdb_create_timestamp_s(duckdb_timestamp_s input);
+duckdb_value duckdb_create_timestamp_ms(duckdb_timestamp_ms input);
+duckdb_value duckdb_create_timestamp_ns(duckdb_timestamp_ns input);
 duckdb_value duckdb_create_interval(duckdb_interval input);
 duckdb_value duckdb_create_blob(const uint8_t *data, idx_t length);
+duckdb_value duckdb_create_bit(duckdb_bit input);
+duckdb_value duckdb_create_uuid(duckdb_uhugeint input);
 bool duckdb_get_bool(duckdb_value val);
 int8_t duckdb_get_int8(duckdb_value val);
 uint8_t duckdb_get_uint8(duckdb_value val);
@@ -7505,15 +7522,23 @@ int64_t duckdb_get_int64(duckdb_value val);
 uint64_t duckdb_get_uint64(duckdb_value val);
 duckdb_hugeint duckdb_get_hugeint(duckdb_value val);
 duckdb_uhugeint duckdb_get_uhugeint(duckdb_value val);
+duckdb_varint duckdb_get_varint(duckdb_value val);
+duckdb_decimal duckdb_get_decimal(duckdb_value val);
 float duckdb_get_float(duckdb_value val);
 double duckdb_get_double(duckdb_value val);
 duckdb_date duckdb_get_date(duckdb_value val);
 duckdb_time duckdb_get_time(duckdb_value val);
 duckdb_time_tz duckdb_get_time_tz(duckdb_value val);
 duckdb_timestamp duckdb_get_timestamp(duckdb_value val);
+duckdb_timestamp duckdb_get_timestamp_tz(duckdb_value val);
+duckdb_timestamp_s duckdb_get_timestamp_s(duckdb_value val);
+duckdb_timestamp_ms duckdb_get_timestamp_ms(duckdb_value val);
+duckdb_timestamp_ns duckdb_get_timestamp_ns(duckdb_value val);
 duckdb_interval duckdb_get_interval(duckdb_value val);
 duckdb_logical_type duckdb_get_value_type(duckdb_value val);
 duckdb_blob duckdb_get_blob(duckdb_value val);
+duckdb_bit duckdb_get_bit(duckdb_value val);
+duckdb_uhugeint duckdb_get_uuid(duckdb_value val);
 char *duckdb_get_varchar(duckdb_value value);
 duckdb_value duckdb_create_struct_value(duckdb_logical_type type, duckdb_value *values);
 duckdb_value duckdb_create_list_value(duckdb_logical_type type, duckdb_value *values, idx_t value_count);
@@ -7521,6 +7546,13 @@ duckdb_value duckdb_create_array_value(duckdb_logical_type type, duckdb_value *v
 idx_t duckdb_get_map_size(duckdb_value value);
 duckdb_value duckdb_get_map_key(duckdb_value value, idx_t index);
 duckdb_value duckdb_get_map_value(duckdb_value value, idx_t index);
+bool duckdb_is_null_value(duckdb_value value);
+duckdb_value duckdb_create_null_value();
+idx_t duckdb_get_list_size(duckdb_value value);
+duckdb_value duckdb_get_list_child(duckdb_value value, idx_t index);
+duckdb_value duckdb_create_enum_value(duckdb_logical_type type, uint64_t value);
+uint64_t duckdb_get_enum_value(duckdb_value value);
+duckdb_value duckdb_get_struct_child(duckdb_value value, idx_t index);
 
 
 ### Logical Type Interface
@@ -7701,15 +7733,19 @@ duckdb_profiling_info duckdb_profiling_info_get_child(duckdb_profiling_info info
 ### Appender
 
 duckdb_state duckdb_appender_create(duckdb_connection connection, const char *schema, const char *table, duckdb_appender *out_appender);
+duckdb_state duckdb_appender_create_ext(duckdb_connection connection, const char *catalog, const char *schema, const char *table, duckdb_appender *out_appender);
 idx_t duckdb_appender_column_count(duckdb_appender appender);
 duckdb_logical_type duckdb_appender_column_type(duckdb_appender appender, idx_t col_idx);
 const char *duckdb_appender_error(duckdb_appender appender);
 duckdb_state duckdb_appender_flush(duckdb_appender appender);
 duckdb_state duckdb_appender_close(duckdb_appender appender);
 duckdb_state duckdb_appender_destroy(duckdb_appender *appender);
+duckdb_state duckdb_appender_add_column(duckdb_appender appender, const char *name);
+duckdb_state duckdb_appender_clear_columns(duckdb_appender appender);
 duckdb_state duckdb_appender_begin_row(duckdb_appender appender);
 duckdb_state duckdb_appender_end_row(duckdb_appender appender);
 duckdb_state duckdb_append_default(duckdb_appender appender);
+duckdb_state duckdb_append_default_to_chunk(duckdb_appender appender, duckdb_data_chunk chunk, idx_t col, idx_t row);
 duckdb_state duckdb_append_bool(duckdb_appender appender, bool value);
 duckdb_state duckdb_append_int8(duckdb_appender appender, int8_t value);
 duckdb_state duckdb_append_int16(duckdb_appender appender, int16_t value);
@@ -7731,15 +7767,18 @@ duckdb_state duckdb_append_varchar(duckdb_appender appender, const char *val);
 duckdb_state duckdb_append_varchar_length(duckdb_appender appender, const char *val, idx_t length);
 duckdb_state duckdb_append_blob(duckdb_appender appender, const void *data, idx_t length);
 duckdb_state duckdb_append_null(duckdb_appender appender);
+duckdb_state duckdb_append_value(duckdb_appender appender, duckdb_value value);
 duckdb_state duckdb_append_data_chunk(duckdb_appender appender, duckdb_data_chunk chunk);
 
 
 ### Table Description
 
 duckdb_state duckdb_table_description_create(duckdb_connection connection, const char *schema, const char *table, duckdb_table_description *out);
+duckdb_state duckdb_table_description_create_ext(duckdb_connection connection, const char *catalog, const char *schema, const char *table, duckdb_table_description *out);
 void duckdb_table_description_destroy(duckdb_table_description *table_description);
 const char *duckdb_table_description_error(duckdb_table_description table_description);
 duckdb_state duckdb_column_has_default(duckdb_table_description table_description, idx_t index, bool *out);
+char *duckdb_table_description_get_column_name(duckdb_table_description table_description, idx_t index);
 
 
 ### Arrow Interface
@@ -7794,11 +7833,76 @@ duckdb_state duckdb_register_cast_function(duckdb_connection con, duckdb_cast_fu
 void duckdb_destroy_cast_function(duckdb_cast_function *cast_function);
 
 
+#### `duckdb_create_instance_cache`
+
+Creates a new database instance cache.
+The instance cache is necessary if a client/program (re)opens multiple databases to the same file within the same
+process. Must be destroyed with 'duckdb_destroy_instance_cache'.
+
+##### Return Value
+
+The database instance cache.
+
+##### Syntax
+
+duckdb_instance_cache duckdb_create_instance_cache(
+  
+);
+ 
+
+#### `duckdb_get_or_create_from_cache`
+
+Creates a new database instance in the instance cache, or retrieves an existing database instance.
+Must be closed with 'duckdb_close'.
+
+##### Syntax
+
+duckdb_state duckdb_get_or_create_from_cache(
+  duckdb_instance_cache instance_cache,
+  const char *path,
+  duckdb_database *out_database,
+  duckdb_config config,
+  char **out_error
+);
+
+
+##### Parameters
+
+* `instance_cache`: The instance cache in which to create the database, or from which to take the database.
+* `path`: Path to the database file on disk. Both `nullptr` and `:memory:` open or retrieve an in-memory database.
+* `out_database`: The resulting cached database.
+* `config`: (Optional) configuration used to create the database.
+* `out_error`: If set and the function returns `DuckDBError`, this contains the error message.
+Note that the error message must be freed using `duckdb_free`.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
+#### `duckdb_destroy_instance_cache`
+
+Destroys an existing database instance cache and de-allocates its memory.
+
+##### Syntax
+
+void duckdb_destroy_instance_cache(
+  duckdb_instance_cache *instance_cache
+);
+
+
+##### Parameters
+
+* `instance_cache`: The instance cache to destroy.
+
+
+
 #### `duckdb_open`
 
 Creates a new database or opens an existing database file stored at the given path.
 If no path is given a new in-memory database is created instead.
-The instantiated database should be closed with 'duckdb_close'.
+The database must be closed with 'duckdb_close'.
 
 ##### Syntax
 
@@ -7810,7 +7914,7 @@ duckdb_state duckdb_open(
 
 ##### Parameters
 
-* `path`: Path to the database file on disk, or `nullptr` or `:memory:` to open an in-memory database.
+* `path`: Path to the database file on disk. Both `nullptr` and `:memory:` open an in-memory database.
 * `out_database`: The result database object.
 
 ##### Return Value
@@ -7822,7 +7926,7 @@ duckdb_state duckdb_open(
 #### `duckdb_open_ext`
 
 Extended version of duckdb_open. Creates a new database or opens an existing database file stored at the given path.
-The instantiated database should be closed with 'duckdb_close'.
+The database must be closed with 'duckdb_close'.
 
 ##### Syntax
 
@@ -7836,11 +7940,11 @@ duckdb_state duckdb_open_ext(
 
 ##### Parameters
 
-* `path`: Path to the database file on disk, or `nullptr` or `:memory:` to open an in-memory database.
+* `path`: Path to the database file on disk. Both `nullptr` and `:memory:` open an in-memory database.
 * `out_database`: The result database object.
-* `config`: (Optional) configuration used to start up the database system.
-* `out_error`: If set and the function returns DuckDBError, this will contain the reason why the start-up failed.
-Note that the error must be freed using `duckdb_free`.
+* `config`: (Optional) configuration used to start up the database.
+* `out_error`: If set and the function returns `DuckDBError`, this contains the error message.
+Note that the error message must be freed using `duckdb_free`.
 
 ##### Return Value
 
@@ -9246,7 +9350,70 @@ bool duckdb_is_finite_timestamp(
 
 ##### Parameters
 
-* `ts`: The timestamp object, as obtained from a `DUCKDB_TYPE_TIMESTAMP` column.
+* `ts`: The duckdb_timestamp object, as obtained from a `DUCKDB_TYPE_TIMESTAMP` column.
+
+##### Return Value
+
+True if the timestamp is finite, false if it is Â±infinity.
+
+
+
+#### `duckdb_is_finite_timestamp_s`
+
+Test a `duckdb_timestamp_s` to see if it is a finite value.
+
+##### Syntax
+
+bool duckdb_is_finite_timestamp_s(
+  duckdb_timestamp_s ts
+);
+
+
+##### Parameters
+
+* `ts`: The duckdb_timestamp_s object, as obtained from a `DUCKDB_TYPE_TIMESTAMP_S` column.
+
+##### Return Value
+
+True if the timestamp is finite, false if it is Â±infinity.
+
+
+
+#### `duckdb_is_finite_timestamp_ms`
+
+Test a `duckdb_timestamp_ms` to see if it is a finite value.
+
+##### Syntax
+
+bool duckdb_is_finite_timestamp_ms(
+  duckdb_timestamp_ms ts
+);
+
+
+##### Parameters
+
+* `ts`: The duckdb_timestamp_ms object, as obtained from a `DUCKDB_TYPE_TIMESTAMP_MS` column.
+
+##### Return Value
+
+True if the timestamp is finite, false if it is Â±infinity.
+
+
+
+#### `duckdb_is_finite_timestamp_ns`
+
+Test a `duckdb_timestamp_ns` to see if it is a finite value.
+
+##### Syntax
+
+bool duckdb_is_finite_timestamp_ns(
+  duckdb_timestamp_ns ts
+);
+
+
+##### Parameters
+
+* `ts`: The duckdb_timestamp_ns object, as obtained from a `DUCKDB_TYPE_TIMESTAMP_NS` column.
 
 ##### Return Value
 
@@ -9521,6 +9688,33 @@ duckdb_type duckdb_param_type(
 ##### Return Value
 
 The parameter type
+
+
+
+#### `duckdb_param_logical_type`
+
+Returns the logical type for the parameter at the given index.
+
+Returns `nullptr` if the parameter index is out of range or the statement was not successfully prepared.
+
+The return type of this call should be destroyed with `duckdb_destroy_logical_type`.
+
+##### Syntax
+
+duckdb_logical_type duckdb_param_logical_type(
+  duckdb_prepared_statement prepared_statement,
+  idx_t param_idx
+);
+
+
+##### Parameters
+
+* `prepared_statement`: The prepared statement.
+* `param_idx`: The parameter index.
+
+##### Return Value
+
+The logical type of the parameter
 
 
 
@@ -10526,6 +10720,48 @@ The value. This must be destroyed with `duckdb_destroy_value`.
 
 
 
+#### `duckdb_create_varint`
+
+Creates a VARINT value from a duckdb_varint
+
+##### Syntax
+
+duckdb_value duckdb_create_varint(
+  duckdb_varint input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_varint value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_decimal`
+
+Creates a DECIMAL value from a duckdb_decimal
+
+##### Syntax
+
+duckdb_value duckdb_create_decimal(
+  duckdb_decimal input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_decimal value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
 #### `duckdb_create_float`
 
 Creates a value from a float
@@ -10634,7 +10870,7 @@ The value. This must be destroyed with `duckdb_destroy_value`.
 
 #### `duckdb_create_timestamp`
 
-Creates a value from a timestamp
+Creates a TIMESTAMP value from a duckdb_timestamp
 
 ##### Syntax
 
@@ -10645,7 +10881,91 @@ duckdb_value duckdb_create_timestamp(
 
 ##### Parameters
 
-* `input`: The timestamp value
+* `input`: The duckdb_timestamp value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_timestamp_tz`
+
+Creates a TIMESTAMP_TZ value from a duckdb_timestamp
+
+##### Syntax
+
+duckdb_value duckdb_create_timestamp_tz(
+  duckdb_timestamp input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_timestamp value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_timestamp_s`
+
+Creates a TIMESTAMP_S value from a duckdb_timestamp_s
+
+##### Syntax
+
+duckdb_value duckdb_create_timestamp_s(
+  duckdb_timestamp_s input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_timestamp_s value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_timestamp_ms`
+
+Creates a TIMESTAMP_MS value from a duckdb_timestamp_ms
+
+##### Syntax
+
+duckdb_value duckdb_create_timestamp_ms(
+  duckdb_timestamp_ms input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_timestamp_ms value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_timestamp_ns`
+
+Creates a TIMESTAMP_NS value from a duckdb_timestamp_ns
+
+##### Syntax
+
+duckdb_value duckdb_create_timestamp_ns(
+  duckdb_timestamp_ns input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_timestamp_ns value
 
 ##### Return Value
 
@@ -10690,6 +11010,48 @@ duckdb_value duckdb_create_blob(
 
 * `data`: The blob data
 * `length`: The length of the blob data
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_bit`
+
+Creates a BIT value from a duckdb_bit
+
+##### Syntax
+
+duckdb_value duckdb_create_bit(
+  duckdb_bit input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_bit value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_uuid`
+
+Creates a UUID value from a uhugeint
+
+##### Syntax
+
+duckdb_value duckdb_create_uuid(
+  duckdb_uhugeint input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_uhugeint containing the UUID
 
 ##### Return Value
 
@@ -10928,6 +11290,49 @@ A duckdb_uhugeint, or MinValue if the value cannot be converted
 
 
 
+#### `duckdb_get_varint`
+
+Returns the duckdb_varint value of the given value.
+The `data` field must be destroyed with `duckdb_free`.
+
+##### Syntax
+
+duckdb_varint duckdb_get_varint(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a VARINT
+
+##### Return Value
+
+A duckdb_varint. The `data` field must be destroyed with `duckdb_free`.
+
+
+
+#### `duckdb_get_decimal`
+
+Returns the duckdb_decimal value of the given value.
+
+##### Syntax
+
+duckdb_decimal duckdb_get_decimal(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a DECIMAL
+
+##### Return Value
+
+A duckdb_decimal, or MinValue if the value cannot be converted
+
+
+
 #### `duckdb_get_float`
 
 Returns the float value of the given value.
@@ -11035,7 +11440,7 @@ A duckdb_time_tz, or MinValue if the value cannot be converted
 
 #### `duckdb_get_timestamp`
 
-Returns the timestamp value of the given value.
+Returns the TIMESTAMP value of the given value.
 
 ##### Syntax
 
@@ -11046,11 +11451,95 @@ duckdb_timestamp duckdb_get_timestamp(
 
 ##### Parameters
 
-* `val`: A duckdb_value containing a timestamp
+* `val`: A duckdb_value containing a TIMESTAMP
 
 ##### Return Value
 
 A duckdb_timestamp, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_timestamp_tz`
+
+Returns the TIMESTAMP_TZ value of the given value.
+
+##### Syntax
+
+duckdb_timestamp duckdb_get_timestamp_tz(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a TIMESTAMP_TZ
+
+##### Return Value
+
+A duckdb_timestamp, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_timestamp_s`
+
+Returns the duckdb_timestamp_s value of the given value.
+
+##### Syntax
+
+duckdb_timestamp_s duckdb_get_timestamp_s(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a TIMESTAMP_S
+
+##### Return Value
+
+A duckdb_timestamp_s, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_timestamp_ms`
+
+Returns the duckdb_timestamp_ms value of the given value.
+
+##### Syntax
+
+duckdb_timestamp_ms duckdb_get_timestamp_ms(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a TIMESTAMP_MS
+
+##### Return Value
+
+A duckdb_timestamp_ms, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_timestamp_ns`
+
+Returns the duckdb_timestamp_ns value of the given value.
+
+##### Syntax
+
+duckdb_timestamp_ns duckdb_get_timestamp_ns(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a TIMESTAMP_NS
+
+##### Return Value
+
+A duckdb_timestamp_ns, or MinValue if the value cannot be converted
 
 
 
@@ -11115,6 +11604,49 @@ duckdb_blob duckdb_get_blob(
 ##### Return Value
 
 A duckdb_blob
+
+
+
+#### `duckdb_get_bit`
+
+Returns the duckdb_bit value of the given value.
+The `data` field must be destroyed with `duckdb_free`.
+
+##### Syntax
+
+duckdb_bit duckdb_get_bit(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a BIT
+
+##### Return Value
+
+A duckdb_bit
+
+
+
+#### `duckdb_get_uuid`
+
+Returns a duckdb_uhugeint representing the UUID value of the given value.
+
+##### Syntax
+
+duckdb_uhugeint duckdb_get_uuid(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a UUID
+
+##### Return Value
+
+A duckdb_uhugeint representing the UUID value
 
 
 
@@ -11279,6 +11811,153 @@ duckdb_value duckdb_get_map_value(
 ##### Return Value
 
 The value as a duckdb_value.
+
+
+
+#### `duckdb_is_null_value`
+
+Returns whether the value's type is SQLNULL or not.
+
+##### Syntax
+
+bool duckdb_is_null_value(
+  duckdb_value value
+);
+
+
+##### Parameters
+
+* `value`: The value to check.
+
+##### Return Value
+
+True, if the value's type is SQLNULL, otherwise false.
+
+
+
+#### `duckdb_create_null_value`
+
+Creates a value of type SQLNULL.
+
+##### Return Value
+
+The duckdb_value representing SQLNULL. This must be destroyed with `duckdb_destroy_value`.
+
+##### Syntax
+
+duckdb_value duckdb_create_null_value(
+  
+);
+ 
+
+#### `duckdb_get_list_size`
+
+Returns the number of elements in a LIST value.
+
+##### Syntax
+
+idx_t duckdb_get_list_size(
+  duckdb_value value
+);
+
+
+##### Parameters
+
+* `value`: The LIST value.
+
+##### Return Value
+
+The number of elements in the list.
+
+
+
+#### `duckdb_get_list_child`
+
+Returns the LIST child at index as a duckdb_value.
+
+##### Syntax
+
+duckdb_value duckdb_get_list_child(
+  duckdb_value value,
+  idx_t index
+);
+
+
+##### Parameters
+
+* `value`: The LIST value.
+* `index`: The index of the child.
+
+##### Return Value
+
+The child as a duckdb_value.
+
+
+
+#### `duckdb_create_enum_value`
+
+Creates an enum value from a type and a value. Must be destroyed with `duckdb_destroy_value`.
+
+##### Syntax
+
+duckdb_value duckdb_create_enum_value(
+  duckdb_logical_type type,
+  uint64_t value
+);
+
+
+##### Parameters
+
+* `type`: The type of the enum
+* `value`: The value for the enum
+
+##### Return Value
+
+The enum value, or nullptr.
+
+
+
+#### `duckdb_get_enum_value`
+
+Returns the enum value of the given value.
+
+##### Syntax
+
+uint64_t duckdb_get_enum_value(
+  duckdb_value value
+);
+
+
+##### Parameters
+
+* `value`: A duckdb_value containing an enum
+
+##### Return Value
+
+A uint64_t, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_struct_child`
+
+Returns the STRUCT child at index as a duckdb_value.
+
+##### Syntax
+
+duckdb_value duckdb_get_struct_child(
+  duckdb_value value,
+  idx_t index
+);
+
+
+##### Parameters
+
+* `value`: The STRUCT value.
+* `index`: The index of the child.
+
+##### Return Value
+
+The child as a duckdb_value.
 
 
 
@@ -12198,7 +12877,7 @@ The pointer to the validity mask, or NULL if no validity mask is present
 Ensures the validity mask is writable by allocating it.
 
 After this function is called, `duckdb_vector_get_validity` will ALWAYS return non-NULL.
-This allows null values to be written to the vector, regardless of whether a validity mask was present before.
+This allows NULL values to be written to the vector, regardless of whether a validity mask was present before.
 
 ##### Syntax
 
@@ -14026,9 +14705,41 @@ duckdb_state duckdb_appender_create(
 
 
 
+#### `duckdb_appender_create_ext`
+
+Creates an appender object.
+
+Note that the object must be destroyed with `duckdb_appender_destroy`.
+
+##### Syntax
+
+duckdb_state duckdb_appender_create_ext(
+  duckdb_connection connection,
+  const char *catalog,
+  const char *schema,
+  const char *table,
+  duckdb_appender *out_appender
+);
+
+
+##### Parameters
+
+* `connection`: The connection context to create the appender in.
+* `catalog`: The catalog of the table to append to, or `nullptr` for the default catalog.
+* `schema`: The schema of the table to append to, or `nullptr` for the default schema.
+* `table`: The table name to append to.
+* `out_appender`: The resulting appender object.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
 #### `duckdb_appender_column_count`
 
-Returns the number of columns in the table that belongs to the appender.
+Returns the number of columns that belong to the appender.
+If there is no active column list, then this equals the table's physical columns.
 
 ##### Syntax
 
@@ -14043,15 +14754,16 @@ idx_t duckdb_appender_column_count(
 
 ##### Return Value
 
-The number of columns in the table.
+The number of columns in the data chunks.
 
 
 
 #### `duckdb_appender_column_type`
 
-Returns the type of the column at the specified index.
+Returns the type of the column at the specified index. This is either a type in the active column list, or the same type
+as a column in the receiving table.
 
-Note: The resulting type should be destroyed with `duckdb_destroy_logical_type`.
+Note: The resulting type must be destroyed with `duckdb_destroy_logical_type`.
 
 ##### Syntax
 
@@ -14068,7 +14780,7 @@ duckdb_logical_type duckdb_appender_column_type(
 
 ##### Return Value
 
-The duckdb_logical_type of the column.
+The `duckdb_logical_type` of the column.
 
 
 
@@ -14169,6 +14881,53 @@ duckdb_state duckdb_appender_destroy(
 
 
 
+#### `duckdb_appender_add_column`
+
+Appends a column to the active column list of the appender. Immediately flushes all previous data.
+
+The active column list specifies all columns that are expected when flushing the data. Any non-active columns are filled
+with their default values, or NULL.
+
+##### Syntax
+
+duckdb_state duckdb_appender_add_column(
+  duckdb_appender appender,
+  const char *name
+);
+
+
+##### Parameters
+
+* `appender`: The appender to add the column to.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
+#### `duckdb_appender_clear_columns`
+
+Removes all columns from the active column list of the appender, resetting the appender to treat all columns as active.
+Immediately flushes all previous data.
+
+##### Syntax
+
+duckdb_state duckdb_appender_clear_columns(
+  duckdb_appender appender
+);
+
+
+##### Parameters
+
+* `appender`: The appender to clear the columns from.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
 #### `duckdb_appender_begin_row`
 
 A nop function, provided for backwards compatibility reasons. Does nothing. Only `duckdb_appender_end_row` is required.
@@ -14211,6 +14970,35 @@ duckdb_state duckdb_append_default(
   duckdb_appender appender
 );
  
+
+#### `duckdb_append_default_to_chunk`
+
+Append a DEFAULT value, at the specified row and column, (NULL if DEFAULT not available for column) to the chunk created
+from the specified appender. The default value of the column must be a constant value. Non-deterministic expressions
+like nextval('seq') or random() are not supported.
+
+##### Syntax
+
+duckdb_state duckdb_append_default_to_chunk(
+  duckdb_appender appender,
+  duckdb_data_chunk chunk,
+  idx_t col,
+  idx_t row
+);
+
+
+##### Parameters
+
+* `appender`: The appender to get the default value from.
+* `chunk`: The data chunk to append the default value to.
+* `col`: The chunk column index to append the default value to.
+* `row`: The chunk row index to append the default value to.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
 
 #### `duckdb_append_bool`
 
@@ -14465,13 +15253,22 @@ duckdb_state duckdb_append_null(
 );
  
 
+#### `duckdb_append_value`
+
+Append a duckdb_value to the appender.
+
+##### Syntax
+
+duckdb_state duckdb_append_value(
+  duckdb_appender appender,
+  duckdb_value value
+);
+ 
+
 #### `duckdb_append_data_chunk`
 
 Appends a pre-filled data chunk to the specified appender.
-
-The types of the data chunk must exactly match the types of the table, no casting is performed.
-If the types do not match or the appender is in an invalid state, DuckDBError is returned.
-If the append is successful, DuckDBSuccess is returned.
+Attempts casting, if the data chunk types do not match the active appender types.
 
 ##### Syntax
 
@@ -14488,7 +15285,7 @@ duckdb_state duckdb_append_data_chunk(
 
 ##### Return Value
 
-The return state.
+`DuckDBSuccess` on success or `DuckDBError` on failure.
 
 
 
@@ -14510,6 +15307,36 @@ duckdb_state duckdb_table_description_create(
 ##### Parameters
 
 * `connection`: The connection context.
+* `schema`: The schema of the table, or `nullptr` for the default schema.
+* `table`: The table name.
+* `out`: The resulting table description object.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
+#### `duckdb_table_description_create_ext`
+
+Creates a table description object. Note that `duckdb_table_description_destroy` must be called on the resulting
+table_description, even if the function returns `DuckDBError`.
+
+##### Syntax
+
+duckdb_state duckdb_table_description_create_ext(
+  duckdb_connection connection,
+  const char *catalog,
+  const char *schema,
+  const char *table,
+  duckdb_table_description *out
+);
+
+
+##### Parameters
+
+* `connection`: The connection context.
+* `catalog`: The catalog (database) name of the table, or `nullptr` for the default catalog.
 * `schema`: The schema of the table, or `nullptr` for the default schema.
 * `table`: The table name.
 * `out`: The resulting table description object.
@@ -14582,6 +15409,30 @@ duckdb_state duckdb_column_has_default(
 ##### Return Value
 
 `DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
+#### `duckdb_table_description_get_column_name`
+
+Obtain the column name at 'index'.
+The out result must be destroyed with `duckdb_free`.
+
+##### Syntax
+
+char *duckdb_table_description_get_column_name(
+  duckdb_table_description table_description,
+  idx_t index
+);
+
+
+##### Parameters
+
+* `table_description`: The table_description to query.
+* `index`: The index of the column to query.
+
+##### Return Value
+
+The column name.
 
 
 
@@ -15448,15 +16299,19 @@ duckdb_appender_destroy(&appender);
 
 
 duckdb_state duckdb_appender_create(duckdb_connection connection, const char *schema, const char *table, duckdb_appender *out_appender);
+duckdb_state duckdb_appender_create_ext(duckdb_connection connection, const char *catalog, const char *schema, const char *table, duckdb_appender *out_appender);
 idx_t duckdb_appender_column_count(duckdb_appender appender);
 duckdb_logical_type duckdb_appender_column_type(duckdb_appender appender, idx_t col_idx);
 const char *duckdb_appender_error(duckdb_appender appender);
 duckdb_state duckdb_appender_flush(duckdb_appender appender);
 duckdb_state duckdb_appender_close(duckdb_appender appender);
 duckdb_state duckdb_appender_destroy(duckdb_appender *appender);
+duckdb_state duckdb_appender_add_column(duckdb_appender appender, const char *name);
+duckdb_state duckdb_appender_clear_columns(duckdb_appender appender);
 duckdb_state duckdb_appender_begin_row(duckdb_appender appender);
 duckdb_state duckdb_appender_end_row(duckdb_appender appender);
 duckdb_state duckdb_append_default(duckdb_appender appender);
+duckdb_state duckdb_append_default_to_chunk(duckdb_appender appender, duckdb_data_chunk chunk, idx_t col, idx_t row);
 duckdb_state duckdb_append_bool(duckdb_appender appender, bool value);
 duckdb_state duckdb_append_int8(duckdb_appender appender, int8_t value);
 duckdb_state duckdb_append_int16(duckdb_appender appender, int16_t value);
@@ -15478,6 +16333,7 @@ duckdb_state duckdb_append_varchar(duckdb_appender appender, const char *val);
 duckdb_state duckdb_append_varchar_length(duckdb_appender appender, const char *val, idx_t length);
 duckdb_state duckdb_append_blob(duckdb_appender appender, const void *data, idx_t length);
 duckdb_state duckdb_append_null(duckdb_appender appender);
+duckdb_state duckdb_append_value(duckdb_appender appender, duckdb_value value);
 duckdb_state duckdb_append_data_chunk(duckdb_appender appender, duckdb_data_chunk chunk);
 
 
@@ -15510,9 +16366,41 @@ duckdb_state duckdb_appender_create(
 
 
 
+#### `duckdb_appender_create_ext`
+
+Creates an appender object.
+
+Note that the object must be destroyed with `duckdb_appender_destroy`.
+
+##### Syntax
+
+duckdb_state duckdb_appender_create_ext(
+  duckdb_connection connection,
+  const char *catalog,
+  const char *schema,
+  const char *table,
+  duckdb_appender *out_appender
+);
+
+
+##### Parameters
+
+* `connection`: The connection context to create the appender in.
+* `catalog`: The catalog of the table to append to, or `nullptr` for the default catalog.
+* `schema`: The schema of the table to append to, or `nullptr` for the default schema.
+* `table`: The table name to append to.
+* `out_appender`: The resulting appender object.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
 #### `duckdb_appender_column_count`
 
-Returns the number of columns in the table that belongs to the appender.
+Returns the number of columns that belong to the appender.
+If there is no active column list, then this equals the table's physical columns.
 
 ##### Syntax
 
@@ -15527,15 +16415,16 @@ idx_t duckdb_appender_column_count(
 
 ##### Return Value
 
-The number of columns in the table.
+The number of columns in the data chunks.
 
 
 
 #### `duckdb_appender_column_type`
 
-Returns the type of the column at the specified index.
+Returns the type of the column at the specified index. This is either a type in the active column list, or the same type
+as a column in the receiving table.
 
-Note: The resulting type should be destroyed with `duckdb_destroy_logical_type`.
+Note: The resulting type must be destroyed with `duckdb_destroy_logical_type`.
 
 ##### Syntax
 
@@ -15552,7 +16441,7 @@ duckdb_logical_type duckdb_appender_column_type(
 
 ##### Return Value
 
-The duckdb_logical_type of the column.
+The `duckdb_logical_type` of the column.
 
 
 
@@ -15653,6 +16542,53 @@ duckdb_state duckdb_appender_destroy(
 
 
 
+#### `duckdb_appender_add_column`
+
+Appends a column to the active column list of the appender. Immediately flushes all previous data.
+
+The active column list specifies all columns that are expected when flushing the data. Any non-active columns are filled
+with their default values, or NULL.
+
+##### Syntax
+
+duckdb_state duckdb_appender_add_column(
+  duckdb_appender appender,
+  const char *name
+);
+
+
+##### Parameters
+
+* `appender`: The appender to add the column to.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
+#### `duckdb_appender_clear_columns`
+
+Removes all columns from the active column list of the appender, resetting the appender to treat all columns as active.
+Immediately flushes all previous data.
+
+##### Syntax
+
+duckdb_state duckdb_appender_clear_columns(
+  duckdb_appender appender
+);
+
+
+##### Parameters
+
+* `appender`: The appender to clear the columns from.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
 #### `duckdb_appender_begin_row`
 
 A nop function, provided for backwards compatibility reasons. Does nothing. Only `duckdb_appender_end_row` is required.
@@ -15695,6 +16631,35 @@ duckdb_state duckdb_append_default(
   duckdb_appender appender
 );
  
+
+#### `duckdb_append_default_to_chunk`
+
+Append a DEFAULT value, at the specified row and column, (NULL if DEFAULT not available for column) to the chunk created
+from the specified appender. The default value of the column must be a constant value. Non-deterministic expressions
+like nextval('seq') or random() are not supported.
+
+##### Syntax
+
+duckdb_state duckdb_append_default_to_chunk(
+  duckdb_appender appender,
+  duckdb_data_chunk chunk,
+  idx_t col,
+  idx_t row
+);
+
+
+##### Parameters
+
+* `appender`: The appender to get the default value from.
+* `chunk`: The data chunk to append the default value to.
+* `col`: The chunk column index to append the default value to.
+* `row`: The chunk row index to append the default value to.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
 
 #### `duckdb_append_bool`
 
@@ -15949,13 +16914,22 @@ duckdb_state duckdb_append_null(
 );
  
 
+#### `duckdb_append_value`
+
+Append a duckdb_value to the appender.
+
+##### Syntax
+
+duckdb_state duckdb_append_value(
+  duckdb_appender appender,
+  duckdb_value value
+);
+ 
+
 #### `duckdb_append_data_chunk`
 
 Appends a pre-filled data chunk to the specified appender.
-
-The types of the data chunk must exactly match the types of the table, no casting is performed.
-If the types do not match or the appender is in an invalid state, DuckDBError is returned.
-If the append is successful, DuckDBSuccess is returned.
+Attempts casting, if the data chunk types do not match the active appender types.
 
 ##### Syntax
 
@@ -15972,7 +16946,7 @@ duckdb_state duckdb_append_data_chunk(
 
 ##### Return Value
 
-The return state.
+`DuckDBSuccess` on success or `DuckDBError` on failure.
 
 
 
@@ -16186,6 +17160,9 @@ duckdb_close(&db);
 
 
 
+duckdb_instance_cache duckdb_create_instance_cache();
+duckdb_state duckdb_get_or_create_from_cache(duckdb_instance_cache instance_cache, const char *path, duckdb_database *out_database, duckdb_config config, char **out_error);
+void duckdb_destroy_instance_cache(duckdb_instance_cache *instance_cache);
 duckdb_state duckdb_open(const char *path, duckdb_database *out_database);
 duckdb_state duckdb_open_ext(const char *path, duckdb_database *out_database, duckdb_config config, char **out_error);
 void duckdb_close(duckdb_database *database);
@@ -16196,11 +17173,76 @@ void duckdb_disconnect(duckdb_connection *connection);
 const char *duckdb_library_version();
 
 
+#### `duckdb_create_instance_cache`
+
+Creates a new database instance cache.
+The instance cache is necessary if a client/program (re)opens multiple databases to the same file within the same
+process. Must be destroyed with 'duckdb_destroy_instance_cache'.
+
+##### Return Value
+
+The database instance cache.
+
+##### Syntax
+
+duckdb_instance_cache duckdb_create_instance_cache(
+  
+);
+ 
+
+#### `duckdb_get_or_create_from_cache`
+
+Creates a new database instance in the instance cache, or retrieves an existing database instance.
+Must be closed with 'duckdb_close'.
+
+##### Syntax
+
+duckdb_state duckdb_get_or_create_from_cache(
+  duckdb_instance_cache instance_cache,
+  const char *path,
+  duckdb_database *out_database,
+  duckdb_config config,
+  char **out_error
+);
+
+
+##### Parameters
+
+* `instance_cache`: The instance cache in which to create the database, or from which to take the database.
+* `path`: Path to the database file on disk. Both `nullptr` and `:memory:` open or retrieve an in-memory database.
+* `out_database`: The resulting cached database.
+* `config`: (Optional) configuration used to create the database.
+* `out_error`: If set and the function returns `DuckDBError`, this contains the error message.
+Note that the error message must be freed using `duckdb_free`.
+
+##### Return Value
+
+`DuckDBSuccess` on success or `DuckDBError` on failure.
+
+
+
+#### `duckdb_destroy_instance_cache`
+
+Destroys an existing database instance cache and de-allocates its memory.
+
+##### Syntax
+
+void duckdb_destroy_instance_cache(
+  duckdb_instance_cache *instance_cache
+);
+
+
+##### Parameters
+
+* `instance_cache`: The instance cache to destroy.
+
+
+
 #### `duckdb_open`
 
 Creates a new database or opens an existing database file stored at the given path.
 If no path is given a new in-memory database is created instead.
-The instantiated database should be closed with 'duckdb_close'.
+The database must be closed with 'duckdb_close'.
 
 ##### Syntax
 
@@ -16212,7 +17254,7 @@ duckdb_state duckdb_open(
 
 ##### Parameters
 
-* `path`: Path to the database file on disk, or `nullptr` or `:memory:` to open an in-memory database.
+* `path`: Path to the database file on disk. Both `nullptr` and `:memory:` open an in-memory database.
 * `out_database`: The result database object.
 
 ##### Return Value
@@ -16224,7 +17266,7 @@ duckdb_state duckdb_open(
 #### `duckdb_open_ext`
 
 Extended version of duckdb_open. Creates a new database or opens an existing database file stored at the given path.
-The instantiated database should be closed with 'duckdb_close'.
+The database must be closed with 'duckdb_close'.
 
 ##### Syntax
 
@@ -16238,11 +17280,11 @@ duckdb_state duckdb_open_ext(
 
 ##### Parameters
 
-* `path`: Path to the database file on disk, or `nullptr` or `:memory:` to open an in-memory database.
+* `path`: Path to the database file on disk. Both `nullptr` and `:memory:` open an in-memory database.
 * `out_database`: The result database object.
-* `config`: (Optional) configuration used to start up the database system.
-* `out_error`: If set and the function returns DuckDBError, this will contain the reason why the start-up failed.
-Note that the error must be freed using `duckdb_free`.
+* `config`: (Optional) configuration used to start up the database.
+* `out_error`: If set and the function returns `DuckDBError`, this contains the error message.
+Note that the error message must be freed using `duckdb_free`.
 
 ##### Return Value
 
@@ -16621,6 +17663,7 @@ const char *duckdb_prepare_error(duckdb_prepared_statement prepared_statement);
 idx_t duckdb_nparams(duckdb_prepared_statement prepared_statement);
 const char *duckdb_parameter_name(duckdb_prepared_statement prepared_statement, idx_t index);
 duckdb_type duckdb_param_type(duckdb_prepared_statement prepared_statement, idx_t param_idx);
+duckdb_logical_type duckdb_param_logical_type(duckdb_prepared_statement prepared_statement, idx_t param_idx);
 duckdb_state duckdb_clear_bindings(duckdb_prepared_statement prepared_statement);
 duckdb_statement_type duckdb_prepared_statement_type(duckdb_prepared_statement statement);
 
@@ -16758,6 +17801,33 @@ duckdb_type duckdb_param_type(
 ##### Return Value
 
 The parameter type
+
+
+
+#### `duckdb_param_logical_type`
+
+Returns the logical type for the parameter at the given index.
+
+Returns `nullptr` if the parameter index is out of range or the statement was not successfully prepared.
+
+The return type of this call should be destroyed with `duckdb_destroy_logical_type`.
+
+##### Syntax
+
+duckdb_logical_type duckdb_param_logical_type(
+  duckdb_prepared_statement prepared_statement,
+  idx_t param_idx
+);
+
+
+##### Parameters
+
+* `prepared_statement`: The prepared statement.
+* `param_idx`: The parameter index.
+
+##### Return Value
+
+The logical type of the parameter
 
 
 
@@ -18209,6 +19279,9 @@ duckdb_time duckdb_to_time(duckdb_time_struct time);
 duckdb_timestamp_struct duckdb_from_timestamp(duckdb_timestamp ts);
 duckdb_timestamp duckdb_to_timestamp(duckdb_timestamp_struct ts);
 bool duckdb_is_finite_timestamp(duckdb_timestamp ts);
+bool duckdb_is_finite_timestamp_s(duckdb_timestamp_s ts);
+bool duckdb_is_finite_timestamp_ms(duckdb_timestamp_ms ts);
+bool duckdb_is_finite_timestamp_ns(duckdb_timestamp_ns ts);
 
 
 ### Hugeint Helpers
@@ -18561,7 +19634,70 @@ bool duckdb_is_finite_timestamp(
 
 ##### Parameters
 
-* `ts`: The timestamp object, as obtained from a `DUCKDB_TYPE_TIMESTAMP` column.
+* `ts`: The duckdb_timestamp object, as obtained from a `DUCKDB_TYPE_TIMESTAMP` column.
+
+##### Return Value
+
+True if the timestamp is finite, false if it is Â±infinity.
+
+
+
+#### `duckdb_is_finite_timestamp_s`
+
+Test a `duckdb_timestamp_s` to see if it is a finite value.
+
+##### Syntax
+
+bool duckdb_is_finite_timestamp_s(
+  duckdb_timestamp_s ts
+);
+
+
+##### Parameters
+
+* `ts`: The duckdb_timestamp_s object, as obtained from a `DUCKDB_TYPE_TIMESTAMP_S` column.
+
+##### Return Value
+
+True if the timestamp is finite, false if it is Â±infinity.
+
+
+
+#### `duckdb_is_finite_timestamp_ms`
+
+Test a `duckdb_timestamp_ms` to see if it is a finite value.
+
+##### Syntax
+
+bool duckdb_is_finite_timestamp_ms(
+  duckdb_timestamp_ms ts
+);
+
+
+##### Parameters
+
+* `ts`: The duckdb_timestamp_ms object, as obtained from a `DUCKDB_TYPE_TIMESTAMP_MS` column.
+
+##### Return Value
+
+True if the timestamp is finite, false if it is Â±infinity.
+
+
+
+#### `duckdb_is_finite_timestamp_ns`
+
+Test a `duckdb_timestamp_ns` to see if it is a finite value.
+
+##### Syntax
+
+bool duckdb_is_finite_timestamp_ns(
+  duckdb_timestamp_ns ts
+);
+
+
+##### Parameters
+
+* `ts`: The duckdb_timestamp_ns object, as obtained from a `DUCKDB_TYPE_TIMESTAMP_NS` column.
 
 ##### Return Value
 
@@ -19370,14 +20506,22 @@ duckdb_value duckdb_create_uint64(uint64_t input);
 duckdb_value duckdb_create_int64(int64_t val);
 duckdb_value duckdb_create_hugeint(duckdb_hugeint input);
 duckdb_value duckdb_create_uhugeint(duckdb_uhugeint input);
+duckdb_value duckdb_create_varint(duckdb_varint input);
+duckdb_value duckdb_create_decimal(duckdb_decimal input);
 duckdb_value duckdb_create_float(float input);
 duckdb_value duckdb_create_double(double input);
 duckdb_value duckdb_create_date(duckdb_date input);
 duckdb_value duckdb_create_time(duckdb_time input);
 duckdb_value duckdb_create_time_tz_value(duckdb_time_tz value);
 duckdb_value duckdb_create_timestamp(duckdb_timestamp input);
+duckdb_value duckdb_create_timestamp_tz(duckdb_timestamp input);
+duckdb_value duckdb_create_timestamp_s(duckdb_timestamp_s input);
+duckdb_value duckdb_create_timestamp_ms(duckdb_timestamp_ms input);
+duckdb_value duckdb_create_timestamp_ns(duckdb_timestamp_ns input);
 duckdb_value duckdb_create_interval(duckdb_interval input);
 duckdb_value duckdb_create_blob(const uint8_t *data, idx_t length);
+duckdb_value duckdb_create_bit(duckdb_bit input);
+duckdb_value duckdb_create_uuid(duckdb_uhugeint input);
 bool duckdb_get_bool(duckdb_value val);
 int8_t duckdb_get_int8(duckdb_value val);
 uint8_t duckdb_get_uint8(duckdb_value val);
@@ -19389,15 +20533,23 @@ int64_t duckdb_get_int64(duckdb_value val);
 uint64_t duckdb_get_uint64(duckdb_value val);
 duckdb_hugeint duckdb_get_hugeint(duckdb_value val);
 duckdb_uhugeint duckdb_get_uhugeint(duckdb_value val);
+duckdb_varint duckdb_get_varint(duckdb_value val);
+duckdb_decimal duckdb_get_decimal(duckdb_value val);
 float duckdb_get_float(duckdb_value val);
 double duckdb_get_double(duckdb_value val);
 duckdb_date duckdb_get_date(duckdb_value val);
 duckdb_time duckdb_get_time(duckdb_value val);
 duckdb_time_tz duckdb_get_time_tz(duckdb_value val);
 duckdb_timestamp duckdb_get_timestamp(duckdb_value val);
+duckdb_timestamp duckdb_get_timestamp_tz(duckdb_value val);
+duckdb_timestamp_s duckdb_get_timestamp_s(duckdb_value val);
+duckdb_timestamp_ms duckdb_get_timestamp_ms(duckdb_value val);
+duckdb_timestamp_ns duckdb_get_timestamp_ns(duckdb_value val);
 duckdb_interval duckdb_get_interval(duckdb_value val);
 duckdb_logical_type duckdb_get_value_type(duckdb_value val);
 duckdb_blob duckdb_get_blob(duckdb_value val);
+duckdb_bit duckdb_get_bit(duckdb_value val);
+duckdb_uhugeint duckdb_get_uuid(duckdb_value val);
 char *duckdb_get_varchar(duckdb_value value);
 duckdb_value duckdb_create_struct_value(duckdb_logical_type type, duckdb_value *values);
 duckdb_value duckdb_create_list_value(duckdb_logical_type type, duckdb_value *values, idx_t value_count);
@@ -19405,6 +20557,13 @@ duckdb_value duckdb_create_array_value(duckdb_logical_type type, duckdb_value *v
 idx_t duckdb_get_map_size(duckdb_value value);
 duckdb_value duckdb_get_map_key(duckdb_value value, idx_t index);
 duckdb_value duckdb_get_map_value(duckdb_value value, idx_t index);
+bool duckdb_is_null_value(duckdb_value value);
+duckdb_value duckdb_create_null_value();
+idx_t duckdb_get_list_size(duckdb_value value);
+duckdb_value duckdb_get_list_child(duckdb_value value, idx_t index);
+duckdb_value duckdb_create_enum_value(duckdb_logical_type type, uint64_t value);
+uint64_t duckdb_get_enum_value(duckdb_value value);
+duckdb_value duckdb_get_struct_child(duckdb_value value, idx_t index);
 
 
 #### `duckdb_destroy_value`
@@ -19693,6 +20852,48 @@ The value. This must be destroyed with `duckdb_destroy_value`.
 
 
 
+#### `duckdb_create_varint`
+
+Creates a VARINT value from a duckdb_varint
+
+##### Syntax
+
+duckdb_value duckdb_create_varint(
+  duckdb_varint input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_varint value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_decimal`
+
+Creates a DECIMAL value from a duckdb_decimal
+
+##### Syntax
+
+duckdb_value duckdb_create_decimal(
+  duckdb_decimal input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_decimal value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
 #### `duckdb_create_float`
 
 Creates a value from a float
@@ -19801,7 +21002,7 @@ The value. This must be destroyed with `duckdb_destroy_value`.
 
 #### `duckdb_create_timestamp`
 
-Creates a value from a timestamp
+Creates a TIMESTAMP value from a duckdb_timestamp
 
 ##### Syntax
 
@@ -19812,7 +21013,91 @@ duckdb_value duckdb_create_timestamp(
 
 ##### Parameters
 
-* `input`: The timestamp value
+* `input`: The duckdb_timestamp value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_timestamp_tz`
+
+Creates a TIMESTAMP_TZ value from a duckdb_timestamp
+
+##### Syntax
+
+duckdb_value duckdb_create_timestamp_tz(
+  duckdb_timestamp input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_timestamp value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_timestamp_s`
+
+Creates a TIMESTAMP_S value from a duckdb_timestamp_s
+
+##### Syntax
+
+duckdb_value duckdb_create_timestamp_s(
+  duckdb_timestamp_s input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_timestamp_s value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_timestamp_ms`
+
+Creates a TIMESTAMP_MS value from a duckdb_timestamp_ms
+
+##### Syntax
+
+duckdb_value duckdb_create_timestamp_ms(
+  duckdb_timestamp_ms input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_timestamp_ms value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_timestamp_ns`
+
+Creates a TIMESTAMP_NS value from a duckdb_timestamp_ns
+
+##### Syntax
+
+duckdb_value duckdb_create_timestamp_ns(
+  duckdb_timestamp_ns input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_timestamp_ns value
 
 ##### Return Value
 
@@ -19857,6 +21142,48 @@ duckdb_value duckdb_create_blob(
 
 * `data`: The blob data
 * `length`: The length of the blob data
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_bit`
+
+Creates a BIT value from a duckdb_bit
+
+##### Syntax
+
+duckdb_value duckdb_create_bit(
+  duckdb_bit input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_bit value
+
+##### Return Value
+
+The value. This must be destroyed with `duckdb_destroy_value`.
+
+
+
+#### `duckdb_create_uuid`
+
+Creates a UUID value from a uhugeint
+
+##### Syntax
+
+duckdb_value duckdb_create_uuid(
+  duckdb_uhugeint input
+);
+
+
+##### Parameters
+
+* `input`: The duckdb_uhugeint containing the UUID
 
 ##### Return Value
 
@@ -20095,6 +21422,49 @@ A duckdb_uhugeint, or MinValue if the value cannot be converted
 
 
 
+#### `duckdb_get_varint`
+
+Returns the duckdb_varint value of the given value.
+The `data` field must be destroyed with `duckdb_free`.
+
+##### Syntax
+
+duckdb_varint duckdb_get_varint(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a VARINT
+
+##### Return Value
+
+A duckdb_varint. The `data` field must be destroyed with `duckdb_free`.
+
+
+
+#### `duckdb_get_decimal`
+
+Returns the duckdb_decimal value of the given value.
+
+##### Syntax
+
+duckdb_decimal duckdb_get_decimal(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a DECIMAL
+
+##### Return Value
+
+A duckdb_decimal, or MinValue if the value cannot be converted
+
+
+
 #### `duckdb_get_float`
 
 Returns the float value of the given value.
@@ -20202,7 +21572,7 @@ A duckdb_time_tz, or MinValue if the value cannot be converted
 
 #### `duckdb_get_timestamp`
 
-Returns the timestamp value of the given value.
+Returns the TIMESTAMP value of the given value.
 
 ##### Syntax
 
@@ -20213,11 +21583,95 @@ duckdb_timestamp duckdb_get_timestamp(
 
 ##### Parameters
 
-* `val`: A duckdb_value containing a timestamp
+* `val`: A duckdb_value containing a TIMESTAMP
 
 ##### Return Value
 
 A duckdb_timestamp, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_timestamp_tz`
+
+Returns the TIMESTAMP_TZ value of the given value.
+
+##### Syntax
+
+duckdb_timestamp duckdb_get_timestamp_tz(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a TIMESTAMP_TZ
+
+##### Return Value
+
+A duckdb_timestamp, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_timestamp_s`
+
+Returns the duckdb_timestamp_s value of the given value.
+
+##### Syntax
+
+duckdb_timestamp_s duckdb_get_timestamp_s(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a TIMESTAMP_S
+
+##### Return Value
+
+A duckdb_timestamp_s, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_timestamp_ms`
+
+Returns the duckdb_timestamp_ms value of the given value.
+
+##### Syntax
+
+duckdb_timestamp_ms duckdb_get_timestamp_ms(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a TIMESTAMP_MS
+
+##### Return Value
+
+A duckdb_timestamp_ms, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_timestamp_ns`
+
+Returns the duckdb_timestamp_ns value of the given value.
+
+##### Syntax
+
+duckdb_timestamp_ns duckdb_get_timestamp_ns(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a TIMESTAMP_NS
+
+##### Return Value
+
+A duckdb_timestamp_ns, or MinValue if the value cannot be converted
 
 
 
@@ -20282,6 +21736,49 @@ duckdb_blob duckdb_get_blob(
 ##### Return Value
 
 A duckdb_blob
+
+
+
+#### `duckdb_get_bit`
+
+Returns the duckdb_bit value of the given value.
+The `data` field must be destroyed with `duckdb_free`.
+
+##### Syntax
+
+duckdb_bit duckdb_get_bit(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a BIT
+
+##### Return Value
+
+A duckdb_bit
+
+
+
+#### `duckdb_get_uuid`
+
+Returns a duckdb_uhugeint representing the UUID value of the given value.
+
+##### Syntax
+
+duckdb_uhugeint duckdb_get_uuid(
+  duckdb_value val
+);
+
+
+##### Parameters
+
+* `val`: A duckdb_value containing a UUID
+
+##### Return Value
+
+A duckdb_uhugeint representing the UUID value
 
 
 
@@ -20446,6 +21943,153 @@ duckdb_value duckdb_get_map_value(
 ##### Return Value
 
 The value as a duckdb_value.
+
+
+
+#### `duckdb_is_null_value`
+
+Returns whether the value's type is SQLNULL or not.
+
+##### Syntax
+
+bool duckdb_is_null_value(
+  duckdb_value value
+);
+
+
+##### Parameters
+
+* `value`: The value to check.
+
+##### Return Value
+
+True, if the value's type is SQLNULL, otherwise false.
+
+
+
+#### `duckdb_create_null_value`
+
+Creates a value of type SQLNULL.
+
+##### Return Value
+
+The duckdb_value representing SQLNULL. This must be destroyed with `duckdb_destroy_value`.
+
+##### Syntax
+
+duckdb_value duckdb_create_null_value(
+  
+);
+ 
+
+#### `duckdb_get_list_size`
+
+Returns the number of elements in a LIST value.
+
+##### Syntax
+
+idx_t duckdb_get_list_size(
+  duckdb_value value
+);
+
+
+##### Parameters
+
+* `value`: The LIST value.
+
+##### Return Value
+
+The number of elements in the list.
+
+
+
+#### `duckdb_get_list_child`
+
+Returns the LIST child at index as a duckdb_value.
+
+##### Syntax
+
+duckdb_value duckdb_get_list_child(
+  duckdb_value value,
+  idx_t index
+);
+
+
+##### Parameters
+
+* `value`: The LIST value.
+* `index`: The index of the child.
+
+##### Return Value
+
+The child as a duckdb_value.
+
+
+
+#### `duckdb_create_enum_value`
+
+Creates an enum value from a type and a value. Must be destroyed with `duckdb_destroy_value`.
+
+##### Syntax
+
+duckdb_value duckdb_create_enum_value(
+  duckdb_logical_type type,
+  uint64_t value
+);
+
+
+##### Parameters
+
+* `type`: The type of the enum
+* `value`: The value for the enum
+
+##### Return Value
+
+The enum value, or nullptr.
+
+
+
+#### `duckdb_get_enum_value`
+
+Returns the enum value of the given value.
+
+##### Syntax
+
+uint64_t duckdb_get_enum_value(
+  duckdb_value value
+);
+
+
+##### Parameters
+
+* `value`: A duckdb_value containing an enum
+
+##### Return Value
+
+A uint64_t, or MinValue if the value cannot be converted
+
+
+
+#### `duckdb_get_struct_child`
+
+Returns the STRUCT child at index as a duckdb_value.
+
+##### Syntax
+
+duckdb_value duckdb_get_struct_child(
+  duckdb_value value,
+  idx_t index
+);
+
+
+##### Parameters
+
+* `value`: The STRUCT value.
+* `index`: The index of the child.
+
+##### Return Value
+
+The child as a duckdb_value.
 
 
 
@@ -20893,11 +22537,9 @@ The bit is set to 1 if the value is valid (i.e., not NULL) or 0 if the value is 
 
 Validity of a specific value can be obtained like this:
 
-```c
 idx_t entry_idx = row_idx / 64;
 idx_t idx_in_entry = row_idx % 64;
 bool is_valid = validity_mask[entry_idx] & (1 << idx_in_entry);
-```
 
 Alternatively, the (slower) duckdb_validity_row_is_valid function can be used.
 
@@ -20914,7 +22556,7 @@ uint64_t *duckdb_vector_get_validity(
 
 ##### Return Value
 
-The pointer to the validity mask, or `NULL` if no validity mask is present
+The pointer to the validity mask, or NULL if no validity mask is present
 
 
 
@@ -20923,7 +22565,7 @@ The pointer to the validity mask, or `NULL` if no validity mask is present
 Ensures the validity mask is writable by allocating it.
 
 After this function is called, `duckdb_vector_get_validity` will ALWAYS return non-NULL.
-This allows `NULL` values to be written to the vector, regardless of whether a validity mask was present before.
+This allows NULL values to be written to the vector, regardless of whether a validity mask was present before.
 
 ##### Syntax
 
@@ -21996,6 +23638,7 @@ To see the commits that changed each storage version, see the [commit log](https
 
 | Storage version | DuckDB version(s) |
 |----------------:|---------------------------------|
+| 65 | v1.2.0 |
 | 64 | v0.9.x, v0.10.x, v1.0.0, v1.1.x |
 | 51 | v0.8.x |
 | 43 | v0.7.x |
@@ -22436,7 +24079,7 @@ For example, the `OPTIMIZER_JOIN_ORDER` metric corresponds to the `JOIN_ORDER` o
 Additionally, the following metrics are available to support the optimizer metrics:
 
 * `ALL_OPTIMIZERS`: Enables all optimizer metrics and measures the time the optimizer parent node takes.
-* `CUMMULATIVE_OPTIMIZER_TIMING`: The cumulative sum of all optimizer metrics. It is usable without turning on all optimizer metrics.
+* `CUMULATIVE_OPTIMIZER_TIMING`: The cumulative sum of all optimizer metrics. It is usable without turning on all optimizer metrics.
 
 ### Planner Metrics
 
@@ -23911,9 +25554,10 @@ Additionally, we recommend using the [Ninja build system](https://ninja-build.or
 DuckDB fully supports Linux, macOS and Windows. Both AMD64 (x86_64) and ARM64 (AArch64) builds are available for these platforms.
 
 | Platform name | Description |
-|--------------------|--------------------------------------|
-| `linux_amd64` | Linux AMD64 (x86_64) |
-| `linux_arm64` | Linux ARM64 (AArch64) |
+|--------------------|------------------------------------------------------------------------|
+| `linux_amd64` | Linux AMD64 (x86_64) with [glibc](https://www.gnu.org/software/libc/) |
+| `linux_arm64` | Linux ARM64 (AArch64) with [glibc](https://www.gnu.org/software/libc/) |
+| `linux_amd64_musl` | Linux AMD64 (x86_64) with [musl libc](https://www.musl-libc.org/) |
 | `osx_amd64` | macOS 12+ AMD64 (Intel CPUs) |
 | `osx_arm64` | macOS 12+ ARM64 (Apple Silicon CPUs) |
 | `windows_amd64` | Windows 10+ AMD64 (x86_64) |
@@ -23934,8 +25578,10 @@ For some platforms, DuckDB binaries and extensions (or a [subset of extensions](
 |------------------------|------------------------------------------------------------------------------------------------------|
 | `freebsd_amd64` | FreeBSD AMD64 (x86_64) |
 | `freebsd_arm64` | FreeBSD ARM64 (AArch64) |
+| `linux_amd64_musl` | Linux AMD64 (x86_64) with musl libc, e.g., Alpine Linux |
 | `linux_arm64_android` | Android ARM64 (AArch64) |
 | `linux_arm64_gcc4` | Linux ARM64 (AArch64) with GCC 4, e.g., CentOS 7 |
+| `linux_arm64_musl` | Linux ARM64 (x86_64) with musl libc, e.g., Alpine Linux |
 | `wasm_eh` | WebAssembly Exception Handling |
 | `wasm_mvp` | WebAssembly Minimum Viable Product |
 | `windows_amd64_mingw` | Windows 10+ AMD64 (x86_64) with MinGW |
@@ -24685,6 +26331,7 @@ Note that there are many tools using DuckDB, which are not covered in the offici
 ## Data Import and Export
 
 * [Data import overview]({% link docs/guides/file_formats/overview.md %})
+* [File Access with the file: Protocol]({% link docs/guides/file_formats/file_access.md %})
 
 ### CSV Files
 
@@ -25852,15 +27499,22 @@ DuckDB has two types of indexes: zonemaps and ART indexes.
 
 ## Zonemaps
 
-DuckDB automatically creates [zonemaps](https://en.wikipedia.org/wiki/Block_Range_Index) (also known as min-max indexes) for the columns of all [general-purpose data types]({% link docs/sql/data_types/overview.md %}#general-purpose-data-types). These indexes are used for predicate pushdown into scan operators and computing aggregations. This means that if a filter criterion (like `WHERE column1 = 123`) is in use, DuckDB can skip any row group whose min-max range does not contain that filter value (e.g., a block with a min-max range of 1000 to 2000 will be omitted when comparing for `= 123` or `< 400`).
+DuckDB automatically creates [zonemaps](https://en.wikipedia.org/wiki/Block_Range_Index) (also known as min-max indexes) for the columns of all [general-purpose data types]({% link docs/sql/data_types/overview.md %}#general-purpose-data-types).
+Operations like predicate pushdown into scan operators and computing aggregations use zonemaps.
+If a filter criterion (like `WHERE column1 = 123`) is in use, DuckDB can skip any row group whose min-max range does not contain that filter value (e.g., it can omit a block with a min-max range of 1000 to 2000 when comparing for `= 123` or `< 400`).
 
 ### The Effect of Ordering on Zonemaps
 
-The more ordered the data within a column, the more useful the zonemap indexes will be. For example, in the worst case, a column could contain a random number on every row. DuckDB will be unlikely to be able to skip any row groups. The best case of ordered data commonly arises with `DATETIME` columns. If specific columns will be queried with selective filters, it is best to pre-order data by those columns when inserting it. Even an imperfect ordering will still be helpful.
+The more ordered the data within a column, the more valuable the zonemap indexes will be.
+For example, a column could contain a random number on every row in the worst case.
+Then, DuckDB will likely be unable to skip any row groups.
+If you query specific columns with selective filters, it is best to pre-order data by those columns when inserting it.
+Even an imperfect ordering will still be helpful.
+The best case of ordered data commonly arises with `DATETIME` columns.
 
 ### Microbenchmark: The Effect of Ordering
 
-For an example, letâ€™s repeat the [microbenchmark for timestamps]({% link docs/guides/performance/schema.md %}#microbenchmark-using-timestamps) with a timestamp column that sorted using an ascending order vs. an unordered one.
+For an example, letâ€™s repeat the [microbenchmark for timestamps]({% link docs/guides/performance/schema.md %}#microbenchmark-using-timestamps) with an ordered timestamp column using an ascending order vs. an unordered one.
 
 | Column type | Ordered | Storage size | Query time |
 |---|---|--:|--:|
@@ -25872,30 +27526,69 @@ It also allows the computation to be 1.5Ã— faster.
 
 ### Ordered Integers
 
-Another practical way to exploit ordering is to use the `INTEGER` type with automatic increments rather than `UUID` for columns that will be queried using selective filters. `UUID`s will likely be inserted in a random order, so many row groups in the table will need to be scanned to find a specific `UUID` value, while an ordered `INTEGER` column will allow all row groups to be skipped except the one that contains the value.
+Another practical way to exploit ordering is to use the `INTEGER` type with automatic increments rather than `UUID` for columns queried using selective filters.
+In a scenario where a table contains out-of-order `UUID`s, DuckDB has to scan many row groups to find a specific `UUID` value.
+An ordered `INTEGER` column allows skipping all row groups except those containing the value.
 
 ## ART Indexes
 
 DuckDB allows defining [Adaptive Radix Tree (ART) indexes](https://db.in.tum.de/~leis/papers/ART.pdf) in two ways.
 First, such an index is created implicitly for columns with `PRIMARY KEY`, `FOREIGN KEY`, and `UNIQUE` [constraints]({% link docs/guides/performance/schema.md %}#constraints).
-Second, explicitly running a the [`CREATE INDEX`]({% link docs/sql/indexes.md %}) statement creates an ART index on the target column(s).
+Second, explicitly running the [`CREATE INDEX`]({% link docs/sql/indexes.md %}) statement creates an ART index on the target column(s).
 
 The tradeoffs of having an ART index on a column are as follows:
 
-1. It enables efficient constraint checking upon changes (inserts, updates, and deletes) for non-bulky changes.
-2. Having an ART index makes changes to the affected column(s) slower compared to non-indexed performance. That is because of index maintenance for these operations.
+1. ART indexes enable constraint checking during changes (inserts, updates, and deletes).
+2. Changes on indexed tables perform worse than their non-indexed counterparts.
+That is because of index maintenance for these operations.
+3. For some use cases, _single-column ART indexes_ improve the performance of highly selective queries using the indexed column.
 
-Regarding query performance, an ART index has the following effects:
+An ART index does not affect the performance of join, aggregation, and sorting queries.
 
-1. It speeds up point queries and other highly selective queries using the indexed column(s), where the filtering condition returns approx. 0.1% of all rows or fewer. When in doubt, use [`EXPLAIN`]({% link docs/guides/meta/explain.md %}) to verify that your query plan uses the index scan.
-2. An ART index has no effect on the performance of join, aggregation, and sorting queries.
+### ART Index Scans
 
-Indexes are serialized to disk and deserialized lazily, i.e., when the database is reopened, operations using the index will only load the required parts of the index. Therefore, having an index will not cause any slowdowns when opening an existing database.
+ART index scans probe a single-column ART index for the requested data instead of scanning a table sequentially.
+Probing can improve the performance of some queries.
+DuckDB will try to use an index scan for equality and `IN(...)` conditions.
+It also pushes dynamic filters, e.g., from hash joins, into the scan, allowing dynamic index scans on these filters.
+
+Indexes are only eligible for index scans if they index a single column without expressions.
+E.g. the following index is eligible for index scans:
+
+```sql
+CREATE INDEX idx ON tbl (col1);
+```
+
+E.g. the following two indexes are **NOT** eligible for index scans:
+
+```sql
+CREATE INDEX idx_multi_column ON tbl (col1, col2);
+CREATE INDEX idx_expr ON tbl (col1 + 1);
+```
+
+The default threshold for index scans is `MAX(2048, 0.001 * table_cardinality)`.
+You can configure this threshold via `index_scan_percentage` and `index_scan_max_count`, or disable them by setting these values to zero.
+When in doubt, use [`EXPLAIN ANALYZE`]({% link docs/guides/meta/explain_analyze.md %}) to verify that your query plan uses the index scan.
+
+### Indexes and Memory
+
+DuckDB registers index memory through its buffer manager.
+However, these index buffers are not yet buffer-managed.
+That means DuckDB does not yet destroy any index buffers if it has to evict memory.
+Thus, indexes can take up a significant portion of DuckDB's available memory, potentially affecting the performance of memory-intensive queries.
+Re-attaching (`DETACH` + `ATTACH`) the database containing indexes can mitigate this effect, as we deserialize index memory lazily.
+Disabling index scans and re-attaching after changes can further decrease the impact of indexes on DuckDB's available memory.
+
+### Indexes and Opening Databases
+
+Indexes are serialized to disk and deserialized lazily, i.e., when reopening the database.
+Operations using the index will only load the required parts of the index.
+Therefore, having an index will not cause any slowdowns when opening an existing database.
 
 > Bestpractice We recommend following these guidelines:
 >
 > * Only use primary keys, foreign keys, or unique constraints, if these are necessary for enforcing constraints on your data.
-> * Do not define explicit indexes unless you have highly selective queries.
+> * Do not define explicit indexes unless you have highly selective queries and enough memory available.
 > * If you define an ART index, do so after bulk loading the data to the table. Adding an index prior to loading, either explicitly or via primary/foreign keys, is [detrimental to load performance]({% link docs/guides/performance/schema.md %}#microbenchmark-the-effect-of-primary-keys).
 
 ---
@@ -26164,37 +27857,53 @@ redirect_from:
 - /docs/guides/import/excel_export
 ---
 
-## Installing the Extension
-
-To export the data from a table to an Excel file, install and load the [spatial extension]({% link docs/extensions/spatial/overview.md %}).
-This is only needed once per DuckDB connection.
-
-```sql
-INSTALL spatial;
-LOAD spatial;
-```
+DuckDB supports exporting data to Excel `.xlsx` files. However, `.xls` files are not supported.
 
 ## Exporting Excel Sheets
 
-Then use the `COPY` statement. The file will contain one worksheet with the same name as the file, but without the `.xlsx` extension:
+To export a table to an Excel file, use the `COPY` statement with the `FORMAT XLSX` option:
 
 ```sql
-COPY tbl TO 'output.xlsx' WITH (FORMAT GDAL, DRIVER 'xlsx');
+COPY tbl TO 'output.xlsx' WITH (FORMAT XLSX);
 ```
 
 The result of a query can also be directly exported to an Excel file:
 
 ```sql
-COPY (SELECT * FROM tbl) TO 'output.xlsx' WITH (FORMAT GDAL, DRIVER 'xlsx');
+COPY (SELECT * FROM tbl) TO 'output.xlsx' WITH (FORMAT XLSX);
 ```
 
-> Dates and timestamps are currently not supported by the `xlsx` writer.
-> Cast columns of those types to `VARCHAR` prior to creating the `xlsx` file.
+To write the column names as the first row in the Excel file, use the `HEADER` option:
+
+```sql
+COPY tbl TO 'output.xlsx' WITH (FORMAT XLSX, HEADER TRUE);
+```
+
+To name the worksheet in the resulting Excel file, use the `SHEET` option:
+
+```sql
+COPY tbl TO 'output.xlsx' WITH (FORMAT XLSX, SHEET 'Sheet1');
+```
+
+## Type Conversions
+
+Because Excel only really supports storing numbers or strings - the equivalent of `VARCHAR` and `DOUBLE`, the following type conversions are automatically applied when writing XLSX files:
+- Numeric types are cast to `DOUBLE`.
+- Temporal types (`TIMESTAMP`, `DATE`, `TIME`, etc.) are converted to excel "serial" numbers, that is the number of days since 1900-01-01 for dates and the fraction of a day for times. These are then styled with a "number format" so that they appear as dates or times when opened in Excel.
+- `TIMESTAMP_TZ` and `TIME_TZ` are cast to UTC `TIMESTAMP` and `TIME` respectively, with the timezone information being lost.
+- `BOOLEAN`s are converted to `1` and `0`, with a "number format" applied to make them appear as `TRUE` and `FALSE` in Excel.
+- All other types are cast to `VARCHAR` and then written as text cells.
+
+But you can of course also explicitly cast columns to a different type before exporting them to Excel:
+
+```sql
+COPY (SELECT CAST(a AS VARCHAR), b FROM tbl) TO 'output.xlsx' WITH (FORMAT XLSX);
+```
 
 ## See Also
 
 DuckDB can also [import Excel files]({% link docs/guides/file_formats/excel_import.md %}).
-For additional details, see the [spatial extension page]({% link docs/extensions/spatial/overview.md %}) and the [GDAL XLSX driver page](https://gdal.org/drivers/vector/xlsx.html).
+For additional details on Excel support, see the [excel extension page]({% link docs/extensions/excel.md %}).
 
 ---
 duckdb/docs/guides/file_formats/excel_import.md
@@ -26206,105 +27915,153 @@ redirect_from:
 - /docs/guides/import/excel_import
 ---
 
-## Installing the Extension
-
-To read data from an Excel file, install and load the [spatial extension]({% link docs/extensions/spatial/overview.md %}).
-This is only needed once per DuckDB connection.
-
-```sql
-INSTALL spatial;
-LOAD spatial;
-```
+DuckDB supports reading Excel `.xlsx` files, however, `.xls` files are not supported.
 
 ## Importing Excel Sheets
 
-Use the `st_read` function in the `FROM` clause of a query:
+Use the `read_xlsx` function in the `FROM` clause of a query:
 
 ```sql
-SELECT * FROM st_read('test_excel.xlsx');
+SELECT * FROM read_xlsx('test_excel.xlsx');
 ```
 
-The `layer` parameter allows specifying the name of the Excel worksheet:
+Alternatively, you can omit the `read_xlsx` function and let DuckDB infer it from the extension:
 
 ```sql
-SELECT * FROM st_read('test_excel.xlsx', layer = 'Sheet1');
+SELECT * FROM 'test_excel.xlsx';
 ```
 
-### Creating a New Table
+However, if you want to be able to pass options to control the import behavior, you should use the `read_xlsx` function.
+
+One such option is the `sheet` parameter, which allows specifying the name of the Excel worksheet:
+
+```sql
+SELECT * FROM read_xlsx('test_excel.xlsx', sheet = 'Sheet1');
+```
+
+By default, the first sheet is loaded if no sheet is specified.
+
+## Importing a specific range
+
+To select a specific range of cells, use the `range` parameter with a string in the format `A1:B2`, where `A1` is the top-left cell and `B2` is the bottom-right cell:
+
+```sql
+SELECT * FROM read_xlsx('test_excel.xlsx', range = 'A1:B2');
+```
+
+This can also be used to e.g. skip the first 5 of rows:
+
+```sql
+SELECT * FROM read_xlsx('test_excel.xlsx', range = 'A5:Z');
+```
+
+Or skip the first 5 columns
+```sql
+SELECT * FROM read_xlsx('test_excel.xlsx', range = 'E:Z');
+```
+
+If no range parameter is provided, the range is automatically inferred as the rectangular region of cells between the first row of consecutive non-empty cells and the first empty row spanning the same columns.
+
+By default, if no range is provided DuckDB will stop reading the excel file at when encountering an empty row. But when a range is provided, the default is to read until the end of the range. This behavior can be controlled with the `stop_at_empty` parameter:
+
+```sql
+-- Read the first 100 rows, or until the first empty row, whichever comes first
+SELECT * FROM read_xlsx('test_excel.xlsx', range = '1:100', stop_at_empty = true);
+
+-- Always read the whole sheet, even if it contains empty rows
+SELECT * FROM read_xlsx('test_excel.xlsx', stop_at_empty = false);
+```
+
+## Creating a New Table
 
 To create a new table using the result from a query, use `CREATE TABLE ... AS` from a `SELECT` statement:
 
 ```sql
 CREATE TABLE new_tbl AS
-SELECT * FROM st_read('test_excel.xlsx', layer = 'Sheet1');
+SELECT * FROM read_xlsx('test_excel.xlsx', sheet = 'Sheet1');
 ```
 
-### Loading to an Existing Table
+## Loading to an Existing Table
 
 To load data into an existing table from a query, use `INSERT INTO` from a `SELECT` statement:
 
 ```sql
 INSERT INTO tbl
-SELECT * FROM st_read('test_excel.xlsx', layer = 'Sheet1');
+SELECT * FROM read_xlsx('test_excel.xlsx', sheet = 'Sheet1');
 ```
 
-### Options
-
-Several configuration options are also available for the underlying GDAL library that is doing the XLSX parsing.
-You can pass them via the `open_options` parameter of the `st_read` function as a list of `'KEY=VALUE'` strings.
-
-#### Importing a Sheet with/without a Header
-
-The option `HEADERS` has three possible values:
-
-* `FORCE`: treat the first row as a header
-* `DISABLE` treat the first row as a row of data
-* `AUTO` attempt auto-detection (default)
-
-For example, to treat the first row as a header, run:
+Alternatively, you can use the `COPY` statement with the `XLSX` format option to import an Excel file into an existing table:
 
 ```sql
-SELECT *
-FROM st_read(
-'test_excel.xlsx',
-layer = 'Sheet1',
-open_options = ['HEADERS=FORCE']
-);
+COPY tbl FROM 'test_excel.xlsx' (FORMAT XLSX, sheet 'Sheet1');
 ```
 
-#### Detecting Types
+When using the `COPY` statement to load an excel file into a existing table, the types of the columns in the target table will be used to coerce the types of the cells in the Excel sheet.
 
-The option `FIELD_TYPE` defines how field types should be treated:
+## Importing a Sheet with/without a Header
 
-* `STRING`: all fields should be loaded as strings (`VARCHAR` type)
-* `AUTO`: field types should be auto-detected (default)
-
-For example, to treat the first row as a header and use auto-detection for types, run:
+To treat the first row as containing the names of the resulting columns, use the `header` parameter:
 
 ```sql
-SELECT *
-FROM st_read(
-'test_excel.xlsx',
-layer = 'Sheet1',
-open_options = ['HEADERS=FORCE', 'FIELD_TYPES=AUTO']
-);
+SELECT * FROM read_xlsx('test_excel.xlsx', header = true);
 ```
 
-To treat the fields as strings:
+By default, the first row is treated as a header if all the cells in the first row (within the inferred or supplied range) are non-empty strings. To disable this behavior, set `header` to `false`.
+
+## Detecting Types
+
+When not importing into an existing table, DuckDB will attempt to infer the types of the columns in the Excel sheet based on their contents and/or "number format".
+
+- `TIMESTAMP`, `TIME`, `DATE` and `BOOLEAN` types are inferred when possible based on the "number format" applied to the cell.
+- Text cells containing `TRUE` and `FALSE` are inferred as `BOOLEAN`.
+- Empty cells are considered to be of type `DOUBLE` by default.
+- Otherwise cells are inferred as `VARCHAR` or `DOUBLE` based on their contents.
+
+This behavior can be adjusted in the following ways.
+
+To treat all empty cells as `VARCHAR` instead of `DOUBLE`, set `empty_as_varchar` to `true`:
 
 ```sql
-SELECT *
-FROM st_read(
-'test_excel.xlsx',
-layer = 'Sheet1',
-open_options = ['FIELD_TYPES=STRING']
-);
+SELECT * FROM read_xlsx('test_excel.xlsx', empty_as_varchar = true);
+```
+
+To disable type inference completely and treat all cells as `VARCHAR`, set `all_varchar` to `true`:
+
+```sql
+SELECT * FROM read_xlsx('test_excel.xlsx', all_varchar = true);
+```
+
+Additionally, if the `ignore_errors` parameter is set to `true`, DuckDB will silently replace cells that can't be cast to the corresponding inferred column type with `NULL`'s.
+
+```sql
+SELECT * FROM read_xlsx('test_excel.xlsx', ignore_errors = true);
 ```
 
 ## See Also
 
 DuckDB can also [export Excel files]({% link docs/guides/file_formats/excel_export.md %}).
-For additional details on Excel support, see the [spatial extension page]({% link docs/extensions/spatial/overview.md %}), the [GDAL XLSX driver page](https://gdal.org/drivers/vector/xlsx.html), and the [GDAL configuration options page](https://gdal.org/user/configoptions.html#configoptions).
+For additional details on Excel support, see the [excel extension page]({% link docs/extensions/excel.md %}).
+
+---
+duckdb/docs/guides/file_formats/file_access.md
+---
+---
+layout: docu
+title: "File Access with the file: Protocol"
+---
+
+DuckDB supports using the `file:` protocol. It currently supports the following formats:
+
+* `file:/some/path` (host omitted completely)
+* `file:///some/path` (empty host)
+* `file://localhost/some/path` (`localhost` as host)
+
+Note that the following formats are *not* supported because they are non-standard:
+
+* `file:some/relative/path` (relative path)
+* `file://some/path` (double-slash path)
+
+Additionally, the `file:` protocol currently does not support remote (non-localhost) hosts.
 
 ---
 duckdb/docs/guides/file_formats/json_export.md
@@ -30208,6 +31965,7 @@ Below are parameters that can be passed to the [`read_csv` function](#csv-functi
 | `sep` | Delimiter character used to separate columns within each line. Alias for `delim`. | `VARCHAR` | `,` |
 | `skip` | Number of lines to skip at the start of each file. | `BIGINT` | 0 |
 | `store_rejects` | Skip any lines with errors and store them in the rejects table. | `BOOL` | `false` |
+| `strict_mode` | Enforces the strictness level of the CSV Reader. When set to `true`, the parser will throw an error upon encountering any issues. When set to `false`, the parser will attempt to read structurally incorrect files. It is important to note that reading structurally incorrect files can cause ambiguity; therefore, this option should be used with caution. | `BOOL` | `true` |
 | `timestampformat` | [Timestamp format]({% link docs/sql/functions/dateformat.md %}) used when parsing and writing timestamps. | `VARCHAR` | (empty) |
 | `timestamp_format` | Alias for `timestampformat`; only available in the `COPY` statement. | `VARCHAR` | (empty) |
 | `types` or `dtypes` or `column_types` | Column types, as either a list (by position) or a struct (by name). See [example]({% link docs/data/csv/tips.md %}#override-the-types-of-specific-columns). | `VARCHAR[]` or `STRUCT` | (empty) |
@@ -32955,9 +34713,11 @@ Configuration options come with different default [scopes]({% link docs/sql/stat
 | `allow_persistent_secrets` | Allow the creation of persistent secrets, that are stored and loaded on restarts | `BOOLEAN` | `true` |
 | `allow_unredacted_secrets` | Allow printing unredacted secrets | `BOOLEAN` | `false` |
 | `allow_unsigned_extensions` | Allow to load extensions with invalid or missing signatures | `BOOLEAN` | `false` |
-| `arrow_large_buffer_size` | Whether arrow buffers for strings, blobs, uuids and bits should be exported using large buffers | `BOOLEAN` | `false` |
+| `allowed_directories` | List of directories/prefixes that are ALWAYS allowed to be queried - even when enable_external_access is false | `VARCHAR[]` | `[]` |
+| `allowed_paths` | List of files that are ALWAYS allowed to be queried - even when enable_external_access is false | `VARCHAR[]` | `[]` |
+| `arrow_large_buffer_size` | Whether Arrow buffers for strings, blobs, uuids and bits should be exported using large buffers | `BOOLEAN` | `false` |
 | `arrow_lossless_conversion` | Whenever a DuckDB type does not have a clear native or canonical extension match in Arrow, export the types with a duckdb.type_name extension name. | `BOOLEAN` | `false` |
-| `arrow_output_list_view` | Whether export to arrow format should use ListView as the physical layout for LIST columns | `BOOLEAN` | `false` |
+| `arrow_output_list_view` | Whether export to Arrow format should use ListView as the physical layout for LIST columns | `BOOLEAN` | `false` |
 | `autoinstall_extension_repository` | Overrides the custom endpoint for extension installation on autoloading | `VARCHAR` | |
 | `autoinstall_known_extensions` | Whether known extensions are allowed to be automatically installed when a query depends on them | `BOOLEAN` | `true` |
 | `autoload_known_extensions` | Whether known extensions are allowed to be automatically loaded when a query depends on them | `BOOLEAN` | `true` |
@@ -32969,20 +34729,26 @@ Configuration options come with different default [scopes]({% link docs/sql/stat
 | `custom_user_agent` | Metadata from DuckDB callers | `VARCHAR` | |
 | `default_block_size` | The default block size for new duckdb database files (new as-in, they do not yet exist). | `UBIGINT` | `262144` |
 | `default_collation` | The collation setting used when none is specified | `VARCHAR` | |
-| `default_null_order`, `null_order` | Null ordering used when none is specified (`NULLS_FIRST`, `NULLS_LAST`, `NULLS_FIRST_ON_ASC_LAST_ON_DESC` or `NULLS_LAST_ON_ASC_FIRST_ON_DESC`) | `VARCHAR` | `NULLS_LAST` |
+| `default_null_order`, `null_order` | NULL ordering used when none is specified (`NULLS_FIRST` or `NULLS_LAST`) | `VARCHAR` | `NULLS_LAST` |
 | `default_order` | The order type used when none is specified (`ASC` or `DESC`) | `VARCHAR` | `ASC` |
 | `default_secret_storage` | Allows switching the default storage for secrets | `VARCHAR` | `local_file` |
+| `disable_parquet_prefetching` | Disable the prefetching mechanism in Parquet | `BOOLEAN` | `false` |
+| `disabled_compression_methods` | Disable a specific set of compression methods (comma separated) | `VARCHAR` | |
 | `disabled_filesystems` | Disable specific file systems preventing access (e.g., LocalFileSystem) | `VARCHAR` | |
+| `disabled_log_types` | Sets the list of disabled loggers | `VARCHAR` | |
 | `duckdb_api` | DuckDB API surface | `VARCHAR` | `cli` |
 | `enable_external_access` | Allow the database to access external state (through e.g., loading/installing modules, COPY TO/FROM, CSV readers, pandas replacement scans, etc) | `BOOLEAN` | `true` |
 | `enable_fsst_vectors` | Allow scans on FSST compressed segments to emit compressed vectors to utilize late decompression | `BOOLEAN` | `false` |
+| `enable_geoparquet_conversion` | Attempt to decode/encode geometry data in/as GeoParquet files if the spatial extension is present. | `BOOLEAN` | `true` |
 | `enable_http_metadata_cache` | Whether or not the global http metadata is used to cache HTTP metadata | `BOOLEAN` | `false` |
+| `enable_logging` | Enables the logger | `BOOLEAN` | `0` |
 | `enable_macro_dependencies` | Enable created MACROs to create dependencies on the referenced objects (such as tables) | `BOOLEAN` | `false` |
-| `enable_object_cache` | Whether or not object cache is used to cache e.g., Parquet metadata | `BOOLEAN` | `false` |
+| `enable_object_cache` | [PLACEHOLDER] Legacy setting - does nothing | `BOOLEAN` | `NULL` |
 | `enable_server_cert_verification` | Enable server side certificate verification. | `BOOLEAN` | `false` |
 | `enable_view_dependencies` | Enable created VIEWs to create dependencies on the referenced objects (such as tables) | `BOOLEAN` | `false` |
+| `enabled_log_types` | Sets the list of enabled loggers | `VARCHAR` | |
 | `extension_directory` | Set the directory to store extensions in | `VARCHAR` | |
-| `external_threads` | The number of external threads that work on DuckDB tasks. | `BIGINT` | `1` |
+| `external_threads` | The number of external threads that work on DuckDB tasks. | `UBIGINT` | `1` |
 | `force_download` | Forces upfront download of file | `BOOLEAN` | `false` |
 | `http_keep_alive` | Keep alive connections. Setting this to false can help when running into connection failures | `BOOLEAN` | `true` |
 | `http_proxy_password` | Password for HTTP proxy | `VARCHAR` | |
@@ -32996,11 +34762,16 @@ Configuration options come with different default [scopes]({% link docs/sql/stat
 | `index_scan_max_count` | The maximum index scan count sets a threshold for index scans. If fewer than MAX(index_scan_max_count, index_scan_percentage * total_row_count) rows match, we perform an index scan instead of a table scan. | `UBIGINT` | `2048` |
 | `index_scan_percentage` | The index scan percentage sets a threshold for index scans. If fewer than MAX(index_scan_max_count, index_scan_percentage * total_row_count) rows match, we perform an index scan instead of a table scan. | `DOUBLE` | `0.001` |
 | `lock_configuration` | Whether or not the configuration can be altered | `BOOLEAN` | `false` |
+| `logging_level` | The log level which will be recorded in the log | `VARCHAR` | `INFO` |
+| `logging_mode` | Enables the logger | `VARCHAR` | `LEVEL_ONLY` |
+| `logging_storage` | Set the logging storage (memory/stdout/file) | `VARCHAR` | `memory` |
 | `max_memory`, `memory_limit` | The maximum memory of the system (e.g., 1GB) | `VARCHAR` | 80% of RAM |
-| `max_temp_directory_size` | The maximum amount of data stored inside the 'temp_directory'. The default value of `0 bytes` is a placeholder to mean that the entire available disk space on that drive may be used. To actually limit the `temp_directory ` to `0 bytes`, set `temp_directory` to `NULL` or the empty string. | `VARCHAR` | `0 bytes` |
-| `max_vacuum_tasks` | The maximum vacuum tasks to schedule during a checkpoint | `UBIGINT` | `100` |
+| `max_temp_directory_size` | The maximum amount of data stored inside the 'temp_directory' (when set) (e.g., 1GB) | `VARCHAR` | `90% of available disk space` |
+| `max_vacuum_tasks` | The maximum vacuum tasks to schedule during a checkpoint. | `UBIGINT` | `100` |
 | `old_implicit_casting` | Allow implicit casting to/from VARCHAR | `BOOLEAN` | `false` |
+| `parquet_metadata_cache` | Cache Parquet metadata - useful when reading the same files multiple times | `BOOLEAN` | `false` |
 | `password` | The password to use. Ignored for legacy compatibility. | `VARCHAR` | `NULL` |
+| `prefetch_all_parquet_files` | Use the prefetching mechanism for all types of parquet files | `BOOLEAN` | `false` |
 | `preserve_insertion_order` | Whether or not to preserve insertion order. If set to false the system is allowed to re-order any results that do not contain ORDER BY clauses. | `BOOLEAN` | `true` |
 | `produce_arrow_string_view` | Whether strings should be produced by DuckDB in Utf8View format instead of Utf8 | `BOOLEAN` | `false` |
 | `s3_access_key_id` | S3 Access Key ID | `VARCHAR` | |
@@ -33016,15 +34787,17 @@ Configuration options come with different default [scopes]({% link docs/sql/stat
 | `s3_use_ssl` | S3 use SSL | `BOOLEAN` | `true` |
 | `secret_directory` | Set the directory to which persistent secrets are stored | `VARCHAR` | `~/.duckdb/stored_secrets` |
 | `storage_compatibility_version` | Serialize on checkpoint with compatibility for a given duckdb version | `VARCHAR` | `v0.10.2` |
-| `temp_directory` | Set the directory to which to write temp files. Set to `NULL` or empty string to disable. | `VARCHAR` | `âŸ¨database_nameâŸ©.tmp` or `.tmp` (in in-memory mode) |
+| `temp_directory` | Set the directory to which to write temp files | `VARCHAR` | `âŸ¨database_nameâŸ©.tmp` or `.tmp` (in in-memory mode) |
 | `threads`, `worker_threads` | The number of total threads used by the system. | `BIGINT` | # CPU cores |
 | `username`, `user` | The username to use. Ignored for legacy compatibility. | `VARCHAR` | `NULL` |
+| `zstd_min_string_length` | The (average) length at which to enable ZSTD compression, defaults to 4096 | `UBIGINT` | `4096` |
 
 ### Local Configuration Options
 
 | Name | Description | Type | Default value |
 |----|--------|--|---|
-| `custom_profiling_settings` | Accepts a `JSON` enabling custom metrics | `VARCHAR` | `{"RESULT_SET_SIZE": "true", "OPERATOR_TIMING": "true", "OPERATOR_ROWS_SCANNED": "true", "CUMULATIVE_ROWS_SCANNED": "true", "OPERATOR_CARDINALITY": "true", "OPERATOR_TYPE": "true", "CUMULATIVE_CARDINALITY": "true", "EXTRA_INFO": "true", "CPU_TIME": "true", "BLOCKED_THREAD_TIME": "true", "QUERY_NAME": "true"}` |
+| `custom_profiling_settings` | Accepts a `JSON` enabling custom metrics | `VARCHAR` | `{"ROWS_RETURNED": "true", "LATENCY": "true", "RESULT_SET_SIZE": "true", "OPERATOR_TIMING": "true", "OPERATOR_ROWS_SCANNED": "true", "CUMULATIVE_ROWS_SCANNED": "true", "OPERATOR_CARDINALITY": "true", "OPERATOR_TYPE": "true", "OPERATOR_NAME": "true", "CUMULATIVE_CARDINALITY": "true", "EXTRA_INFO": "true", "CPU_TIME": "true", "BLOCKE |
+| `dynamic_or_filter_threshold` | The maximum amount of OR filters we generate dynamically from a hash join | `UBIGINT` | `50` |
 | `enable_http_logging` | Enables HTTP logging | `BOOLEAN` | `false` |
 | `enable_profiling` | Enables profiling, and sets the output format (`JSON`, `QUERY_TREE`, `QUERY_TREE_OPTIMIZER`) | `VARCHAR` | `NULL` |
 | `enable_progress_bar_print` | Controls the printing of the progress bar, when 'enable_progress_bar' is true | `BOOLEAN` | `true` |
@@ -33034,25 +34807,26 @@ Configuration options come with different default [scopes]({% link docs/sql/stat
 | `file_search_path` | A comma separated list of directories to search for input files | `VARCHAR` | |
 | `home_directory` | Sets the home directory used by the system | `VARCHAR` | |
 | `http_logging_output` | The file to which HTTP logging output should be saved, or empty to print to the terminal | `VARCHAR` | |
-| `ieee_floating_point_ops` | Use IEE754-compliant floating point operations (returning NAN instead of errors/NULL) | `BOOLEAN` | `true` |
+| `ieee_floating_point_ops` | Use IEE754-compliant floating point operations (returning NAN instead of errors/NULL). | `BOOLEAN` | `true` |
 | `integer_division` | Whether or not the / operator defaults to integer division, or to floating point division | `BOOLEAN` | `false` |
+| `late_materialization_max_rows` | The maximum amount of rows in the LIMIT/SAMPLE for which we trigger late materialization | `UBIGINT` | `50` |
 | `log_query_path` | Specifies the path to which queries should be logged (default: NULL, queries are not logged) | `VARCHAR` | `NULL` |
 | `max_expression_depth` | The maximum expression depth limit in the parser. WARNING: increasing this setting and using very deep expressions might lead to stack overflow errors. | `UBIGINT` | `1000` |
 | `merge_join_threshold` | The number of rows we need on either table to choose a merge join | `UBIGINT` | `1000` |
 | `nested_loop_join_threshold` | The number of rows we need on either table to choose a nested loop join | `UBIGINT` | `5` |
-| `order_by_non_integer_literal` | Allow ordering by non-integer literals - ordering by such literals has no effect | `BOOLEAN` | `false` |
+| `order_by_non_integer_literal` | Allow ordering by non-integer literals - ordering by such literals has no effect. | `BOOLEAN` | `false` |
 | `ordered_aggregate_threshold` | The number of rows to accumulate before sorting, used for tuning | `UBIGINT` | `262144` |
 | `partitioned_write_flush_threshold` | The threshold in number of rows after which we flush a thread state when writing using `PARTITION_BY` | `UBIGINT` | `524288` |
 | `partitioned_write_max_open_files` | The maximum amount of files the system can keep open before flushing to disk when writing using `PARTITION_BY` | `UBIGINT` | `100` |
-| `perfect_ht_threshold` | Threshold in bytes for when to use a perfect hash table | `BIGINT` | `12` |
-| `pivot_filter_threshold` | The threshold to switch from using filtered aggregates to LIST with a dedicated pivot operator | `BIGINT` | `20` |
-| `pivot_limit` | The maximum number of pivot columns in a pivot statement | `BIGINT` | `100000` |
+| `perfect_ht_threshold` | Threshold in bytes for when to use a perfect hash table | `UBIGINT` | `12` |
+| `pivot_filter_threshold` | The threshold to switch from using filtered aggregates to LIST with a dedicated pivot operator | `UBIGINT` | `20` |
+| `pivot_limit` | The maximum number of pivot columns in a pivot statement | `UBIGINT` | `100000` |
 | `prefer_range_joins` | Force use of range joins with mixed predicates | `BOOLEAN` | `false` |
 | `preserve_identifier_case` | Whether or not to preserve the identifier case, instead of always lowercasing all non-quoted identifiers | `BOOLEAN` | `true` |
 | `profile_output`, `profiling_output` | The file to which profile output should be saved, or empty to print to the terminal | `VARCHAR` | |
 | `profiling_mode` | The profiling mode (`STANDARD` or `DETAILED`) | `VARCHAR` | `NULL` |
 | `progress_bar_time` | Sets the time (in milliseconds) how long a query needs to take before we start printing a progress bar | `BIGINT` | `2000` |
-| `scalar_subquery_error_on_multiple_rows` | When a scalar subquery returns multiple rows - return a random row instead of returning an error | `BOOLEAN` | `true` |
+| `scalar_subquery_error_on_multiple_rows` | When a scalar subquery returns multiple rows - return a random row instead of returning an error. | `BOOLEAN` | `true` |
 | `schema` | Sets the default search schema. Equivalent to setting search_path to a single value. | `VARCHAR` | `main` |
 | `search_path` | Sets the default catalog search path as a comma-separated list of values | `VARCHAR` | |
 | `streaming_buffer_size` | The maximum memory to buffer between fetching from a streaming result (e.g., 1GB) | `VARCHAR` | `976.5 KiB` |
@@ -33562,6 +35336,27 @@ PRAGMA disable_object_cache;
 
 ## Checkpointing
 
+#### Compression
+
+During checkpointing, the existing column data + any new changes get compressed.
+There exist a couple pragmas to influence which compression functions are considered.
+
+##### Force Compression
+
+Prefer using this compression method over any other method if possible:
+
+```sql
+PRAGMA force_compression = 'bitpacking';
+```
+
+##### Disabled Compression Methods
+
+Avoid using any of the listed compression methods from the comma separated list:
+
+```sql
+PRAGMA disabled_compression_methods = 'fsst,rle';
+```
+
 #### Force Checkpoint
 
 When [`CHECKPOINT`]({% link docs/sql/statements/checkpoint.md %}) is called when no changes are made, force a checkpoint regardless:
@@ -33941,7 +35736,7 @@ A [min-max index](https://en.wikipedia.org/wiki/Block_Range_Index) (also known a
 
 An [Adaptive Radix Tree (ART)](https://db.in.tum.de/~leis/papers/ART.pdf) is mainly used to ensure primary key constraints and to speed up point and very highly selective (i.e., < 0.1%) queries. ART indexes are automatically created for columns with a `UNIQUE` or `PRIMARY KEY` constraint and can be defined using `CREATE INDEX`.
 
-> Warning ART indexes must currently be able to fit in-memory. Avoid creating ART indexes if the index does not fit in memory.
+> Warning ART indexes must currently be able to fit in-memory during index creation. Avoid creating ART indexes if the index does not fit in memory during index creation.
 
 ### Indexes Defined by Extensions
 
@@ -33962,46 +35757,33 @@ ART indexes create a secondary copy of the data in a second location â€“ th
 
 > As expected, indexes have a strong effect on performance, slowing down loading and updates, but speeding up certain queries. Please consult the [Performance Guide]({% link docs/guides/performance/indexing.md %}) for details.
 
-### Updates Become Deletes and Inserts
+### Constraint Checking in `UPDATE` Statements
 
-When an update statement is executed on a column that is present in an index, the statement is transformed into a *delete* of the original row followed by an *insert*.
-This has certain performance implications, particularly for wide tables, as entire rows are rewritten instead of only the affected columns.
+`UPDATE` statements on indexed columns are transformed into a `DELETE` of the original row followed by an `INSERT` of the updated row.
+This rewrite has performance implications, particularly for wide tables, as entire rows are rewritten instead of only the affected columns.
 
-### Over-Eager Unique Constraint Checking
+Additionally, it causes the following constraint checking limitation of `UPDATE` statements. The same limitation exists in other DBMSs, like postgres.
 
-Due to the presence of transactions, data can only be removed from the index after (1) the transaction that performed the delete is committed, and (2) no further transactions exist that refer to the old entry still present in the index. As a result of this â€“ transactions that perform *deletions followed by insertions* may trigger unexpected unique constraint violations, as the deleted tuple has not actually been removed from the index yet. For example:
-
-```sql
-CREATE TABLE students (id INTEGER, name VARCHAR);
-INSERT INTO students VALUES (1, 'John Doe');
-CREATE UNIQUE INDEX students_id ON students (id);
-
-BEGIN; -- start transaction
-DELETE FROM students WHERE id = 1;
-INSERT INTO students VALUES (1, 'Jane Doe');
-```
-
-The last statement fails with the following error:
-
-```console
-Constraint Error: Duplicate key "id: 1" violates unique constraint. If this is an unexpected constraint violation please double check with the known index limitations section in our documentation (https://duckdb.org/docs/sql/indexes).
-```
-
-This, combined with the fact that updates are turned into deletions and insertions within the same transaction, means that updating rows in the presence of unique or primary key constraints can often lead to unexpected unique constraint violations. For example, in the following query, `SET id = 1` causes a `Constraint Error` to occur.
+In the example below, note how the number of rows exceeds DuckDB's standard vector size, which is 2048.
+The `UPDATE` statement is rewritten into a `DELETE`, followed by an `INSERT`.
+This rewrite happens per chunk of data (2048 rows) moving through DuckDB's processing pipeline.
+When updating `i = 2047` to `i = 2048`, we do not yet know that 2048 becomes 2049, and so forth.
+That is because we have not yet seen that chunk.
+Thus, we throw a constraint violation.
 
 ```sql
-CREATE TABLE students (id INTEGER PRIMARY KEY, name VARCHAR);
-INSERT INTO students VALUES (1, 'John Doe');
-
-UPDATE students SET id = 1 WHERE id = 1;
+CREATE TABLE my_table (i INT PRIMARY KEY);
+INSERT INTO my_table SELECT range FROM range(3_000);
+UPDATE my_table SET i = i + 1;
 ```
 
-```console
-Constraint Error: Duplicate key "id: 1" violates primary key constraint.
-If this is an unexpected constraint violation please double check with the known index limitations section in our documentation (https://duckdb.org/docs/sql/indexes).
+```sql
+Constraint Error:
+Duplicate key "i: 2048" violates primary key constraint.
 ```
 
-Currently, this is an expected limitation of DuckDB â€“ although we aim to resolve this in the future.
+A workaround is to split the `UPDATE` into a `DELETE ... RETURNING ...` followed by an `INSERT`.
+Both statements should be run inside a transaction via `BEGIN`, and eventually `COMMIT`.
 
 ---
 duckdb/docs/sql/introduction.md
@@ -35055,74 +36837,9 @@ title: Star Expression
 railroad: expressions/star.js
 ---
 
-## Examples
-
-Select all columns present in the `FROM` clause:
-
-```sql
-SELECT * FROM table_name;
-```
-
-Count the number of rows in a table:
-
-```sql
-SELECT count(*) FROM table_name;
-```
-
-DuckDB offers a shorthand for `count(*)` expressions where the `*` may be omitted:
-
-```sql
-SELECT count() FROM table_name;
-```
-
-Select all columns from the table called `table_name`:
-
-```sql
-SELECT table_name.*
-FROM table_name
-JOIN other_table_name USING (id);
-```
-
-Select all columns except the city column from the addresses table:
-
-```sql
-SELECT * EXCLUDE (city)
-FROM addresses;
-```
-
-Select all columns from the addresses table, but replace city with `lower(city)`:
-
-```sql
-SELECT * REPLACE (lower(city) AS city)
-FROM addresses;
-```
-
-Select all columns matching the given expression:
-
-```sql
-SELECT COLUMNS(c -> c LIKE '%num%')
-FROM addresses;
-```
-
-Select all columns matching the given regex from the table:
-
-```sql
-SELECT COLUMNS('number\d+')
-FROM addresses;
-```
-
-Select columns using a list:
-
-```sql
-SELECT COLUMNS(['city', 'zip_code'])
-FROM addresses;
-```
-
 ## Syntax
 
 
-
-## Star Expression
 
 The `*` expression can be used in a `SELECT` statement to select all columns that are projected in the `FROM` clause.
 
@@ -35131,7 +36848,31 @@ SELECT *
 FROM tbl;
 ```
 
-The `*` expression can be modified using the `EXCLUDE` and `REPLACE`.
+### `TABLE.*` and `STRUCT.*`
+
+The `*` expression can be prepended by a table name to select only columns from that table.
+
+```sql
+SELECT table_name.*
+FROM table_name
+JOIN other_table_name USING (id);
+```
+
+Similarly, the `*` expression can also be used to retrieve all keys from a struct as separate columns.
+This is particularly useful when a prior operation creates a struct of unknown shape, or if a query must handle any potential struct keys.
+See the [`STRUCT` data type]({% link docs/sql/data_types/struct.md %}) and [`STRUCT` functions]({% link docs/sql/functions/struct.md %}) pages for more details on working with structs.
+
+For example:
+
+```sql
+SELECT st.* FROM (SELECT {'x': 1, 'y': 2, 'z': 3} AS st);
+```
+
+
+
+| x | y | z |
+|--:|--:|--:|
+| 1 | 2 | 3 |
 
 ### `EXCLUDE` Clause
 
@@ -35144,16 +36885,44 @@ FROM tbl;
 
 ### `REPLACE` Clause
 
-`REPLACE` allows us to replace specific values in columns as specified by an expression.
+`REPLACE` allows us to replace specific columns by alternative expressions.
 
 ```sql
-SELECT * REPLACE (col / 1_000 AS col)
+SELECT * REPLACE (col1 / 1_000 AS col1, col2 / 1_000 AS col2)
+FROM tbl;
+```
+
+### `RENAME` Clause
+
+`RENAME` allows us to replace specific columns.
+
+```sql
+SELECT * RENAME (col1 AS height, col2 AS width)
+FROM tbl;
+```
+
+### Column Filtering via Pattern Matching Operators
+
+The [pattern matching operators]({% link docs/sql/functions/pattern_matching.md %}) `LIKE`, `GLOB`, `SIMILAR TO` and their variants allow us to select columns by matching their names to patterns.
+
+```sql
+SELECT * LIKE 'col%'
+FROM tbl;
+```
+
+```sql
+SELECT * GLOB 'col*'
+FROM tbl;
+```
+
+```sql
+SELECT * SIMILAR TO 'col.'
 FROM tbl;
 ```
 
 ## `COLUMNS` Expression
 
-The `COLUMNS` expression can be used to execute the same expression on the values in multiple columns. For example:
+The `COLUMNS` expression is similar to the regular star expression, but additionally allows us to execute the same expression on the resulting columns.
 
 ```sql
 CREATE TABLE numbers (id INTEGER, number INTEGER);
@@ -35164,8 +36933,6 @@ SELECT min(COLUMNS(*)), count(COLUMNS(*)) FROM numbers;
 | id | number | id | number |
 |---:|-------:|---:|-------:|
 | 1 | 10 | 3 | 2 |
-
-The `*` expression in the `COLUMNS` statement can also contain `EXCLUDE` or `REPLACE`, similar to regular star expressions.
 
 ```sql
 SELECT
@@ -35178,7 +36945,7 @@ FROM numbers;
 |---:|-----------------------------:|---:|
 | 1 | 11 | 3 |
 
-`COLUMNS` expressions can also be combined, as long as the `COLUMNS` contains the same (star) expression:
+`COLUMNS` expressions can also be combined, as long as they contain the same star expression:
 
 ```sql
 SELECT COLUMNS(*) + COLUMNS(*) FROM numbers;
@@ -35189,6 +36956,8 @@ SELECT COLUMNS(*) + COLUMNS(*) FROM numbers;
 | 2 | 20 |
 | 4 | 40 |
 | 6 | NULL |
+
+### `COLUMNS` Expression in a `WHERE` Clause
 
 `COLUMNS` expressions can also be used in `WHERE` clauses. The conditions are applied to all columns and are combined using the logical `AND` operator.
 
@@ -35208,9 +36977,9 @@ WHERE COLUMNS(*) > 1; -- equivalent to: x > 1 AND y > 1 AND z > 1
 |--:|--:|--:|
 | 2 | 3 | 4 |
 
-## `COLUMNS` Regular Expression
+### Regular Expressions in a `COLUMNS` Expression
 
-`COLUMNS` supports passing a regex in as a string constant:
+`COLUMNS` expressions don't currently support the pattern matching operators, but they do supports regular expression matching by simply passing a string constant in place of the star:
 
 ```sql
 SELECT COLUMNS('(id|numbers?)') FROM numbers;
@@ -35222,9 +36991,9 @@ SELECT COLUMNS('(id|numbers?)') FROM numbers;
 | 2 | 20 |
 | 3 | NULL |
 
-### Renaming Columns Using a `COLUMNS` Expression
+### Renaming Columns with Regular Expressions in a `COLUMNS` Expression
 
-The matches of capture groups can be used to rename columns selected by a regular expression.
+The matches of capture groups in regular expressions can be used to rename matching columns.
 The capture groups are one-indexed; `\0` is the original column name.
 
 For example, to select the first three letters of colum names, run:
@@ -35246,7 +37015,7 @@ CREATE TABLE tbl ("Foo:Bar" INTEGER, "Foo:Baz" INTEGER, "Foo:Qux" INTEGER);
 SELECT COLUMNS('(\w*):(\w*)') AS '\1\2' FROM tbl;
 ```
 
-## `COLUMNS` Lambda Function
+### `COLUMNS` Lambda Function
 
 `COLUMNS` also supports passing in a lambda function. The lambda function will be evaluated for all columns present in the `FROM` clause, and only columns that match the lambda function will be returned. This allows the execution of arbitrary expressions in order to select and rename columns.
 
@@ -35259,6 +37028,22 @@ SELECT COLUMNS(c -> c LIKE '%num%') FROM numbers;
 | 10 |
 | 20 |
 | NULL |
+
+### `COLUMNS` List
+
+`COLUMNS` also supports passing in a list of column names.
+
+```sql
+SELECT COLUMNS(['id', 'num']) FROM numbers;
+```
+
+
+
+| id | num |
+|---:|-----:|
+| 1 | 10 |
+| 2 | 20 |
+| 3 | NULL |
 
 ## `*COLUMNS` Unpacked Columns
 
@@ -35615,6 +37400,7 @@ Aggregates are functions that *combine* multiple rows into a single value. Aggre
 ### `DISTINCT` Clause in Aggregate Functions
 
 When the `DISTINCT` clause is provided, only distinct values are considered in the computation of the aggregate. This is typically used in combination with the `count` aggregate to get the number of distinct elements; but it can be used together with any aggregate function in the system.
+There are some aggregates that are insensitive to duplicate values (e.g., `min` and `max`) and for them this clause is parsed and ignored.
 
 ### `ORDER BY` Clause in Aggregate Functions
 
@@ -35685,17 +37471,18 @@ The table below shows the available general aggregate functions.
 | [`histogram_exact(arg, elements)`](#histogram_exactarg-elements) | Returns a `MAP` of key-value pairs representing the requested elements and their counts. A catch-all element specific to the data-type is automatically added to count other elements when they appear, see [`is_histogram_other_bin`]({% link docs/sql/functions/utility.md %}#is_histogram_other_binarg). |
 | [`last(arg)`](#lastarg) | Returns the last value of a column. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
 | [`list(arg)`](#listarg) | Returns a `LIST` containing all the values of a column. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
-| [`max(arg)`](#maxarg) | Returns the maximum value present in `arg`. |
+| [`max(arg)`](#maxarg) | Returns the maximum value present in `arg`. This function is [unaffected by distinctness](#distinct-clause-in-aggregate-functions). |
 | [`max(arg, n)`](#maxarg-n) | Returns a `LIST` containing the `arg` values for the "top" `n` rows ordered by `arg` descending. |
 | [`max_by(arg, val)`](#max_byarg-val) | Finds the row with the maximum `val`. Calculates the `arg` expression at that row. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
 | [`max_by(arg, val, n)`](#max_byarg-val-n) | Returns a `LIST` containing the `arg` expressions for the "top" `n` rows ordered by `val` descending. |
-| [`min(arg)`](#minarg) | Returns the minimum value present in `arg`. |
+| [`min(arg)`](#minarg) | Returns the minimum value present in `arg`. This function is [unaffected by distinctness](#distinct-clause-in-aggregate-functions). |
 | [`min(arg, n)`](#minarg-n) | Returns a `LIST` containing the `arg` values for the "bottom" `n` rows ordered by `arg` ascending. |
 | [`min_by(arg, val)`](#min_byarg-val) | Finds the row with the minimum `val`. Calculates the `arg` expression at that row. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
 | [`min_by(arg, val, n)`](#min_byarg-val-n) | Returns a `LIST` containing the `arg` expressions for the "bottom" `n` rows ordered by `val` ascending. |
 | [`product(arg)`](#productarg) | Calculates the product of all non-null values in `arg`. |
 | [`string_agg(arg, sep)`](#string_aggarg-sep) | Concatenates the column string values with a separator. This function is [affected by ordering](#order-by-clause-in-aggregate-functions). |
-| [`sum(arg)`](#sumarg) | Calculates the sum of all non-null values in `arg`. |
+| [`sum(arg)`](#sumarg) | Calculates the sum of all non-null values in `arg` / counts `true` values when `arg` is boolean. |
+| [`weighted_avg(arg, weight)`](#weighted_avgarg-weight) | Calculates the weighted average all non-null values in `arg`, where each value is scaled by its corresponding `weight`. If `weight` is `NULL`, the corresponding `arg` value will be skipped. |
 
 #### `any_value(arg)`
 
@@ -35917,7 +37704,7 @@ The table below shows the available general aggregate functions.
 
 
 
-| **Description** | Returns the maximum value present in `arg`. |
+| **Description** | Returns the maximum value present in `arg`. This function is [unaffected by distinctness](#distinct-clause-in-aggregate-functions). |
 | **Example** | `max(A)` |
 | **Alias(es)** | - |
 
@@ -35949,7 +37736,7 @@ The table below shows the available general aggregate functions.
 
 
 
-| **Description** | Returns the minimum value present in `arg`. |
+| **Description** | Returns the minimum value present in `arg`. This function is [unaffected by distinctness](#distinct-clause-in-aggregate-functions). |
 | **Example** | `min(A)` |
 | **Alias(es)** | - |
 
@@ -35997,9 +37784,17 @@ The table below shows the available general aggregate functions.
 
 
 
-| **Description** | Calculates the sum of all non-null values in `arg`. |
+| **Description** | Calculates the sum of all non-null values in `arg` / counts `true` values when `arg` is boolean. |
 | **Example** | `sum(A)` |
 | **Alias(es)** | - |
+
+#### `weighted_avg(arg, weight)`
+
+
+
+| **Description** | Calculates the weighted average of all non-null values in `arg`, where each value is scaled by its corresponding `weight`. If `weight` is `NULL`, the value will be skipped. |
+| **Example** | `weighted_avg(A, W)` |
+| **Alias(es)** | `wavg(arg, weight)` |
 
 ## Approximate Aggregates
 
@@ -38637,7 +40432,7 @@ For example, the following are all valid lambda functions:
 
 * `param -> param > 1`
 * `s -> contains(concat(s, 'DB'), 'duck')`
-* `(x, y) -> x + y`
+* `(acc, x) -> acc + x`
 
 ## Scalar Functions That Accept Lambda Functions
 
@@ -38670,7 +40465,7 @@ For example, the following are all valid lambda functions:
 
 
 | **Description** | Reduces all elements of the input list into a single value by executing the lambda function on a running result and the next list element. The list must have at least one element â€“ the use of an initial accumulator value is currently not supported. For more information, see [Reduce](#reduce). |
-| **Example** | `list_reduce([4, 5, 6], (x, y) -> x + y)` |
+| **Example** | `list_reduce([4, 5, 6], (acc, x) -> acc + x)` |
 | **Result** | `15` |
 | **Aliases** | `array_reduce`, `reduce` |
 
@@ -38726,7 +40521,7 @@ SELECT apply([1, 2], x -> apply([4], x -> x + tbl.x)[1] + x) FROM tbl;
 ## Indexes as Parameters
 
 All lambda functions accept an optional extra parameter that represents the index of the current element.
-This is always the last parameter of the lambda function (e.g., `i` in `(x, y, i)`), and is 1-based (i.e., the first element has index 1).
+This is always the last parameter of the lambda function (e.g., `i` in `(x, i)`), and is 1-based (i.e., the first element has index 1).
 
 Get all elements that are larger than their index:
 
@@ -38868,7 +40663,7 @@ The list must have at least one element.
 Sum of all list elements:
 
 ```sql
-SELECT list_reduce([1, 2, 3, 4], (x, y) -> x + y);
+SELECT list_reduce([1, 2, 3, 4], (acc, x) -> acc + x);
 ```
 
 ```text
@@ -38878,7 +40673,7 @@ SELECT list_reduce([1, 2, 3, 4], (x, y) -> x + y);
 Only add up list elements if they are greater than 2:
 
 ```sql
-SELECT list_reduce(list_filter([1, 2, 3, 4], x -> x > 2), (x, y) -> x + y);
+SELECT list_reduce(list_filter([1, 2, 3, 4], x -> x > 2), (acc, x) -> acc + x);
 ```
 
 ```text
@@ -38888,7 +40683,7 @@ SELECT list_reduce(list_filter([1, 2, 3, 4], x -> x > 2), (x, y) -> x + y);
 Concat all list elements:
 
 ```sql
-SELECT list_reduce(['DuckDB', 'is', 'awesome'], (x, y) -> concat(x, ' ', y));
+SELECT list_reduce(['DuckDB', 'is', 'awesome'], (acc, x) -> concat(acc, ' ', x));
 ```
 
 ```text
@@ -38933,7 +40728,7 @@ title: List Functions
 | [`list_intersect(list1, list2)`](#list_intersectlist1-list2) | Returns a list of all the elements that exist in both `l1` and `l2`, without duplicates. |
 | [`list_position(list, element)`](#list_positionlist-element) | Returns the index of the element if the list contains the element. If the element is not found, it returns `NULL`. |
 | [`list_prepend(element, list)`](#list_prependelement-list) | Prepends `element` to `list`. |
-| [`list_reduce(list, lambda)`](#list_reducelist-lambda) | Returns a single value that is the result of applying the lambda function to each element of the input list. See the [Lambda Functions]({% link docs/sql/functions/lambda.md %}#reduce) page for more details. While list functions use a 1-based indexing, `list_reduce` uses a 0-based indexing. This is a [known issue](https://github.com/duckdb/duckdb/issues/14619). |
+| [`list_reduce(list, lambda)`](#list_reducelist-lambda) | Returns a single value that is the result of applying the lambda function to each element of the input list. See the [Lambda Functions]({% link docs/sql/functions/lambda.md %}#reduce) page for more details. |
 | [`list_resize(list, size[, value])`](#list_resizelist-size-value) | Resizes the list to contain `size` elements. Initializes new elements with `value` or `NULL` if `value` is not set. |
 | [`list_reverse_sort(list)`](#list_reverse_sortlist) | Sorts the elements of the list in reverse order. See the [Sorting Lists]({% link docs/sql/functions/list.md %}#sorting-lists) section for more details about the `NULL` sorting order. |
 | [`list_reverse(list)`](#list_reverselist) | Reverses the list. |
@@ -39179,8 +40974,8 @@ title: List Functions
 
 
 
-| **Description** | Returns a single value that is the result of applying the lambda function to each element of the input list. See the [Lambda Functions]({% link docs/sql/functions/lambda.md %}#reduce) page for more details. While list functions use a 1-based indexing, `list_reduce` uses a 0-based indexing. This is a [known issue](https://github.com/duckdb/duckdb/issues/14619). |
-| **Example** | `list_reduce([4, 5, 6], (x, y) -> x + y)` |
+| **Description** | Returns a single value that is the result of applying the lambda function to each element of the input list. See the [Lambda Functions]({% link docs/sql/functions/lambda.md %}#reduce) page for more details. |
+| **Example** | `list_reduce([4, 5, 6], (acc, x) -> acc + x)` |
 | **Result** | `15` |
 | **Aliases** | `array_reduce`, `reduce` |
 
@@ -42609,24 +44404,24 @@ The table below shows the available general window functions.
 
 | Name | Description |
 |:--|:-------|
-| [`cume_dist()`](#cume_dist) | The cumulative distribution: (number of partition rows preceding or peer with current row) / total partition rows. |
+| [`cume_dist([ORDER BY ordering])`](#cume_distorder-by-ordering) | The cumulative distribution: (number of partition rows preceding or peer with current row) / total partition rows. |
 | [`dense_rank()`](#dense_rank) | The rank of the current row *without gaps;* this function counts peer groups. |
-| [`first_value(expr[ IGNORE NULLS])`](#first_valueexpr-ignore-nulls) | Returns `expr` evaluated at the row that is the first row (with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame. |
-| [`lag(expr[, offset[, default]][ IGNORE NULLS])`](#lagexpr-offset-default-ignore-nulls) | Returns `expr` evaluated at the row that is `offset` rows (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) before the current row within the window frame; if there is no such row, instead return `default` (which must be of the Same type as `expr`). Both `offset` and `default` are evaluated with respect to the current row. If omitted, `offset` defaults to `1` and default to `NULL`. |
-| [`last_value(expr[ IGNORE NULLS])`](#last_valueexpr-ignore-nulls) | Returns `expr` evaluated at the row that is the last row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame. |
-| [`lead(expr[, offset[, default]][ IGNORE NULLS])`](#leadexpr-offset-default-ignore-nulls) | Returns `expr` evaluated at the row that is `offset` rows after the current row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) within the window frame; if there is no such row, instead return `default` (which must be of the Same type as `expr`). Both `offset` and `default` are evaluated with respect to the current row. If omitted, `offset` defaults to `1` and default to `NULL`. |
-| [`nth_value(expr, nth[ IGNORE NULLS])`](#nth_valueexpr-nth-ignore-nulls) | Returns `expr` evaluated at the nth row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame (counting from 1); `NULL` if no such row. |
-| [`ntile(num_buckets)`](#ntilenum_buckets) | An integer ranging from 1 to `num_buckets`, dividing the partition as equally as possible. |
-| [`percent_rank()`](#percent_rank) | The relative rank of the current row: `(rank() - 1) / (total partition rows - 1)`. |
-| [`rank_dense()`](#rank_dense) | The rank of the current row *without gaps. |
-| [`rank()`](#rank) | The rank of the current row *with gaps;* same as `row_number` of its first peer. |
-| [`row_number()`](#row_number) | The number of the current row within the partition, counting from 1. |
+| [`first_value(expr[ ORDER BY ordering][ IGNORE NULLS])`](#first_valueexpr-order-by-ordering-ignore-nulls) | Returns `expr` evaluated at the row that is the first row (with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame. |
+| [`lag(expr[, offset[, default]][ ORDER BY ordering][ IGNORE NULLS])`](#lagexpr-offset-default-order-by-ordering-ignore-nulls) | Returns `expr` evaluated at the row that is `offset` rows (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) before the current row within the window frame; if there is no such row, instead return `default` (which must be of the Same type as `expr`). Both `offset` and `default` are evaluated with respect to the current row. If omitted, `offset` defaults to `1` and default to `NULL`. |
+| [`last_value(expr[ ORDER BY ordering][ IGNORE NULLS])`](#last_valueexpr-order-by-ordering-ignore-nulls) | Returns `expr` evaluated at the row that is the last row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame. |
+| [`lead(expr[, offset[, default]][ ORDER BY ordering][ IGNORE NULLS])`](#leadexpr-offset-default-order-by-ordering-ignore-nulls) | Returns `expr` evaluated at the row that is `offset` rows after the current row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) within the window frame; if there is no such row, instead return `default` (which must be of the Same type as `expr`). Both `offset` and `default` are evaluated with respect to the current row. If omitted, `offset` defaults to `1` and default to `NULL`. |
+| [`nth_value(expr, nth[ ORDER BY ordering][ IGNORE NULLS])`](#nth_valueexpr-nth-order-by-ordering-ignore-nulls) | Returns `expr` evaluated at the nth row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame (counting from 1); `NULL` if no such row. |
+| [`ntile(num_buckets[ ORDER BY ordering])`](#ntilenum_buckets-order-by-ordering) | An integer ranging from 1 to `num_buckets`, dividing the partition as equally as possible. |
+| [`percent_rank([ORDER BY ordering])`](#percent_rankorder-by-ordering) | The relative rank of the current row: `(rank() - 1) / (total partition rows - 1)`. |
+| [`rank_dense()`](#rank_dense) | The rank of the current row *without gaps*. |
+| [`rank([ORDER BY ordering])`](#rankorder-by-ordering) | The rank of the current row *with gaps;* same as `row_number` of its first peer. |
+| [`row_number([ORDER BY ordering])`](#row_numberorder-by-ordering) | The number of the current row within the partition, counting from 1. |
 
-#### `cume_dist()`
+#### `cume_dist([ORDER BY ordering])`
 
 
 
-| **Description** | The cumulative distribution: (number of partition rows preceding or peer with current row) / total partition rows. |
+| **Description** | The cumulative distribution: (number of partition rows preceding or peer with current row) / total partition rows. If an `ORDER BY` clause is specified, the distribution is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | `DOUBLE` |
 | **Example** | `cume_dist()` |
 
@@ -42639,59 +44434,59 @@ The table below shows the available general window functions.
 | **Example** | `dense_rank()` |
 | **Aliases** | `rank_dense()` |
 
-#### `first_value(expr[ IGNORE NULLS])`
+#### `first_value(expr[ ORDER BY ordering][ IGNORE NULLS])`
 
 
 
-| **Description** | Returns `expr` evaluated at the row that is the first row (with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame. |
+| **Description** | Returns `expr` evaluated at the row that is the first row (with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame. If an `ORDER BY` clause is specified, the first row number is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | Same type as `expr` |
 | **Example** | `first_value(column)` |
 
-#### `lag(expr[, offset[, default]][ IGNORE NULLS])`
+#### `lag(expr[, offset[, default]][ ORDER BY ordering][ IGNORE NULLS])`
 
 
 
-| **Description** | Returns `expr` evaluated at the row that is `offset` rows (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) before the current row within the window frame; if there is no such row, instead return `default` (which must be of the Same type as `expr`). Both `offset` and `default` are evaluated with respect to the current row. If omitted, `offset` defaults to `1` and default to `NULL`. |
+| **Description** | Returns `expr` evaluated at the row that is `offset` rows (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) before the current row within the window frame; if there is no such row, instead return `default` (which must be of the Same type as `expr`). Both `offset` and `default` are evaluated with respect to the current row. If omitted, `offset` defaults to `1` and default to `NULL`. If an `ORDER BY` clause is specified, the lagged row number is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | Same type as `expr` |
 | **Aliases** | `lag(column, 3, 0)` |
 
-#### `last_value(expr[ IGNORE NULLS])`
+#### `last_value(expr[ ORDER BY ordering][ IGNORE NULLS])`
 
 
 
-| **Description** | Returns `expr` evaluated at the row that is the last row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame. |
+| **Description** | Returns `expr` evaluated at the row that is the last row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame. If omitted, `offset` defaults to `1` and default to `NULL`. If an `ORDER BY` clause is specified, the last row is determined within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | Same type as `expr` |
 | **Example** | `last_value(column)` |
 
-#### `lead(expr[, offset[, default]][ IGNORE NULLS])`
+#### `lead(expr[, offset[, default]][ ORDER BY ordering][ IGNORE NULLS])`
 
 
 
-| **Description** | Returns `expr` evaluated at the row that is `offset` rows after the current row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) within the window frame; if there is no such row, instead return `default` (which must be of the Same type as `expr`). Both `offset` and `default` are evaluated with respect to the current row. If omitted, `offset` defaults to `1` and default to `NULL`. |
+| **Description** | Returns `expr` evaluated at the row that is `offset` rows after the current row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) within the window frame; if there is no such row, instead return `default` (which must be of the Same type as `expr`). Both `offset` and `default` are evaluated with respect to the current row. If omitted, `offset` defaults to `1` and default to `NULL`. If an `ORDER BY` clause is specified, the leading row number is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | Same type as `expr` |
 | **Aliases** | `lead(column, 3, 0)` |
 
-#### `nth_value(expr, nth[ IGNORE NULLS])`
+#### `nth_value(expr, nth[ ORDER BY ordering][ IGNORE NULLS])`
 
 
 
-| **Description** | Returns `expr` evaluated at the nth row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame (counting from 1); `NULL` if no such row. |
+| **Description** | Returns `expr` evaluated at the nth row (among rows with a non-null value of `expr` if `IGNORE NULLS` is set) of the window frame (counting from 1); `NULL` if no such row. If an `ORDER BY` clause is specified, the nth row number is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | Same type as `expr` |
 | **Aliases** | `nth_value(column, 2)` |
 
-#### `ntile(num_buckets)`
+#### `ntile(num_buckets[ ORDER BY ordering])`
 
 
 
-| **Description** | An integer ranging from 1 to `num_buckets`, dividing the partition as equally as possible. |
+| **Description** | An integer ranging from 1 to `num_buckets`, dividing the partition as equally as possible. If an `ORDER BY` clause is specified, the ntile is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | `BIGINT` |
 | **Example** | `ntile(4)` |
 
-#### `percent_rank()`
+#### `percent_rank([ORDER BY ordering])`
 
 
 
-| **Description** | The relative rank of the current row: `(rank() - 1) / (total partition rows - 1)`. |
+| **Description** | The relative rank of the current row: `(rank() - 1) / (total partition rows - 1)`. If an `ORDER BY` clause is specified, the relative rank is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | `DOUBLE` |
 | **Example** | `percent_rank()` |
 
@@ -42704,19 +44499,19 @@ The table below shows the available general window functions.
 | **Example** | `rank_dense()` |
 | **Aliases** | `dense_rank()` |
 
-#### `rank()`
+#### `rank([ORDER BY ordering])`
 
 
 
-| **Description** | The rank of the current row *with gaps;* same as `row_number` of its first peer. |
+| **Description** | The rank of the current row *with gaps*; same as `row_number` of its first peer. If an `ORDER BY` clause is specified, the rank is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | `BIGINT` |
 | **Example** | `rank()` |
 
-#### `row_number()`
+#### `row_number([ORDER BY ordering])`
 
 
 
-| **Description** | The number of the current row within the partition, counting from 1. |
+| **Description** | The number of the current row within the partition, counting from 1. If an `ORDER BY` clause is specified, the row number is computed within the frame using the provided ordering instead of the frame ordering. |
 | **Return Type** | `BIGINT` |
 | **Example** | `row_number()` |
 
@@ -42730,7 +44525,8 @@ The `first` and `last` aggregate functions are shadowed by the respective genera
 All aggregate window functions support using a `DISTINCT` clause for the arguments. When the `DISTINCT` clause is
 provided, only distinct values are considered in the computation of the aggregate. This is typically used in combination
 with the `COUNT` aggregate to get the number of distinct elements; but it can be used together with any aggregate
-function in the system.
+function in the system. There are some aggregates that are insensitive to duplicate values (e.g., `min`, `max`) and for
+them this clause is parsed and ignored.
 
 ```sql
 -- Count the number of distinct users at a given point in time
@@ -42738,6 +44534,35 @@ SELECT count(DISTINCT name) OVER (ORDER BY time) FROM sales;
 -- Concatenate those distinct users into a list
 SELECT list(DISTINCT name) OVER (ORDER BY time) FROM sales;
 ```
+
+## ORDER BY Arguments
+
+All aggregate window functions support using an `ORDER BY` argument clause that is *different* from the window ordering.
+When the `ORDER BY` argument clause is provided, the values being aggregated are sorted before applying the function.
+Usually this is not important, but there are some order-sensitive aggregates that can have indeterminate results (e.g.,
+`mode`, `list` and `string_agg`). These can be made deterministic by ordering the arguments. For order-insensitive
+aggregates, this clause is parsed and ignored.
+
+```sql
+-- Compute the modal value up to each time, breaking ties in favour of the most recent value.
+SELECT MODE(value ORDER BY time DESC) OVER (ORDER BY time) FROM sales;
+```
+
+The SQL standard does not provide for using `ORDER BY` with general-purpose window functions, but we have extended all
+of these functions (except `dense_rank`) to accept this syntax and use framing to restrict the range that the secondary
+ordering applies to.
+
+```sql
+-- Compare each athlete's time in an event with the best time to date
+SELECT event, date, athlete, time
+first_value(time ORDER BY time DESC) OVER w AS record_time,
+first_value(athlete ORDER BY time DESC) OVER w AS record_athlete,
+FROM meet_results
+WINDOW w AS (PARTITION BY event ORDER BY datetime)
+ORDER BY ALL
+```
+
+Note that there is no comma separating the arguments from the `ORDER BY` clause.
 
 ## Nulls
 
@@ -42769,8 +44594,6 @@ Window functions cannot access values outside of the partition containing the ro
 
 Ordering is also optional, but without it the results of [general-purpose window functions](#general-purpose-window-functions) and [order-sensitive aggregate functions]({% link docs/sql/functions/aggregates.md %}#order-by-clause-in-aggregate-functions), and the order of [framing](#framing) are not well-defined.
 Each partition is ordered using the same ordering clause.
-
-> It is not currently possible to specify the aggregation order of window functions other than via the order in the `OVER` specification. In particular, it is not possible to use an aggregation order different from the frame order, e.g., `last_value(x ORDER BY y) OVER (ORDER BY z)`.
 
 Here is a table of power generation data, available as a CSV file ([`power-plant-generation-history.csv`](/data/power-plant-generation-history.csv)). To load the data, run:
 
@@ -43688,8 +45511,6 @@ On empty groups, the aggregate functions `sum`, `list`, and `string_agg` all ret
 
 To comply with standard SQL, one-based indexing is used almost everywhere, e.g., array and string indexing and slicing, and window functions (`row_number`, `rank`, `dense_rank`). However, similarly to PostgreSQL, [JSON features use a zero-based indexing]({% link docs/data/json/overview.md %}#indexing).
 
-> While list functions use a 1-based indexing, `list_reduce` uses a 0-based indexing. This is a [known issue](https://github.com/duckdb/duckdb/issues/14619).
-
 ## Expressions
 
 ### Results That May Surprise You
@@ -43773,9 +45594,9 @@ Return the following:
 
 ```sql
 SELECT
-count(*) AS total_rows,
-count(*) FILTER (i <= 5) AS lte_five,
-count(*) FILTER (i % 2 = 1) AS odds
+count() AS total_rows,
+count() FILTER (i <= 5) AS lte_five,
+count() FILTER (i % 2 = 1) AS odds
 FROM generate_series(1, 10) tbl(i);
 ```
 
@@ -43784,6 +45605,8 @@ FROM generate_series(1, 10) tbl(i);
 | total_rows | lte_five | odds |
 |:---|:---|:---|
 | 10 | 5 | 5 |
+
+> Simply counting rows that satisfy a condition can also be achieved without `FILTER` clause, using the boolean `sum` aggregate function, e.g., `sum(i <= 5)`.
 
 Different aggregate functions may be used, and multiple `WHERE` expressions are also permitted:
 
@@ -47454,20 +49277,28 @@ The types `UTINYINT`, `USMALLINT`, `UINTEGER`, `UBIGINT` and `UHUGEINT` store wh
 
 
 
-| Name | Aliases | Min | Max |
-| :---------- | :------------------------------- | ---------------------------------------: | --------------------------------------: |
-| `TINYINT` | `INT1` | -128 | 127 |
-| `SMALLINT` | `INT2`, `INT16` `SHORT` | -32768 | 32767 |
-| `INTEGER` | `INT4`, `INT32`, `INT`, `SIGNED` | -2147483648 | 2147483647 |
-| `BIGINT` | `INT8`, `INT64` `LONG` | -9223372036854775808 | 9223372036854775807 |
-| `HUGEINT` | `INT128` | -170141183460469231731687303715884105728 | 170141183460469231731687303715884105727 |
-| `UTINYINT` | - | 0 | 255 |
-| `USMALLINT` | - | 0 | 65535 |
-| `UINTEGER` | - | 0 | 4294967295 |
-| `UBIGINT` | - | 0 | 18446744073709551615 |
-| `UHUGEINT` | - | 0 | 340282366920938463463374607431768211455 |
+| Name | Aliases | Min | Max | Size in bytes |
+| :---------- | :------------------------------- | ------: | --------: | ------------: |
+| `TINYINT` | `INT1` | - 2^7 | 2^7 - 1 | 1 |
+| `SMALLINT` | `INT2`, `INT16` `SHORT` | - 2^15 | 2^15 - 1 | 2 |
+| `INTEGER` | `INT4`, `INT32`, `INT`, `SIGNED` | - 2^31 | 2^31 - 1 | 4 |
+| `BIGINT` | `INT8`, `INT64` `LONG` | - 2^63 | 2^63 - 1 | 8 |
+| `HUGEINT` | `INT128` | - 2^127 | 2^127 - 1 | 16 |
+| `UTINYINT` | - | 0 | 2^8 - 1 | 1 |
+| `USMALLINT` | - | 0 | 2^16 - 1 | 2 |
+| `UINTEGER` | - | 0 | 2^32 - 1 | 4 |
+| `UBIGINT` | - | 0 | 2^64 - 1 | 8 |
+| `UHUGEINT` | - | 0 | 2^128 - 1 | 16 |
 
 The type integer is the common choice, as it offers the best balance between range, storage size, and performance. The `SMALLINT` type is generally only used if disk space is at a premium. The `BIGINT` and `HUGEINT` types are designed to be used when the range of the integer type is insufficient.
+
+## Variable Integer
+
+The previously mentioned integer types all have in common that the numbers in the minimum and maximum range all have the same storage size, `UTINYINT` is 1 byte, `SMALLINT` is 2 bytes, etc.
+But sometimes you need numbers that are even bigger than what is supported by a `HUGEINT`! For these situations the `VARINT` type can come in handy, as the `VARINT` type has a *much* bigger limit (the value can consist of up to 1,262,612 digits).
+The minimum storage size for a `VARINT` is 4 bytes, every digit takes up an extra bit, rounded up to 8 (12 digits take 12 bits, rounded up to 16, becomes two extra bytes).
+
+Both negative and positive values are supported by the `VARINT` type.
 
 ## Fixed-Point Decimals
 
@@ -47839,7 +49670,7 @@ CREATE TABLE t2 AS SELECT row('a');
 Invalid Input Error: A table cannot be created from an unnamed struct
 ```
 
-When casting structs, the names of fields have to match. Therefore, the following query will fail:
+When casting between structs, the names of at least one field have to match. Therefore, the following query will fail:
 
 ```sql
 SELECT a::STRUCT(y INTEGER) AS b
@@ -47848,7 +49679,7 @@ FROM
 ```
 
 ```console
-Mismatch Type Error: Type STRUCT(x INTEGER) does not match with STRUCT(y INTEGER). Cannot cast STRUCTs - element "x" in source struct was not found in target struct
+Binder Error: STRUCT to STRUCT cast must have at least one matching member
 ```
 
 A workaround for this is to use [`struct_pack`](#creating-structs) instead:
@@ -47915,17 +49746,6 @@ These queries return `NULL`.
 
 ```sql
 SELECT {'k1': 2, 'k2': 3} < {'k1': 2, 'k2': NULL} AS result;
-```
-
-This query returns a `Binder Error` because the keys do not match positionally.
-
-```sql
-SELECT {'k1': 2, 'k2': 3} < {'k2': 2, 'k1': 4} AS result;
-```
-
-```console
-Binder Error: Cannot compare values of type STRUCT(k1 INTEGER, k2 INTEGER)
-and type STRUCT(k2 INTEGER, k1 INTEGER) - an explicit cast is required
 ```
 
 ## Functions
@@ -49050,16 +50870,44 @@ Arrays follow the same casting rules as lists. In addition, arrays can be implic
 
 ### Structs
 
-Structs can be cast to other structs as long as the names of the child elements match.
+Structs can be cast to other structs as long as they share at least one field.
+
+> The rationale behind this requirement is to help avoid unintended errors. If two structs do not have any fields in common, then the cast was likely not intended.
 
 ```sql
 SELECT CAST({'a': 42} AS STRUCT(a VARCHAR));
+```
+
+Fields that exist in the target struct, but that do not exist in the source struct, default to `NULL`.
+
+```sql
+SELECT CAST({'a': 42} AS STRUCT(a VARCHAR, b VARCHAR));
+```
+
+Fields that only exist in the source struct are ignored.
+
+```sql
+SELECT CAST({'a': 42, 'b': 43} AS STRUCT(a VARCHAR));
 ```
 
 The names of the struct can also be in a different order. The fields of the struct will be reshuffled based on the names of the structs.
 
 ```sql
 SELECT CAST({'a': 42, 'b': 84} AS STRUCT(b VARCHAR, a VARCHAR));
+```
+
+Struct casting behaves differently when combined with the [`UNION [ALL] BY NAME`]({% link docs/sql/query_syntax/setops.md %}#union-all-by-name) operation.
+In that case, the fields of the resulting struct are the superset of all fields of the input structs.
+This logic also applies recursively to potentially nested structs.
+
+```sql
+SELECT {'outer1': {'inner1': 42, 'inner2': 42}} AS c
+UNION ALL BY NAME
+SELECT {'outer1': {'inner2': 'hello', 'inner3': 'world'}, 'outer2': '100'} AS c;
+```
+
+```sql
+SELECT [{'a': 42}, {'b': 84}];
 ```
 
 ### Unions
@@ -49475,6 +51323,12 @@ Attach the database `file.db` if explicit database alias `file_db` does not yet 
 
 ```sql
 ATTACH IF NOT EXISTS 'file.db' AS file_db;
+```
+
+Attach the database `file2.db` as alias `file_db` detaching and replacing the existing alias if it exists:
+
+```sql
+ATTACH OR REPLACE 'file2.db' AS file_db;
 ```
 
 Create a table in the attached database with alias `file`:
@@ -49982,8 +51836,6 @@ Copy the entire content of database `db1` to database `db2`:
 ```sql
 COPY FROM DATABASE db1 TO db2;
 ```
-
-> Currently, indexes do not work when using `COPY FROM DATABASE`. While they are copied to the other database, they are not used by the queries. Therefore, if your workload on the new database requires indexes, recreate them manually.
 
 Copy only the schema (catalog elements) but not any data:
 
@@ -54733,10 +56585,9 @@ title: Excel Extension
 github_repository: https://github.com/duckdb/duckdb-excel
 ---
 
-The `excel` extension, unlike what its name may suggest, does not provide support for reading Excel files.
-Instead, provides a function that wraps the number formatting functionality of the [i18npool library](https://www.openoffice.org/l10n/i18n_framework/index.html), which formats numbers per Excel's formatting rules.
+The `excel` extension provides functions to format numbers per Excel's formatting rules by wrapping the [i18npool library](https://www.openoffice.org/l10n/i18n_framework/index.html), but as of DuckDB 1.2 also provides functionality to read and write Excel (`.xlsx`) files. However, `.xls` files are not supported.
 
-Excel files can be currently handled through the [`spatial` extension]({% link docs/extensions/spatial/overview.md %}): see the [Excel Import]({% link docs/guides/file_formats/excel_import.md %}) and [Excel Export]({% link docs/guides/file_formats/excel_export.md %}) pages for instructions.
+Previously, reading and writing Excel files was handled through the [`spatial` extension]({% link docs/extensions/spatial/overview.md %}), which coincidentally included support for xlsx files through one of its dependencies, but this capability may be removed from the spatial extension in the future. Additionally, the `excel` extension is more efficient and provides more control over the import/export process. See the [Excel Import]({% link docs/guides/file_formats/excel_import.md %}) and [Excel Export]({% link docs/guides/file_formats/excel_export.md %}) pages for instructions.
 
 ## Installing and Loading
 
@@ -54748,7 +56599,7 @@ INSTALL excel;
 LOAD excel;
 ```
 
-## Functions
+## Excel Scalar Functions
 
 | Function | Description |
 |:--|:---|
@@ -54772,6 +56623,104 @@ SELECT excel_text(1_234_567.897, 'h AM/PM') AS timestamp;
 | timestamp |
 |-----------|
 | 9 PM |
+
+## Reading XLSX Files
+
+Reading a `.xlsx` file is as simple as just `SELECT`:ing from it immediately, e.g.
+
+```sql
+SELECT * FROM 'test.xlsx';
+----
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ a â”‚ b â”‚
+â”‚ double â”‚ double â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ 1.0 â”‚ 2.0 â”‚
+â”‚ 3.0 â”‚ 4.0 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+However, if you want to set additional options to control the import process, you can use the `read_xlsx` function instead. The following named parameters are supported.
+
+| Option | Type | Default| Description |
+| --- | --- | --- | --- |
+| `header` | `BOOLEAN` | _automatically inferred_ | Whether to treat the first row as containing the names of the resulting columns |
+| `sheet`| `VARCHAR` | _automatically inferred_ | The name of the sheet in the xlsx file to read. Default is the first sheet. |
+| `all_varchar` | `BOOLEAN` | `false` | Whether to read all cells as containing `VARCHAR`s. |
+| `ignore_errors` | `BOOLEAN` | `false` | Whether to ignore errors and silently replace cells that cant be cast to the corresponding inferred column type with `NULL`'s. |
+| `range` | `VARCHAR` | _automatically inferred_ | The range of cells to read, in spreadsheet notation. For example, `A1:B2` reads the cells from A1 to B2. If not specified the resulting range will be inferred as rectangular region of cells between the first row of consecutive non-empty cells and the first empty row spanning the same columns |
+| `stop_at_empty` | `BOOLEAN` | _automatically inferred_ | Whether to stop reading the file when an empty row is encountered. If an explicit `range` option is provided, this is `false` by default, otherwise `true` |
+| `empty_as_varchar` | `BOOLEAN` | `false` | Whether to treat empty cells as `VARCHAR` instead of `DOUBLE` when trying to automatically infer column types |
+
+```sql
+SELECT * FROM read_xlsx('test.xlsx', header = 'true');
+----
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ a â”‚ b â”‚
+â”‚ double â”‚ double â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ 1.0 â”‚ 2.0 â”‚
+â”‚ 3.0 â”‚ 4.0 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+Alternatively, the `COPY` statement with the `XLSX` format option can be used to import an Excel file into an existing table, in which case the types of the columns in the target table will be used to coerce the types of the cells in the Excel file.
+
+```sql
+CREATE TABLE test(a DOUBLE, b DOUBLE);
+COPY test FROM 'test.xlsx' WITH (FORMAT 'xlsx', header 'true');
+SELECT * FROM test;
+```
+
+### Type and Range Inference
+
+Because Excel itself only really stores numbers or strings in cells, and dont enforce that all cells in a column is of the same type, the `excel` extension has to do some guesswork to "infer" and decide the types of the columns when importing an Excel sheet. While almost all columns are inferred as either `DOUBLE` or `VARCHAR`, there are some caveats:
+- `TIMESTAMP`, `TIME`, `DATE` and `BOOLEAN` types are inferred when possible based on the _format_ applied to the cell.
+- Text cells containing `TRUE` and `FALSE` are inferred as `BOOLEAN`.
+- Empty cells are considered to be `DOUBLE` by default, unless the `empty_as_varchar` option is set to `true`, in which case they are typed as `VARCHAR`.
+
+If the `all_varchar` option is set to `true`, none of the above applies and all cells are read as `VARCHAR`.
+
+When no types are specified explicitly, (e.g. when using the `read_xlsx` function instead of `COPY TO ... FROM '.xlsx'`)
+the types of the resulting columns are inferred based on the first "data" row in the sheet, that is:
+- If no explicit range is given
+- The first row after the header if a header is found or forced by the `header` option
+- The first non-empty row in the sheet if no header is found or forced
+- If an explicit range is given
+- The second row of the range if a header is found in the first row or forced by the `header` option
+- The first row of the range if no header is found or forced
+
+This can sometimes lead to issues if the first "data row" is not representative of the rest of the sheet (e.g. it contains empty cells) in which case the `ignore_errors` or `empty_as_varchar` options can be used to work around this.
+
+However, when the `COPY TO ... FROM '.xlsx'` syntax is used, no type inference is done and the types of the resulting columns are determined by the types of the columns in the table being copied to. All cells will simply be converted by casting from `DOUBLE` or `VARCHAR` to the target column type.
+
+## Writing XLSX Files
+
+Writing `.xlsx` files is supported using the `COPY` statement with `XLSX` given as the format. The following additional parameters are supported.
+
+| Option | Type | Default | Description |
+| --- | --- |-----------|--------------------------------------------------------------------------------------|
+| `header` | `BOOLEAN` | `false` | Whether to write the column names as the first row in the sheet |
+| `sheet`| `VARCHAR` | `Sheet1` | The name of the sheet in the xlsx file to write. |
+| `sheet_row_limit` | `INTEGER` | `1048576` | The maximum number of rows in a sheet. An error is thrown if this limit is exceeded. |
+
+> Warning Many tools only support a maximum of 1,048,576 rows in a sheet, so increasing the `sheet_row_limit` may render the resulting file unreadable by other software.
+
+These are passed as options to the `COPY` statement after the `FORMAT`, e.g.
+
+```sql
+CREATE TABLE test AS SELECT * FROM (VALUES (1, 2), (3, 4)) AS t(a, b);
+COPY test TO 'test.xlsx' WITH (format 'xlsx', header 'true');
+```
+
+### Type conversions
+
+Because XLSX files only really support storing numbers or strings - the equivalent of `VARCHAR` and `DOUBLE`, the following type conversions are applied when writing XLSX files.
+- Numeric types are cast to `DOUBLE` when writing to an XLSX file.
+- Temporal types (`TIMESTAMP`, `DATE`, `TIME`, etc.) are converted to excel "serial" numbers, that is the number of days since 1900-01-01 for dates and the fraction of a day for times. These are then styled with a "number format" so that they appear as dates or times when opened in Excel.
+- `TIMESTAMP_TZ` and `TIME_TZ` are cast to UTC `TIMESTAMP` and `TIME` respectively, with the timezone information being lost.
+- `BOOLEAN`s are converted to `1` and `0`, with a "number format" applied to make them appear as `TRUE` and `FALSE` in Excel.
+- All other types are cast to `VARCHAR` and then written as text cells.
 
 ---
 duckdb/docs/extensions/full_text_search.md
@@ -55223,6 +57172,101 @@ SELECT cidr, host(cidr) FROM tbl;
 | 127.0.0.1 | 127.0.0.1 |
 | 2001:db8:3c4d:15::1a2f:1a2b/96 | 2001:db8:3c4d:15::1a2f:1a2b |
 
+## `netmask` Function
+
+Computes the network mask for the address's network.
+
+```sql
+CREATE TABLE tbl (cidr INET);
+INSERT INTO tbl VALUES
+('192.168.1.5/24'),
+('127.0.0.1'),
+('2001:db8:3c4d:15::1a2f:1a2b/96');
+SELECT cidr, netmask(cidr) FROM tbl;
+```
+
+| cidr | netmask(cidr) |
+|--------------------------------|------------------------------------|
+| 192.168.1.5/24 | 255.255.255.0/24 |
+| 127.0.0.1 | 255.255.255.255 |
+| 2001:db8:3c4d:15::1a2f:1a2b/96 | ffff:ffff:ffff:ffff:ffff:ffff::/96 |
+
+## `network` Function
+
+Returns the network part of the address, zeroing out whatever is to the right of the netmask.
+
+```sql
+CREATE TABLE tbl (cidr INET);
+INSERT INTO tbl VALUES
+('192.168.1.5/24'),
+('127.0.0.1'),
+('2001:db8:3c4d:15::1a2f:1a2b/96');
+SELECT cidr, network(cidr) FROM tbl;
+```
+
+| cidr | network(cidr) |
+|--------------------------------|------------------------------------|
+| 192.168.1.5/24 | 192.168.1.0/24 |
+| 127.0.0.1 | 255.255.255.255 |
+| 2001:db8:3c4d:15::1a2f:1a2b/96 | ffff:ffff:ffff:ffff:ffff:ffff::/96 |
+
+## `broadcast` Function
+
+Computes the broadcast address for the address's network.
+
+```sql
+CREATE TABLE tbl (cidr INET);
+INSERT INTO tbl VALUES
+('192.168.1.5/24'),
+('127.0.0.1'),
+('2001:db8:3c4d:15::1a2f:1a2b/96');
+SELECT cidr, broadcast(cidr) FROM tbl;
+```
+
+| cidr | broadcast(cidr) |
+|--------------------------------|------------------------------------|
+| 192.168.1.5/24 | 192.168.1.0/24 |
+| 127.0.0.1 | 127.0.0.1 |
+| 2001:db8:3c4d:15::1a2f:1a2b/96 | 2001:db8:3c4d:15::/96 |
+
+## `<<=` Predicate
+
+Is subnet contained by or equal to subnet?
+
+```sql
+CREATE TABLE tbl (cidr INET);
+INSERT INTO tbl VALUES
+('192.168.1.0/24'),
+('127.0.0.1'),
+('2001:db8:3c4d:15::1a2f:1a2b/96');
+SELECT cidr, INET '192.168.1.5/32' <<= cidr FROM tbl;
+```
+
+| cidr | (CAST('192.168.1.5/32' AS INET) <<= cidr) |
+|--------------------------------|---------------------------------------------|
+| 192.168.1.5/24 | true |
+| 127.0.0.1 | false |
+| 2001:db8:3c4d:15::1a2f:1a2b/96 | false |
+
+## `>>=` Predicate
+
+Does subnet contain or equal subnet?
+
+```sql
+CREATE TABLE tbl (cidr INET);
+INSERT INTO tbl VALUES
+('192.168.1.0/24'),
+('127.0.0.1'),
+('2001:db8:3c4d:15::1a2f:1a2b/96');
+SELECT cidr, INET '192.168.0.0/16' >>= cidr FROM tbl;
+```
+
+| cidr | (CAST('192.168.0.0/16' AS INET) >>= cidr) |
+|--------------------------------|---------------------------------------------|
+| 192.168.1.5/24 | true |
+| 127.0.0.1 | false |
+| 2001:db8:3c4d:15::1a2f:1a2b/96 | false |
+
 ## HTML Escape and Unescape Functions
 
 ```sql
@@ -55269,18 +57313,11 @@ The availability of the `jemalloc` extension depends on the operating system.
 
 ### Linux
 
-On Linux, the AMD64 (x86_64) distribution of DuckDB ships with the `jemalloc` extension.
+Linux distributions of DuckDB ships with the `jemalloc` extension.
 To disable the `jemalloc` extension, [build DuckDB from source]({% link docs/dev/building/overview.md %}) and set the `SKIP_EXTENSIONS` flag as follows:
 
 ```bash
 GEN=ninja SKIP_EXTENSIONS="jemalloc" make
-```
-
-The ARM64 (AArch64) DuckDB distribution on Linux does not ship with the `jemalloc` extension.
-To include it, build it as follows:
-
-```bash
-GEN=ninja BUILD_JEMALLOC=1 make
 ```
 
 ### macOS
