@@ -25388,7 +25388,19 @@ apk add g++ git make cmake ninja
 ```
 
 Note that Alpine Linux uses the musl libc as its C standard library.
-There are no official binaries distributed for musl libc but DuckDB can be build with it manually following the instructions on this page.
+There are no official DuckDB binaries distributed for musl libc but it can be build with it manually following the instructions on this page.
+Note that starting with DuckDB v1.2.0, [extensions are distributed for the `linux_amd64_musl` platform]({% post_url 2025-02-05-announcing-duckdb-120 %}#musl-extensions).
+
+#### Python Client on Alpine Linux
+
+To install the Python client on Alpine Linux, run:
+
+```batch
+apk add g++ py3-pip python3-dev
+pip install duckdb
+```
+
+This will compile DuckDB from source.
 
 ## Building DuckDB
 
@@ -25408,7 +25420,7 @@ build/release/duckdb
 
 For different build configurations (`debug`, `relassert`, etc.), please consult the [Build Configurations page]({% link docs/dev/building/build_configuration.md %}).
 
-### Building Using Extension Flags
+## Building Using Extension Flags
 
 To build using extension flags, set the `CORE_EXTENSIONS` flag to the list of extensions that you want to be build. For example:
 
@@ -39705,7 +39717,7 @@ Dates can also be manipulated with the [timestamp functions]({% link docs/sql/fu
 
 
 | **Description** | Converts a date to a string according to the [format string]({% link docs/sql/functions/dateformat.md %}). |
-| **Example** | `strftime(date '1992-01-01', '%a, %-d %B %Y')` |
+| **Example** | `strftime(DATE '1992-01-01', '%a, %-d %B %Y')` |
 | **Result** | `Wed, 1 January 1992` |
 
 #### `time_bucket(bucket_width, date[, offset])`
@@ -39891,36 +39903,36 @@ The examples are the corresponding parts of the timestamp `2021-08-03 11:59:44.1
 
 | Specifier | Description | Synonyms | Example |
 |:--|:--|:---|:-|
-| `'century'` | Gregorian century | `'cent'`, `'centuries'`, `'c'` | `21` |
-| `'day'` | Gregorian day | `'days'`, `'d'`, `'dayofmonth'` | `3` |
-| `'decade'` | Gregorian decade | `'dec'`, `'decades'`, `'decs'` | `202` |
-| `'hour'` | Hours | `'hr'`, `'hours'`, `'hrs'`, `'h'` | `11` |
-| `'microseconds'` | Sub-minute microseconds | `'microsecond'`, `'us'`, `'usec'`, `'usecs'`, `'usecond'`, `'useconds'` | `44123456` |
-| `'millennium'` | Gregorian millennium | `'mil'`, `'millenniums'`, `'millenia'`, `'mils'`, `'millenium'` | `3` |
-| `'milliseconds'` | Sub-minute milliseconds | `'millisecond'`, `'ms'`, `'msec'`, `'msecs'`, `'msecond'`, `'mseconds'` | `44123` |
-| `'minute'` | Minutes | `'min'`, `'minutes'`, `'mins'`, `'m'` | `59` |
-| `'month'` | Gregorian month | `'mon'`, `'months'`, `'mons'` | `8` |
-| `'quarter'` | Quarter of the year (1-4) | `'quarters'` | `3` |
-| `'second'` | Seconds | `'sec'`, `'seconds'`, `'secs'`, `'s'` | `44` |
-| `'year'` | Gregorian year | `'yr'`, `'y'`, `'years'`, `'yrs'` | `2021` |
+| `century` | Gregorian century | `cent`, `centuries`, `c` | `21` |
+| `day` | Gregorian day | `days`, `d`, `dayofmonth` | `3` |
+| `decade` | Gregorian decade | `dec`, `decades`, `decs` | `202` |
+| `hour` | Hours | `hr`, `hours`, `hrs`, `h` | `11` |
+| `microseconds` | Sub-minute microseconds | `microsecond`, `us`, `usec`, `usecs`, `usecond`, `useconds` | `44123456` |
+| `millennium` | Gregorian millennium | `mil`, `millenniums`, `millenia`, `mils`, `millenium` | `3` |
+| `milliseconds` | Sub-minute milliseconds | `millisecond`, `ms`, `msec`, `msecs`, `msecond`, `mseconds` | `44123` |
+| `minute` | Minutes | `min`, `minutes`, `mins`, `m` | `59` |
+| `month` | Gregorian month | `mon`, `months`, `mons` | `8` |
+| `quarter` | Quarter of the year (1-4) | `quarters` | `3` |
+| `second` | Seconds | `sec`, `seconds`, `secs`, `s` | `44` |
+| `year` | Gregorian year | `yr`, `y`, `years`, `yrs` | `2021` |
 
 ## Part Specifiers Only Usable as Date Part Specifiers
 
 | Specifier | Description | Synonyms | Example |
 |:--|:--|:---|:-|
-| `'dayofweek'` | Day of the week (Sunday = 0, Saturday = 6) | `'weekday'`, `'dow'` | `2` |
-| `'dayofyear'` | Day of the year (1-365/366) | `'doy'` | `215` |
-| `'epoch'` | Seconds since 1970-01-01 | | `1627991984` |
-| `'era'` | Gregorian era (CE/AD, BCE/BC) | | `1` |
-| `'isodow'` | ISO day of the week (Monday = 1, Sunday = 7) | | `2` |
-| `'isoyear'` | ISO Year number (Starts on Monday of week containing Jan 4th) | | `2021` |
-| `'timezone_hour'` | Time zone offset hour portion | | `0` |
-| `'timezone_minute'` | Time zone offset minute portion | | `0` |
-| `'timezone'` | Time zone offset in seconds | | `0` |
-| `'week'` | Week number | `'weeks'`, `'w'` | `31` |
-| `'yearweek'` | ISO year and week number in `YYYYWW` format | | `202131` |
+| `dayofweek` | Day of the week (Sunday = 0, Saturday = 6) | `weekday`, `dow` | `2` |
+| `dayofyear` | Day of the year (1-365/366) | `doy` | `215` |
+| `epoch` | Seconds since 1970-01-01 | | `1627991984` |
+| `era` | Gregorian era (CE/AD, BCE/BC) | | `1` |
+| `isodow` | ISO day of the week (Monday = 1, Sunday = 7) | | `2` |
+| `isoyear` | ISO Year number (Starts on Monday of week containing Jan 4th) | | `2021` |
+| `timezone_hour` | Time zone offset hour portion | | `0` |
+| `timezone_minute` | Time zone offset minute portion | | `0` |
+| `timezone` | Time zone offset in seconds | | `0` |
+| `week` | Week number | `weeks`, `w` | `31` |
+| `yearweek` | ISO year and week number in `YYYYWW` format | | `202131` |
 
-Note that the time zone parts are all zero unless a time zone plugin such as ICU
+Note that the time zone parts are all zero unless a time zone extension such as [ICU]({% link docs/extensions/icu.md %})
 has been installed to support `TIMESTAMP WITH TIME ZONE`.
 
 ## Part Functions
@@ -39961,7 +39973,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Century. |
-| **Example** | `century(date '1992-02-15')` |
+| **Example** | `century(DATE '1992-02-15')` |
 | **Result** | `20` |
 
 #### `day(date)`
@@ -39969,7 +39981,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Day. |
-| **Example** | `day(date '1992-02-15')` |
+| **Example** | `day(DATE '1992-02-15')` |
 | **Result** | `15` |
 
 #### `dayofmonth(date)`
@@ -39977,7 +39989,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Day (synonym). |
-| **Example** | `dayofmonth(date '1992-02-15')` |
+| **Example** | `dayofmonth(DATE '1992-02-15')` |
 | **Result** | `15` |
 
 #### `dayofweek(date)`
@@ -39985,7 +39997,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Numeric weekday (Sunday = 0, Saturday = 6). |
-| **Example** | `dayofweek(date '1992-02-15')` |
+| **Example** | `dayofweek(DATE '1992-02-15')` |
 | **Result** | `6` |
 
 #### `dayofyear(date)`
@@ -39993,7 +40005,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Day of the year (starts from 1, i.e., January 1 = 1). |
-| **Example** | `dayofyear(date '1992-02-15')` |
+| **Example** | `dayofyear(DATE '1992-02-15')` |
 | **Result** | `46` |
 
 #### `decade(date)`
@@ -40001,7 +40013,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Decade (year / 10). |
-| **Example** | `decade(date '1992-02-15')` |
+| **Example** | `decade(DATE '1992-02-15')` |
 | **Result** | `199` |
 
 #### `epoch(date)`
@@ -40009,7 +40021,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Seconds since 1970-01-01. |
-| **Example** | `epoch(date '1992-02-15')` |
+| **Example** | `epoch(DATE '1992-02-15')` |
 | **Result** | `698112000` |
 
 #### `era(date)`
@@ -40017,7 +40029,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Calendar era. |
-| **Example** | `era(date '0044-03-15 (BC)')` |
+| **Example** | `era(DATE '0044-03-15 (BC)')` |
 | **Result** | `0` |
 
 #### `hour(date)`
@@ -40033,7 +40045,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Numeric ISO weekday (Monday = 1, Sunday = 7). |
-| **Example** | `isodow(date '1992-02-15')` |
+| **Example** | `isodow(DATE '1992-02-15')` |
 | **Result** | `6` |
 
 #### `isoyear(date)`
@@ -40041,7 +40053,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | ISO Year number (Starts on Monday of week containing Jan 4th). |
-| **Example** | `isoyear(date '2022-01-01')` |
+| **Example** | `isoyear(DATE '2022-01-01')` |
 | **Result** | `2021` |
 
 #### `microsecond(date)`
@@ -40057,7 +40069,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Millennium. |
-| **Example** | `millennium(date '1992-02-15')` |
+| **Example** | `millennium(DATE '1992-02-15')` |
 | **Result** | `2` |
 
 #### `millisecond(date)`
@@ -40081,7 +40093,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Month. |
-| **Example** | `month(date '1992-02-15')` |
+| **Example** | `month(DATE '1992-02-15')` |
 | **Result** | `2` |
 
 #### `quarter(date)`
@@ -40089,7 +40101,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Quarter. |
-| **Example** | `quarter(date '1992-02-15')` |
+| **Example** | `quarter(DATE '1992-02-15')` |
 | **Result** | `1` |
 
 #### `second(date)`
@@ -40105,7 +40117,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Time zone offset hour portion. |
-| **Example** | `timezone_hour(date '1992-02-15')` |
+| **Example** | `timezone_hour(DATE '1992-02-15')` |
 | **Result** | `0` |
 
 #### `timezone_minute(date)`
@@ -40113,7 +40125,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Time zone offset minutes portion. |
-| **Example** | `timezone_minute(date '1992-02-15')` |
+| **Example** | `timezone_minute(DATE '1992-02-15')` |
 | **Result** | `0` |
 
 #### `timezone(date)`
@@ -40121,7 +40133,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Time Zone offset in minutes. |
-| **Example** | `timezone(date '1992-02-15')` |
+| **Example** | `timezone(DATE '1992-02-15')` |
 | **Result** | `0` |
 
 #### `week(date)`
@@ -40129,7 +40141,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | ISO Week. |
-| **Example** | `week(date '1992-02-15')` |
+| **Example** | `week(DATE '1992-02-15')` |
 | **Result** | `7` |
 
 #### `weekday(date)`
@@ -40137,7 +40149,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Numeric weekday synonym (Sunday = 0, Saturday = 6). |
-| **Example** | `weekday(date '1992-02-15')` |
+| **Example** | `weekday(DATE '1992-02-15')` |
 | **Result** | `6` |
 
 #### `weekofyear(date)`
@@ -40145,7 +40157,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | ISO Week (synonym). |
-| **Example** | `weekofyear(date '1992-02-15')` |
+| **Example** | `weekofyear(DATE '1992-02-15')` |
 | **Result** | `7` |
 
 #### `year(date)`
@@ -40153,7 +40165,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | Year. |
-| **Example** | `year(date '1992-02-15')` |
+| **Example** | `year(DATE '1992-02-15')` |
 | **Result** | `1992` |
 
 #### `yearweek(date)`
@@ -40161,7 +40173,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 | **Description** | `BIGINT` of combined ISO Year number and 2-digit version of ISO Week number. |
-| **Example** | `yearweek(date '1992-02-15')` |
+| **Example** | `yearweek(DATE '1992-02-15')` |
 | **Result** | `199207` |
 
 ---
@@ -41142,7 +41154,7 @@ List comprehensions can also use the position of the list elements by adding a s
 In the following example, we use `x, i`, where `x` is the value and `i` is the position:
 
 ```sql
-SELECT [4, 5, 6] AS l, [x FOR x, i IN l IF i != 2] filtered;
+SELECT [4, 5, 6] AS l, [x FOR x, i IN l IF i != 2] AS filtered;
 ```
 
 
@@ -44396,7 +44408,7 @@ FROM sales;
 
 
 
-Window functions can only be used in the `SELECT` clause. To share `OVER` specifications between functions, use the statement's `WINDOW` clause and use the `OVER âŸ¨window-nameâŸ©` syntax.
+Window functions can only be used in the `SELECT` clause. To share `OVER` specifications between functions, use the statement's [`WINDOW` clause]({% link docs/sql/query_syntax/window.md %}) and use the `OVER âŸ¨window-nameâŸ©` syntax.
 
 ## General-Purpose Window Functions
 
@@ -44578,8 +44590,9 @@ and then computing a new column for each row as a function of the nearby values.
 Some window functions depend only on the partition boundary and the ordering,
 but a few (including all the aggregates) also use a *frame*.
 Frames are specified as a number of rows on either side (*preceding* or *following*) of the *current row*.
-The distance can either be specified as a number of *rows* or a *range* of values
-using the partition's ordering value and a distance.
+The distance can be specified as a number of *rows*,
+as a *range* of values using the partition's ordering value and a distance,
+or as a number of *groups* (sets of rows with the same sort value).
 
 The full syntax is shown in the diagram at the top of the page,
 and this diagram visually illustrates computation environment:
@@ -44729,6 +44742,41 @@ This is the result:
 | Worcester | 2019-01-03 | 102713.00 |
 | Worcester | 2019-01-04 | 102249.50 |
 | ... | ... | ... |
+
+#### `GROUPS` Framing
+
+The third type of framing counts *groups* of rows relative the current row.
+A *group* in this framing is a set of values with identical `ORDER BY` values.
+If we assume that power is being generated on every day,
+we can use `GROUPS` framing to compute the moving average of all power generated in the system
+without having to resort to date arithmetic:
+
+```sql
+SELECT "Date", "Plant",
+avg("MWh") OVER (
+ORDER BY "Date" ASC
+GROUPS BETWEEN 3 PRECEDING
+AND 3 FOLLOWING)
+AS "MWh 7-day Moving Average"
+FROM "Generation History"
+ORDER BY 1, 2;
+```
+
+| Date | Plant | MWh 7-day Moving Average |
+|------------|-----------|-------------------------:|
+| 2019-01-02 | Boston | 311109.500 |
+| 2019-01-02 | Worcester | 311109.500 |
+| 2019-01-03 | Boston | 305753.100 |
+| 2019-01-03 | Worcester | 305753.100 |
+| 2019-01-04 | Boston | 305389.667 |
+| 2019-01-04 | Worcester | 305389.667 |
+| ... | ... | ... |
+| 2019-01-12 | Boston | 309184.900 |
+| 2019-01-12 | Worcester | 309184.900 |
+| 2019-01-13 | Boston | 299469.375 |
+| 2019-01-13 | Worcester | 299469.375 |
+
+Notice how the values for each date are the same.
 
 #### `EXCLUDE` Clause
 
@@ -51325,12 +51373,6 @@ Attach the database `file.db` if explicit database alias `file_db` does not yet 
 ATTACH IF NOT EXISTS 'file.db' AS file_db;
 ```
 
-Attach the database `file2.db` as alias `file_db` detaching and replacing the existing alias if it exists:
-
-```sql
-ATTACH OR REPLACE 'file2.db' AS file_db;
-```
-
 Create a table in the attached database with alias `file`:
 
 ```sql
@@ -54491,7 +54533,23 @@ SELECT rowid, id, content FROM t;
 | 0 | 42 | hello |
 | 1 | 43 | world |
 
-In the current storage, these identifiers are contiguous unsigned integers (0, 1, ...) if no rows were deleted. Deletions introduce gaps in the rowids which may be reclaimed later. Therefore, it is strongly recommended *not to use rowids as identifiers*.
+In the current storage, these identifiers are contiguous unsigned integers (0, 1, ...) if no rows were deleted. Deletions introduce gaps in the rowids which may be reclaimed later:
+
+```sql
+CREATE OR REPLACE TABLE t AS (FROM range(10) r(i));
+DELETE FROM t WHERE i % 2 = 0;
+SELECT rowid FROM t;
+```
+
+| rowid |
+|------:|
+| 1 |
+| 3 |
+| 5 |
+| 7 |
+| 9 |
+
+It is strongly to *avoid using rowids as identifiers*.
 
 > Tip The `rowid` values are stable within a transaction.
 
