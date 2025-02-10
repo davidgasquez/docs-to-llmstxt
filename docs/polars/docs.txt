@@ -5225,7 +5225,7 @@ n_rows = 0
 break
 rows.append(row)
 
-df = pl.from_records(rows, schema=schema)
+df = pl.from_records(rows, schema=schema, orient="row")
 n_rows -= df.height
 
 # If we would make a performant reader, we would not read these
@@ -5240,7 +5240,7 @@ df = df.filter(predicate)
 
 yield df
 
-return register_io_source(callable=source_generator, schema=schema)
+return register_io_source(io_source=source_generator, schema=schema)
 ```
 
 ### Taking it for a (very slow) spin
@@ -5274,10 +5274,10 @@ shape: (4, 4)
 â”‚ --- â”† --- â”† --- â”† --- â”‚
 â”‚ str â”† str â”† str â”† str â”‚
 â•žâ•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•¡
-â”‚ 1 â”† 9 â”† 1 â”† 1 â”‚
-â”‚ 2 â”† 10 â”† 2 â”† 122 â”‚
-â”‚ 3 â”† 11 â”† 3 â”† 3 â”‚
-â”‚ 4 â”† 2 â”† 4 â”† 4 â”‚
+â”‚ 1 â”† 2 â”† 3 â”† 4 â”‚
+â”‚ 9 â”† 10 â”† 11 â”† 2 â”‚
+â”‚ 1 â”† 2 â”† 3 â”† 4 â”‚
+â”‚ 1 â”† 122 â”† 3 â”† 4 â”‚
 â””â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”˜
 shape: (2, 2)
 â”Œâ”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”�
@@ -5285,8 +5285,8 @@ shape: (2, 2)
 â”‚ --- â”† --- â”‚
 â”‚ str â”† str â”‚
 â•žâ•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•¡
-â”‚ 1 â”† 9 â”‚
-â”‚ 2 â”† 10 â”‚
+â”‚ 1 â”† 2 â”‚
+â”‚ 9 â”† 10 â”‚
 â””â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”˜
 ```
 
