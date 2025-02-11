@@ -1353,33 +1353,33 @@ layout: docu
 title: Client APIs Overview
 ---
 
-DuckDB is an in-process database system and offers client APIs for several languages. These clients support the same DuckDB file format and SQL syntax. Note: DuckDB database files are portable between different clients.
+DuckDB is an in-process database system and offers client APIs (also known as â€œdriversâ€�) for several languages.
 
-| Client API | Maintainer | Support tier |
-|------------|------------|--------------|
-| [C]({% link docs/api/c/overview.md %}) | DuckDB team | Primary |
-| [Command Line Interface (CLI)]({% link docs/api/cli/overview.md %}) | DuckDB team | Primary |
-| [Java]({% link docs/api/java.md %}) | DuckDB team | Primary |
-| [Go]({% link docs/api/go.md %}) | DuckDB team and [Mark Boeker](https://github.com/marcboeker) | Primary |
-| [Node.js (deprecated)]({% link docs/api/nodejs/overview.md %}) | DuckDB team | Primary |
-| [Node.js (node-neo)]({% link docs/api/node_neo/overview.md %}) | Jeff Raymakers and Antony Courtney ([MotherDuck](https://motherduck.com/)) | Primary |
-| [Python]({% link docs/api/python/overview.md %}) | DuckDB team | Primary |
-| [R]({% link docs/api/r.md %}) | DuckDB team and [Kirill MÃ¼ller](https://github.com/krlmlr) | Primary |
-| [WebAssembly (Wasm)]({% link docs/api/wasm/overview.md %}) | DuckDB team | Primary |
-| [ADBC (Arrow)]({% link docs/api/adbc.md %}) | DuckDB team | Secondary |
-| [C++]({% link docs/api/cpp.md %}) | DuckDB team | Secondary |
-| [C# (.NET)](https://duckdb.net/) | [Giorgi](https://github.com/Giorgi) | Secondary |
-| [Dart]({% link docs/api/dart.md %}) | [TigerEye](https://www.tigereye.com/) | Secondary |
-| [ODBC]({% link docs/api/odbc/overview.md %}) | DuckDB team | Secondary |
-| [Rust]({% link docs/api/rust.md %}) | DuckDB team | Secondary |
-| [Julia]({% link docs/api/julia.md %}) | DuckDB team | Secondary |
-| [Swift]({% link docs/api/swift.md %}) | DuckDB team | Secondary |
-| [Common Lisp](https://github.com/ak-coram/cl-duckdb) | [ak-coram](https://github.com/ak-coram) | Tertiary |
-| [Crystal](https://github.com/amauryt/crystal-duckdb) | [amauryt](https://github.com/amauryt) | Tertiary |
-| [Elixir](https://github.com/AlexR2D2/duckdbex) | [AlexR2D2](https://github.com/AlexR2D2/duckdbex) | Tertiary |
-| [Erlang](https://github.com/mmzeeman/educkdb) | [MM Zeeman](https://github.com/mmzeeman) | Tertiary |
-| [Ruby](https://github.com/suketa/ruby-duckdb) | [suketa](https://github.com/suketa) | Tertiary |
-| [Zig](https://github.com/karlseguin/zuckdb.zig) | [karlseguin](https://github.com/karlseguin) | Tertiary |
+| Client API | Maintainer | Support tier | Latest version |
+|------------|------------|--------------|---------------:|
+| [C]({% link docs/api/c/overview.md %}) | DuckDB team | Primary | 1.2.0 |
+| [Command Line Interface (CLI)]({% link docs/api/cli/overview.md %}) | DuckDB team | Primary | 1.2.0 |
+| [Java]({% link docs/api/java.md %}) | DuckDB team | Primary | 1.1.3 |
+| [Go]({% link docs/api/go.md %}) | DuckDB team and [Marc Boeker](https://github.com/marcboeker) | Primary | 1.1.3 |
+| [Node.js (node-neo)]({% link docs/api/node_neo/overview.md %}) | Jeff Raymakers and Antony Courtney ([MotherDuck](https://motherduck.com/)) | Primary | 1.2.0 |
+| [Python]({% link docs/api/python/overview.md %}) | DuckDB team | Primary | 1.2.0 |
+| [R]({% link docs/api/r.md %}) | DuckDB team and [Kirill MÃ¼ller](https://github.com/krlmlr) | Primary | 1.1.3 |
+| [WebAssembly (Wasm)]({% link docs/api/wasm/overview.md %}) | DuckDB team | Primary | 1.2.0 |
+| [ADBC (Arrow)]({% link docs/api/adbc.md %}) | DuckDB team | Secondary | 1.2.0 |
+| [C# (.NET)](https://duckdb.net/) | [Giorgi](https://github.com/Giorgi) | Secondary | 1.2.0 |
+| [C++]({% link docs/api/cpp.md %}) | DuckDB team | Secondary | 1.2.0 |
+| [Dart]({% link docs/api/dart.md %}) | [TigerEye](https://www.tigereye.com/) | Secondary | 1.1.3 |
+| [Julia]({% link docs/api/julia.md %}) | DuckDB team | Secondary | 1.1.0 |
+| [Node.js (deprecated)]({% link docs/api/nodejs/overview.md %}) | DuckDB team | Secondary | 1.1.3 |
+| [ODBC]({% link docs/api/odbc/overview.md %}) | DuckDB team | Secondary | 1.1.0 |
+| [Rust]({% link docs/api/rust.md %}) | DuckDB team | Secondary | 1.1.3 |
+| [Swift]({% link docs/api/swift.md %}) | DuckDB team | Secondary | 1.1.3 |
+| [Common Lisp](https://github.com/ak-coram/cl-duckdb) | [ak-coram](https://github.com/ak-coram) | Tertiary | |
+| [Crystal](https://github.com/amauryt/crystal-duckdb) | [amauryt](https://github.com/amauryt) | Tertiary | |
+| [Elixir](https://github.com/AlexR2D2/duckdbex) | [AlexR2D2](https://github.com/AlexR2D2/duckdbex) | Tertiary | |
+| [Erlang](https://github.com/mmzeeman/educkdb) | [MM Zeeman](https://github.com/mmzeeman) | Tertiary | |
+| [Ruby](https://github.com/suketa/ruby-duckdb) | [suketa](https://github.com/suketa) | Tertiary | |
+| [Zig](https://github.com/karlseguin/zuckdb.zig) | [karlseguin](https://github.com/karlseguin) | Tertiary | |
 
 ## Support Tiers
 
@@ -1392,6 +1392,13 @@ Finally, all tertiary clients are maintained by third parties, so there are no f
 > The DuckDB clients listed above are open-source and we welcome community contributions to these libraries.
 > All primary and secondary clients are available for the MIT license.
 > For tertiary clients, please consult the repository for the license.
+
+We report the latest stable version for the clients in the primary and secondary support tiers.
+
+## Compatibility
+
+All DuckDB clients support the same DuckDB SQL syntax and use the same on-disk [database format]({% link docs/internals/storage.md %}).
+[DuckDB extensions]({% link docs/extensions/overview.md %}) are also portable between clients with some exceptions (see [Wasm extensions]({% link docs/api/wasm/extensions.md %}#list-of-officially-available-extensions)).
 
 ---
 duckdb/docs/api/r.md
@@ -2744,8 +2751,6 @@ redirect_from:
 
 This package provides a Node.js API for DuckDB.
 The API for this client is somewhat compliant to the SQLite Node.js client for easier transition.
-
-For TypeScript wrappers, see the [duckdb-async project](https://www.npmjs.com/package/duckdb-async).
 
 ## Initializing
 
@@ -6543,8 +6548,6 @@ title: Python Client API
   duckdb.apilevel int¶   Indicates which Python DBAPI version this package implements  
 
   duckdb.paramstyle str¶   Indicates which parameter style duckdb supports  
-
-  duckdb.default_connection duckdb.DuckDBPyConnection¶   The connection that is used by default if you don’t explicitly pass one to the root methods in this module  
 
   class duckdb.BinaryValue(object: Any)¶   Bases: Value  
 
@@ -23082,7 +23085,6 @@ In DuckDB-Wasm, `INSTALL` is a no-op given there is no durable cross-session sto
 | [parquet]({% link docs/data/parquet/overview.md %}) | Adds support for reading and writing Parquet files | |
 | [sqlite]({% link docs/extensions/sqlite.md %}) | Adds support for reading SQLite database files | sqlite, sqlite3 |
 | [sqlsmith]({% link docs/extensions/sqlsmith.md %}) | | |
-| [substrait]({% link docs/extensions/substrait.md %}) | Adds support for the Substrait integration | |
 | [tpcds]({% link docs/extensions/tpcds.md %}) | Adds TPC-DS data generation and query support | |
 | [tpch]({% link docs/extensions/tpch.md %}) | Adds TPC-H data generation and query support | |
 
@@ -34806,7 +34808,7 @@ Configuration options come with different default [scopes]({% link docs/sql/stat
 
 | Name | Description | Type | Default value |
 |----|--------|--|---|
-| `custom_profiling_settings` | Accepts a `JSON` enabling custom metrics | `VARCHAR` | `{"ROWS_RETURNED": "true", "LATENCY": "true", "RESULT_SET_SIZE": "true", "OPERATOR_TIMING": "true", "OPERATOR_ROWS_SCANNED": "true", "CUMULATIVE_ROWS_SCANNED": "true", "OPERATOR_CARDINALITY": "true", "OPERATOR_TYPE": "true", "CUMULATIVE_CARDINALITY": "true", "EXTRA_INFO": "true", "OPERATOR_NAME": "true", "CPU_TIME": "true", "BLOCKED_THREAD_TIME": "true", "QUERY_NAME": "true"}` |
+| `custom_profiling_settings` | Accepts a `JSON` enabling custom metrics | `VARCHAR` | `{"ROWS_RETURNED": "true", "LATENCY": "true", "RESULT_SET_SIZE": "true", "OPERATOR_TIMING": "true", "OPERATOR_ROWS_SCANNED": "true", "CUMULATIVE_ROWS_SCANNED": "true", "OPERATOR_CARDINALITY": "true", "OPERATOR_TYPE": "true", "OPERATOR_NAME": "true", "CUMULATIVE_CARDINALITY": "true", "EXTRA_INFO": "true", "CPU_TIME": "true", "BLOCKE |
 | `dynamic_or_filter_threshold` | The maximum amount of OR filters we generate dynamically from a hash join | `UBIGINT` | `50` |
 | `enable_http_logging` | Enables HTTP logging | `BOOLEAN` | `false` |
 | `enable_profiling` | Enables profiling, and sets the output format (`JSON`, `QUERY_TREE`, `QUERY_TREE_OPTIMIZER`) | `VARCHAR` | `NULL` |
@@ -56493,7 +56495,6 @@ redirect_from:
 | [postgres]({% link docs/extensions/postgres.md %}) | [GitHub](https://github.com/duckdb/duckdb-postgres) | Adds support for reading from and writing to a PostgreSQL database | yes | postgres_scanner |
 | [spatial]({% link docs/extensions/spatial/overview.md %}) | [GitHub](https://github.com/duckdb/duckdb-spatial) | Geospatial extension that adds support for working with spatial data and functions | no | |
 | [sqlite]({% link docs/extensions/sqlite.md %}) | [GitHub](https://github.com/duckdb/duckdb-sqlite) | Adds support for reading from and writing to SQLite database files | yes | sqlite_scanner, sqlite3 |
-| [substrait]({% link docs/extensions/substrait.md %}) | [GitHub](https://github.com/substrait-io/duckdb-substrait-extension) | Adds support for the Substrait integration | no | |
 | [tpcds]({% link docs/extensions/tpcds.md %}) | | Adds TPC-DS data generation and query support | yes | |
 | [tpch]({% link docs/extensions/tpch.md %}) | | Adds TPC-H data generation and query support | yes | |
 | [vss]({% link docs/extensions/vss.md %}) | [GitHub](https://github.com/duckdb/duckdb-vss) | Adds support for vector similarity search queries | no | |
@@ -58500,6 +58501,14 @@ DuckDB can read or modify a SQLite database while DuckDB or SQLite reads or modi
 
 > Warning Linking multiple copies of the SQLite library into the same application can lead to application errors. See [sqlite_scanner Issue #82](https://github.com/duckdb/sqlite_scanner/issues/82) for more information.
 
+## Settings
+
+The extension exposes the following configuration parameters.
+
+| Name | Description | Default |
+| --------------------------------- | ---------------------------------------------------------------------------- | ------- |
+| `sqlite_debug_show_queries` | DEBUG SETTING: print all queries sent to SQLite to stdout | `false` |
+
 ## Supported Operations
 
 Below is a list of supported operations.
@@ -58616,157 +58625,6 @@ The `sqlsmith` extension registers the following functions:
 * `fuzzyduck`
 * `reduce_sql_statement`
 * `fuzz_all_functions`
-
----
-duckdb/docs/extensions/substrait.md
----
----
-layout: docu
-title: Substrait Extension
-github_repository: https://github.com/duckdb/substrait
----
-
-The main goal of the `substrait` extension is to support both production and consumption of [Substrait](https://substrait.io/) query plans in DuckDB.
-
-This extension is mainly exposed via 3 different APIs â€“ the SQL API, the Python API, and the R API.
-Here we depict how to consume and produce Substrait query plans in each API.
-
-> The Substrait integration is currently experimental. Support is currently only available on request.
-> If you have not asked for permission to ask for support, [contact us prior to opening an issue](https://duckdblabs.com/contact/).
-> If you open an issue without doing so, we will close it without further review.
-
-## Installing and Loading
-
-The Substrait extension is an autoloadable extensions, meaning that it will be loaded at runtime whenever one of the substrait functions is called. To explicitly install and load the released version of the Substrait extension, you can also use the following SQL commands.
-
-```sql
-INSTALL substrait;
-LOAD substrait;
-```
-
-## SQL
-
-In the SQL API, users can generate Substrait plans (into a BLOB or a JSON) and consume Substrait plans.
-
-### BLOB Generation
-
-To generate a Substrait BLOB the `get_substrait(sql)` function must be called with a valid SQL select query.
-
-```sql
-CREATE TABLE crossfit (exercise TEXT, difficulty_level INTEGER);
-INSERT INTO crossfit VALUES ('Push Ups', 3), ('Pull Ups', 5), ('Push Jerk', 7), ('Bar Muscle Up', 10);
-```
-
-```sql
-.mode line
-CALL get_substrait('SELECT count(exercise) AS exercise FROM crossfit WHERE difficulty_level <= 5');
-```
-
-```text
-Plan BLOB = \x12\x09\x1A\x07\x10\x01\x1A\x03lte\x12\x11\x1A\x0F\x10\x02\x1A\x0Bis_not_null\x12\x09\x1A\x07\x10\x03\x1A\x03and\x12\x0B\x1A\x09\x10\x04\x1A\x05count\x1A\xC8\x01\x12\xC5\x01\x0A\xB8\x01:\xB5\x01\x12\xA8\x01\x22\xA5\x01\x12\x94\x01\x0A\x91\x01\x12/\x0A\x08exercise\x0A\x10difficulty_level\x12\x11\x0A\x07\xB2\x01\x04\x08\x0D\x18\x01\x0A\x04*\x02\x10\x01\x18\x02\x1AJ\x1AH\x08\x03\x1A\x04\x0A\x02\x10\x01\x22\x22\x1A \x1A\x1E\x08\x01\x1A\x04*\x02\x10\x01\x22\x0C\x1A\x0A\x12\x08\x0A\x04\x12\x02\x08\x01\x22\x00\x22\x06\x1A\x04\x0A\x02(\x05\x22\x1A\x1A\x18\x1A\x16\x08\x02\x1A\x04*\x02\x10\x01\x22\x0C\x1A\x0A\x12\x08\x0A\x04\x12\x02\x08\x01\x22\x00\x22\x06\x0A\x02\x0A\x00\x10\x01:\x0A\x0A\x08crossfit\x1A\x00\x22\x0A\x0A\x08\x08\x04*\x04:\x02\x10\x01\x1A\x08\x12\x06\x0A\x02\x12\x00\x22\x00\x12\x08exercise2\x0A\x10\x18*\x06DuckDB
-```
-
-### JSON Generation
-
-To generate a JSON representing the Substrait plan the `get_substrait_json(sql)` function must be called with a valid SQL select query.
-
-```sql
-CALL get_substrait_json('SELECT count(exercise) AS exercise FROM crossfit WHERE difficulty_level <= 5');
-```
-
-```json
-Json = {"extensions":[{"extensionFunction":{"functionAnchor":1,"name":"lte"}},{"extensionFunction":{"functionAnchor":2,"name":"is_not_null"}},{"extensionFunction":{"functionAnchor":3,"name":"and"}},{"extensionFunction":{"functionAnchor":4,"name":"count"}}],"relations":[{"root":{"input":{"project":{"input":{"aggregate":{"input":{"read":{"baseSchema":{"names":["exercise","difficulty_level"],"struct":{"types":[{"varchar":{"length":13,"nullability":"NULLABILITY_NULLABLE"}},{"i32":{"nullability":"NULLABILITY_NULLABLE"}}],"nullability":"NULLABILITY_REQUIRED"}},"filter":{"scalarFunction":{"functionReference":3,"outputType":{"bool":{"nullability":"NULLABILITY_NULLABLE"}},"arguments":[{"value":{"scalarFunction":{"functionReference":1,"outputType":{"i32":{"nullability":"NULLABILITY_NULLABLE"}},"arguments":[{"value":{"selection":{"directReference":{"structField":{"field":1}},"rootReference":{}}}},{"value":{"literal":{"i32":5}}}]}}},{"value":{"scalarFunction":{"functionReference":2,"outputType":{"i32":{"nullability":"NULLABILITY_NULLABLE"}},"arguments":[{"value":{"selection":{"directReference":{"structField":{"field":1}},"rootReference":{}}}}]}}}]}},"projection":{"select":{"structItems":[{}]},"maintainSingularStruct":true},"namedTable":{"names":["crossfit"]}}},"groupings":[{}],"measures":[{"measure":{"functionReference":4,"outputType":{"i64":{"nullability":"NULLABILITY_NULLABLE"}}}}]}},"expressions":[{"selection":{"directReference":{"structField":{}},"rootReference":{}}}]}},"names":["exercise"]}}],"version":{"minorNumber":24,"producer":"DuckDB"}}
-```
-
-### BLOB Consumption
-
-To consume a Substrait BLOB the `from_substrait(blob)` function must be called with a valid Substrait BLOB plan.
-
-```sql
-CALL from_substrait('\x12\x09\x1A\x07\x10\x01\x1A\x03lte\x12\x11\x1A\x0F\x10\x02\x1A\x0Bis_not_null\x12\x09\x1A\x07\x10\x03\x1A\x03and\x12\x0B\x1A\x09\x10\x04\x1A\x05count\x1A\xC8\x01\x12\xC5\x01\x0A\xB8\x01:\xB5\x01\x12\xA8\x01\x22\xA5\x01\x12\x94\x01\x0A\x91\x01\x12/\x0A\x08exercise\x0A\x10difficulty_level\x12\x11\x0A\x07\xB2\x01\x04\x08\x0D\x18\x01\x0A\x04*\x02\x10\x01\x18\x02\x1AJ\x1AH\x08\x03\x1A\x04\x0A\x02\x10\x01\x22\x22\x1A \x1A\x1E\x08\x01\x1A\x04*\x02\x10\x01\x22\x0C\x1A\x0A\x12\x08\x0A\x04\x12\x02\x08\x01\x22\x00\x22\x06\x1A\x04\x0A\x02(\x05\x22\x1A\x1A\x18\x1A\x16\x08\x02\x1A\x04*\x02\x10\x01\x22\x0C\x1A\x0A\x12\x08\x0A\x04\x12\x02\x08\x01\x22\x00\x22\x06\x0A\x02\x0A\x00\x10\x01:\x0A\x0A\x08crossfit\x1A\x00\x22\x0A\x0A\x08\x08\x04*\x04:\x02\x10\x01\x1A\x08\x12\x06\x0A\x02\x12\x00\x22\x00\x12\x08exercise2\x0A\x10\x18*\x06DuckDB'::BLOB);
-```
-
-```text
-exercise = 2
-```
-
-## Python
-
-Substrait extension is autoloadable, but if you prefer to do so explicitly, you can use the relevant Python syntax within a connection:
-
-```python
-import duckdb
-
-con = duckdb.connect()
-con.install_extension("substrait")
-con.load_extension("substrait")
-```
-
-### BLOB Generation
-
-To generate a Substrait BLOB the `get_substrait(sql)` function must be called, from a connection, with a valid SQL select query.
-
-```python
-con.execute(query = "CREATE TABLE crossfit (exercise TEXT, difficulty_level INTEGER)")
-con.execute(query = "INSERT INTO crossfit VALUES ('Push Ups', 3), ('Pull Ups', 5), ('Push Jerk', 7), ('Bar Muscle Up', 10)")
-
-proto_bytes = con.get_substrait(query="SELECT count(exercise) AS exercise FROM crossfit WHERE difficulty_level <= 5").fetchone()[0]
-```
-
-### JSON Generation
-
-To generate a JSON representing the Substrait plan the `get_substrait_json(sql)` function, from a connection, must be called with a valid SQL select query.
-
-```python
-json = con.get_substrait_json("SELECT count(exercise) AS exercise FROM crossfit WHERE difficulty_level <= 5").fetchone()[0]
-```
-
-### BLOB Consumption
-
-To consume a Substrait BLOB the `from_substrait(blob)` function must be called, from the connection, with a valid Substrait BLOB plan.
-
-```python
-query_result = con.from_substrait(proto=proto_bytes)
-```
-
-## R
-
-By default the extension will be autoloaded on first use. To explicitly install and load this extension in R, use the following commands:
-
-```r
-library("duckdb")
-con <- dbConnect(duckdb::duckdb())
-dbExecute(con, "INSTALL substrait")
-dbExecute(con, "LOAD substrait")
-```
-
-### BLOB Generation
-
-To generate a Substrait BLOB the `duckdb_get_substrait(con, sql)` function must be called, with a connection and a valid SQL select query.
-
-```r
-dbExecute(con, "CREATE TABLE crossfit (exercise TEXT, difficulty_level INTEGER)")
-dbExecute(con, "INSERT INTO crossfit VALUES ('Push Ups', 3), ('Pull Ups', 5), ('Push Jerk', 7), ('Bar Muscle Up', 10)")
-
-proto_bytes <- duckdb::duckdb_get_substrait(con, "SELECT * FROM crossfit LIMIT 5")
-```
-
-### JSON Generation
-
-To generate a JSON representing the Substrait plan `duckdb_get_substrait_json(con, sql)` function, with a connection and a valid SQL select query.
-
-```r
-json <- duckdb::duckdb_get_substrait_json(con, "SELECT count(exercise) AS exercise FROM crossfit WHERE difficulty_level <= 5")
-```
-
-### BLOB Consumption
-
-To consume a Substrait BLOB the `duckdb_prepare_substrait(con, blob)` function must be called, with a connection and a valid Substrait BLOB plan.
-
-```r
-result <- duckdb::duckdb_prepare_substrait(con, proto_bytes)
-df <- dbFetch(result)
-```
 
 ---
 duckdb/docs/extensions/tpcds.md
