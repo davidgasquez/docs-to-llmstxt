@@ -805,7 +805,8 @@ duckdb/docs/sql/meta/duckdb_table_functions.md
 layout: docu
 title: DuckDB_% Metadata Functions
 redirect_from:
-- docs/sql/duckdb_table_functions
+- /docs/sql/duckdb_table_functions
+- /docs/sql/duckdb_table_functions/
 ---
 
 DuckDB offers a collection of table functions that provide metadata about the current database. These functions reside in the `main` schema and their names are prefixed with `duckdb_`.
@@ -1151,7 +1152,8 @@ duckdb/docs/sql/meta/information_schema.md
 layout: docu
 title: Information Schema
 redirect_from:
-- docs/sql/information_schema
+- /docs/sql/information_schema
+- /docs/sql/information_schema/
 ---
 
 The views in the `information_schema` are SQL-standard views that describe the catalog entries of the database. These views can be filtered to obtain information about a specific column or table.
@@ -5334,7 +5336,8 @@ layout: docu
 title: Aggregate Functions
 railroad: expressions/aggregate.js
 redirect_from:
-- docs/sql/aggregates
+- /docs/sql/aggregates
+- /docs/sql/aggregates/
 ---
 
 
@@ -6167,7 +6170,8 @@ duckdb/docs/sql/functions/bitstring.md
 layout: docu
 title: Bitstring Functions
 redirect_from:
-- docs/test/functions/bitstring
+- /docs/test/functions/bitstring
+- /docs/test/functions/bitstring/
 ---
 
 
@@ -6327,7 +6331,8 @@ duckdb/docs/sql/functions/blob.md
 layout: docu
 title: Blob Functions
 redirect_from:
-- docs/test/functions/blob
+- /docs/test/functions/blob
+- /docs/test/functions/blob/
 ---
 
 
@@ -6402,7 +6407,8 @@ duckdb/docs/sql/functions/char.md
 layout: docu
 title: Text Functions
 redirect_from:
-- docs/test/functions/char
+- /docs/test/functions/char
+- /docs/test/functions/char/
 ---
 
 
@@ -7493,7 +7499,8 @@ duckdb/docs/sql/functions/date.md
 layout: docu
 title: Date Functions
 redirect_from:
-- docs/test/functions/date
+- /docs/test/functions/date
+- /docs/test/functions/date/
 ---
 
 
@@ -8173,7 +8180,8 @@ duckdb/docs/sql/functions/enum.md
 layout: docu
 title: Enum Functions
 redirect_from:
-- docs/test/functions/enum
+- /docs/test/functions/enum
+- /docs/test/functions/enum/
 ---
 
 
@@ -9752,7 +9760,8 @@ duckdb/docs/sql/functions/nested.md
 layout: docu
 title: Nested Functions
 redirect_from:
-- docs/test/functions/nested
+- /docs/test/functions/nested
+- /docs/test/functions/nested/
 ---
 
 There are five [nested data types]({% link docs/sql/data_types/overview.md %}#nested--composite-types):
@@ -9772,7 +9781,8 @@ duckdb/docs/sql/functions/numeric.md
 layout: docu
 title: Numeric Functions
 redirect_from:
-- docs/test/functions/math
+- /docs/test/functions/math
+- /docs/test/functions/math/
 ---
 
 
@@ -10315,7 +10325,8 @@ layout: docu
 title: Functions
 railroad: expressions/function.js
 redirect_from:
-- docs/test/functions/overview
+- /docs/test/functions/overview
+- /docs/test/functions/overview/
 ---
 
 ## Function Syntax
@@ -10384,8 +10395,8 @@ layout: docu
 title: Pattern Matching
 railroad: expressions/like.js
 redirect_from:
-- docs/sql/functions/patternmatching
-- docs/sql/functions/patternmatching.html
+- /docs/sql/functions/patternmatching
+- /docs/sql/functions/patternmatching/
 ---
 
 There are four separate approaches to pattern matching provided by DuckDB:
@@ -11961,7 +11972,8 @@ duckdb/docs/sql/functions/utility.md
 layout: docu
 title: Utility Functions
 redirect_from:
-- docs/test/functions/utility
+- /docs/test/functions/utility
+- /docs/test/functions/utility/
 ---
 
 
@@ -12345,7 +12357,8 @@ layout: docu
 title: Window Functions
 railroad: expressions/window.js
 redirect_from:
-- docs/sql/window_functions
+- /docs/sql/window_functions
+- /docs/sql/window_functions/
 ---
 
 
@@ -19623,7 +19636,8 @@ duckdb/docs/sql/dialect/friendly_sql.md
 layout: docu
 title: Friendly SQL
 redirect_from:
-- docs/guides/sql_features/friendly_sql
+- /docs/guides/sql_features/friendly_sql
+- /docs/guides/sql_features/friendly_sql/
 ---
 
 DuckDB offers several advanced SQL features and syntactic sugar to make SQL queries more concise. We refer to these colloquially as â€œfriendly SQLâ€�.
@@ -19841,7 +19855,9 @@ redirect_from:
 - /docs/sql/case_sensitivity
 - /docs/sql/case_sensitivity/
 - /docs/sql/keywords-and-identifiers
+- /docs/sql/keywords-and-identifiers/
 - /docs/sql/dialect/keywords-and-identifiers
+- /docs/sql/dialect/keywords-and-identifiers/
 ---
 
 ## Identifiers
@@ -20060,7 +20076,8 @@ duckdb/docs/sql/dialect/postgresql_compatibility.md
 layout: docu
 title: PostgreSQL Compatibility
 redirect_from:
-- docs/sql/postgresl_compatibility
+- /docs/sql/postgresl_compatibility
+- /docs/sql/postgresl_compatibility/
 ---
 
 DuckDB's SQL dialect closely follows the conventions of the PostgreSQL dialect.
@@ -20427,7 +20444,9 @@ layout: docu
 title: Guides
 redirect_from:
 - /docs/guides
+- /docs/guides/
 - /docs/guides/index
+- /docs/guides/index/
 ---
 
 The guides section contains compact how-to guides that are focused on achieving a single goal. For an API references and examples, see the rest of the documentation.
@@ -20970,6 +20989,7 @@ layout: docu
 title: File Formats
 redirect_from:
 - /docs/guides/performance/file-formats
+- /docs/guides/performance/file-formats/
 ---
 
 ## Handling Parquet Files
@@ -21075,6 +21095,7 @@ layout: docu
 title: Tuning Workloads
 redirect_from:
 - /docs/guides/performance/how-to-tune-workloads
+- /docs/guides/performance/how-to-tune-workloads/
 ---
 
 ## Parallelism (Multi-Core Processing)
@@ -21239,6 +21260,7 @@ layout: docu
 title: Data Import
 redirect_from:
 - /docs/guides/import/overview
+- /docs/guides/import/overview/
 ---
 
 ## Recommended Import Methods
@@ -21430,6 +21452,7 @@ layout: docu
 title: My Workload Is Slow
 redirect_from:
 - /docs/guides/performance/my-workload-is-slow
+- /docs/guides/performance/my-workload-is-slow/
 ---
 
 If you find that your workload in DuckDB is slow, we recommend performing the following checks. More detailed instructions are linked for each point.
@@ -21453,6 +21476,7 @@ layout: docu
 title: Performance Guide
 redirect_from:
 - /docs/guides/performance
+- /docs/guides/performance/
 ---
 
 DuckDB aims to automatically achieve high performance by using well-chosen default configurations and having a forgiving architecture. Of course, there are still opportunities for tuning the system for specific workloads. The Performance Guide's page contain guidelines and tips for achieving good performance when loading and processing data with DuckDB.
@@ -24150,6 +24174,7 @@ layout: docu
 title: Cloudflare R2 Import
 redirect_from:
 - /docs/guides/import/cloudflare_r2_import
+- /docs/guides/import/cloudflare_r2_import/
 ---
 
 ## Prerequisites
@@ -24252,6 +24277,7 @@ layout: docu
 title: Google Cloud Storage Import
 redirect_from:
 - /docs/guides/import/gcs_import
+- /docs/guides/import/gcs_import/
 ---
 
 ## Prerequisites
@@ -24299,6 +24325,7 @@ layout: docu
 title: HTTP Parquet Import
 redirect_from:
 - /docs/guides/import/http_import
+- /docs/guides/import/http_import/
 ---
 
 To load a Parquet file over HTTP(S), the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) is required. This can be installed using the `INSTALL` SQL command. This only needs to be run once.
@@ -24353,6 +24380,7 @@ layout: docu
 title: S3 Parquet Export
 redirect_from:
 - /docs/guides/import/s3_export
+- /docs/guides/import/s3_export/
 ---
 
 To write a Parquet file to S3, the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) is required. This can be installed using the `INSTALL` SQL command. This only needs to be run once.
@@ -24419,6 +24447,7 @@ layout: docu
 title: S3 Express One
 redirect_from:
 - /docs/guides/import/s3_express_one
+- /docs/guides/import/s3_express_one/
 ---
 
 In late 2023, AWS [announced](https://aws.amazon.com/about-aws/whats-new/2023/11/amazon-s3-express-one-zone-storage-class/) the [S3 Express One Zone](https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-express-one-zone.html), a high-speed variant of traditional S3 buckets.
@@ -24502,6 +24531,7 @@ title: S3 Iceberg Import
 selected: S3 Iceberg Import
 redirect_from:
 - /docs/guides/import/s3_iceberg_import
+- /docs/guides/import/s3_iceberg_import/
 ---
 
 ## Prerequisites
@@ -24565,6 +24595,7 @@ layout: docu
 title: S3 Parquet Import
 redirect_from:
 - /docs/guides/import/s3_import
+- /docs/guides/import/s3_import/
 ---
 
 ## Prerequisites
@@ -24626,6 +24657,7 @@ layout: docu
 title: CSV Export
 redirect_from:
 - /docs/guides/import/csv_export
+- /docs/guides/import/csv_export/
 ---
 
 To export the data from a table to a CSV file, use the `COPY` statement:
@@ -24650,6 +24682,7 @@ layout: docu
 title: CSV Import
 redirect_from:
 - /docs/guides/import/csv_import
+- /docs/guides/import/csv_import/
 ---
 
 To read data from a CSV file, use the `read_csv` function in the `FROM` clause of a query:
@@ -24701,6 +24734,7 @@ layout: docu
 title: Excel Export
 redirect_from:
 - /docs/guides/import/excel_export
+- /docs/guides/import/excel_export/
 ---
 
 DuckDB supports exporting data to Excel `.xlsx` files. However, `.xls` files are not supported.
@@ -24759,6 +24793,7 @@ layout: docu
 title: Excel Import
 redirect_from:
 - /docs/guides/import/excel_import
+- /docs/guides/import/excel_import/
 ---
 
 DuckDB supports reading Excel `.xlsx` files, however, `.xls` files are not supported.
@@ -24917,6 +24952,7 @@ layout: docu
 title: JSON Export
 redirect_from:
 - /docs/guides/import/json_export
+- /docs/guides/import/json_export/
 ---
 
 To export the data from a table to a JSON file, use the `COPY` statement:
@@ -24960,6 +24996,7 @@ layout: docu
 title: JSON Import
 redirect_from:
 - /docs/guides/import/json_import
+- /docs/guides/import/json_import/
 ---
 
 To read data from a JSON file, use the `read_json_auto` function in the `FROM` clause of a query:
@@ -25009,6 +25046,7 @@ layout: docu
 title: Parquet Export
 redirect_from:
 - /docs/guides/import/parquet_export
+- /docs/guides/import/parquet_export/
 ---
 
 To export the data from a table to a Parquet file, use the `COPY` statement:
@@ -25033,6 +25071,7 @@ layout: docu
 title: Parquet Import
 redirect_from:
 - /docs/guides/import/parquet_import
+- /docs/guides/import/parquet_import/
 ---
 
 To read data from a Parquet file, use the `read_parquet` function in the `FROM` clause of a query:
@@ -25077,6 +25116,7 @@ layout: docu
 title: Querying Parquet Files
 redirect_from:
 - /docs/guides/import/query_parquet
+- /docs/guides/import/query_parquet/
 ---
 
 To run a query directly on a Parquet file, use the `read_parquet` function in the `FROM` clause of a query.
@@ -25097,6 +25137,7 @@ layout: docu
 title: Directly Reading Files
 redirect_from:
 - /docs/guides/import/read_file
+- /docs/guides/import/read_file/
 ---
 
 DuckDB allows directly reading files via the [`read_text`](#read_text) and [`read_blob`](#read_blob) functions.
@@ -25166,6 +25207,7 @@ layout: docu
 title: ADBC Client
 redirect_from:
 - /docs/api/adbc
+- /docs/api/adbc/
 ---
 
 [Arrow Database Connectivity (ADBC)](https://arrow.apache.org/adbc/), similarly to ODBC and JDBC, is a C-style API that enables code portability between different database systems. This allows developers to effortlessly build applications that communicate with database systems without using code specific to that system. The main difference between ADBC and ODBC/JDBC is that ADBC uses [Arrow](https://arrow.apache.org/) to transfer data between the database system and the application. DuckDB has an ADBC driver, which takes advantage of the [zero-copy integration between DuckDB and Arrow]({% post_url 2021-12-03-duck-arrow %}) to efficiently transfer data.
@@ -25529,6 +25571,7 @@ layout: docu
 title: C++ API
 redirect_from:
 - /docs/api/cpp
+- /docs/api/cpp/
 ---
 
 > Warning DuckDB's C++ API is internal.
@@ -25776,6 +25819,7 @@ title: Dart Client
 github_repository: https://github.com/TigerEyeLabs/duckdb-dart
 redirect_from:
 - /docs/api/dart
+- /docs/api/dart/
 ---
 
 DuckDB.Dart is the native Dart API for [DuckDB](https://duckdb.org/).
@@ -25788,9 +25832,7 @@ DuckDB.Dart can be installed from [pub.dev](https://pub.dev/packages/dart_duckdb
 
 #### Depend on It
 
-Run this command:
-
-With Flutter:
+Add the dependency with Flutter:
 
 ```bash
 flutter pub add dart_duckdb
@@ -25803,7 +25845,7 @@ dependencies:
 dart_duckdb: ^1.1.3
 ```
 
-Alternatively, your editor might support `flutter pub get.` Check the docs for your editor to learn more.
+Alternatively, your editor might support `flutter pub get`. Check the docs for your editor to learn more.
 
 #### Import It
 
@@ -25878,6 +25920,7 @@ title: Go Client
 github_repository: https://github.com/marcboeker/go-duckdb
 redirect_from:
 - /docs/api/go
+- /docs/api/go/
 ---
 
 The DuckDB Go driver, `go-duckdb`, allows using DuckDB via the `database/sql` interface.
@@ -26000,8 +26043,10 @@ layout: docu
 title: Java JDBC Client
 github_repository: https://github.com/duckdb/duckdb-java
 redirect_from:
-- /docs/api/scala
 - /docs/api/java
+- /docs/api/java/
+- /docs/api/scala
+- /docs/api/scala/
 ---
 
 ## Installation
@@ -26309,6 +26354,7 @@ layout: docu
 title: Julia Client
 redirect_from:
 - /docs/api/julia
+- /docs/api/julia/
 ---
 
 The DuckDB Julia package provides a high-performance front-end for DuckDB. Much like SQLite, DuckDB runs in-process within the Julia client, and provides a DBInterface front-end.
@@ -26473,6 +26519,11 @@ duckdb/docs/clients/overview.md
 ---
 layout: docu
 title: Client Overview
+redirect_from:
+- /docs/clients
+- /docs/clients/
+- /docs/api/overview
+- /docs/api/overview/
 ---
 
 DuckDB is an in-process database system and offers client APIs (also known as â€œdriversâ€�) for several languages.
@@ -26531,6 +26582,7 @@ title: R Client
 github_repository: https://github.com/duckdb/duckdb-r
 redirect_from:
 - /docs/api/r
+- /docs/api/r/
 ---
 
 ## Installation
@@ -26723,6 +26775,7 @@ layout: docu
 title: Rust Client
 redirect_from:
 - /docs/api/rust
+- /docs/api/rust/
 ---
 
 ## Installation
@@ -26796,6 +26849,7 @@ title: Swift Client
 github_repository: https://github.com/duckdb/duckdb-swift
 redirect_from:
 - /docs/api/swift
+- /docs/api/swift/
 ---
 
 DuckDB has a Swift client. See the [announcement post]({% post_url 2023-04-21-swift %}) for details.
@@ -26951,8 +27005,10 @@ duckdb/docs/clients/python/conversion.md
 layout: docu
 title: Conversion between DuckDB and Python
 redirect_from:
-- /docs/api/python/result_conversion
 - /docs/api/python/conversion
+- /docs/api/python/conversion/
+- /docs/api/python/result_conversion
+- /docs/api/python/result_conversion/
 ---
 
 This page documents the rules for converting [Python objects to DuckDB](#object-conversion-python-object-to-duckdb) and [DuckDB results to Python](#result-conversion-duckdb-results-to-python).
@@ -27169,6 +27225,7 @@ layout: docu
 title: Data Ingestion
 redirect_from:
 - /docs/api/python/data_ingestion
+- /docs/api/python/data_ingestion/
 ---
 
 This page contains examples for data ingestion to Python using DuckDB. First, import the DuckDB page:
@@ -27376,6 +27433,7 @@ layout: docu
 title: Python DB API
 redirect_from:
 - /docs/api/python/dbapi
+- /docs/api/python/dbapi/
 ---
 
 The standard DuckDB Python API provides a SQL interface compliant with the [DB-API 2.0 specification described by PEP 249](https://www.python.org/dev/peps/pep-0249/) similar to the [SQLite Python API](https://docs.python.org/3.7/library/sqlite3.html).
@@ -27554,6 +27612,7 @@ layout: docu
 title: Expression API
 redirect_from:
 - /docs/api/python/expression
+- /docs/api/python/expression/
 ---
 
 The `Expression` class represents an instance of an [expression]({% link docs/sql/expressions/overview.md %}).
@@ -27756,6 +27815,7 @@ layout: docu
 title: Python Function API
 redirect_from:
 - /docs/api/python/function
+- /docs/api/python/function/
 ---
 
 You can create a DuckDB user-defined function (UDF) from a Python function so it can be used in SQL queries.
@@ -27994,6 +28054,7 @@ layout: docu
 title: Known Python Issues
 redirect_from:
 - /docs/api/python/known_issues
+- /docs/api/python/known_issues/
 ---
 
 Unfortunately there are some issues that are either beyond our control or are very elusive / hard to track down.
@@ -28106,6 +28167,7 @@ redirect_from:
 - /docs/api/python
 - /docs/api/python/
 - /docs/api/python/overview
+- /docs/api/python/overview/
 ---
 
 ## Installation
@@ -28352,6 +28414,7 @@ layout: docu
 title: Relational API
 redirect_from:
 - /docs/api/python/relational_api
+- /docs/api/python/relational_api/
 ---
 
 The Relational API is an alternative API that can be used to incrementally construct queries. The API is centered around `DuckDBPyRelation` nodes. The relations can be seen as symbolic representations of SQL queries. They do not hold any data â€“ and nothing is executed â€“ until a method that triggers execution is called.
@@ -28672,6 +28735,7 @@ layout: docu
 title: Spark API
 redirect_from:
 - /docs/api/python/spark_api
+- /docs/api/python/spark_api/
 ---
 
 The DuckDB Spark API implements the [PySpark API](https://spark.apache.org/docs/3.5.0/api/python/reference/index.html), allowing you to use the familiar Spark API to interact with DuckDB.
@@ -28730,6 +28794,7 @@ layout: docu
 title: Types API
 redirect_from:
 - /docs/api/python/types
+- /docs/api/python/types/
 ---
 
 The `DuckDBPyType` class represents a type instance of our [data types]({% link docs/sql/data_types/overview.md %}).
@@ -28921,6 +28986,7 @@ layout: docu
 title: Python Client API
 redirect_from:
 - /docs/api/python/reference/index
+- /docs/api/python/reference/index/
 ---
   
 
@@ -29663,6 +29729,7 @@ layout: docu
 title: Complete API
 redirect_from:
 - /docs/api/c/api
+- /docs/api/c/api/
 ---
 
 
@@ -38647,6 +38714,7 @@ layout: docu
 title: Appender
 redirect_from:
 - /docs/api/c/appender
+- /docs/api/c/appender/
 ---
 
 Appenders are the most efficient way of loading data into DuckDB from within the C interface, and are recommended for
@@ -39346,6 +39414,7 @@ layout: docu
 title: Configuration
 redirect_from:
 - /docs/api/c/config
+- /docs/api/c/config/
 ---
 
 Configuration options can be provided to change different settings of the database system. Note that many of these
@@ -39520,6 +39589,7 @@ layout: docu
 title: Startup & Shutdown
 redirect_from:
 - /docs/api/c/connect
+- /docs/api/c/connect/
 ---
 
 To use DuckDB, you must first initialize a `duckdb_database` handle using `duckdb_open()`. `duckdb_open()` takes as parameter the database file to read and write from. The special value `NULL` (`nullptr`) can be used to create an **in-memory database**. Note that for an in-memory database no data is persisted to disk (i.e., all data is lost when you exit the process).
@@ -39805,6 +39875,7 @@ layout: docu
 title: Data Chunks
 redirect_from:
 - /docs/api/c/data_chunk
+- /docs/api/c/data_chunk/
 ---
 
 Data chunks represent a horizontal slice of a table. They hold a number of [vectors]({% link docs/clients/c/vector.md %}), that can each hold up to the `VECTOR_SIZE` rows. The vector size can be obtained through the `duckdb_vector_size` function and is configurable, but is usually set to `2048`.
@@ -39986,7 +40057,8 @@ title: Overview
 redirect_from:
 - /docs/api/c
 - /docs/api/c/
-- /docs/api/overview
+- /docs/api/c/overview
+- /docs/api/c/overview/
 ---
 
 DuckDB implements a custom C API modelled somewhat following the SQLite C API. The API is contained in the `duckdb.h` header. Continue to [Startup & Shutdown]({% link docs/clients/c/connect.md %}) to get started, or check out the [Full API overview]({% link docs/clients/c/api.md %}).
@@ -40005,6 +40077,7 @@ layout: docu
 title: Prepared Statements
 redirect_from:
 - /docs/api/c/prepared
+- /docs/api/c/prepared/
 ---
 
 A prepared statement is a parameterized query. The query is prepared with question marks (`?`) or dollar symbols (`$1`) indicating the parameters of the query. Values can then be bound to these parameters, after which the prepared statement can be executed using those parameters. A single query can be prepared once and executed many times.
@@ -40268,6 +40341,7 @@ layout: docu
 title: Query
 redirect_from:
 - /docs/api/c/query
+- /docs/api/c/query/
 ---
 
 The `duckdb_query` method allows SQL queries to be run in DuckDB from C. This method takes two parameters, a (null-terminated) SQL query string and a `duckdb_result` result pointer. The result pointer may be `NULL` if the application is not interested in the result set or if the query produces no result. After the result is consumed, the `duckdb_destroy_result` method should be used to clean up the result.
@@ -40755,6 +40829,7 @@ layout: docu
 title: Replacement Scans
 redirect_from:
 - /docs/api/c/replacement_scans
+- /docs/api/c/replacement_scans/
 ---
 
 The replacement scan API can be used to register a callback that is called when a table is read that does not exist in the catalog. For example, when a query such as `SELECT * FROM my_table` is executed and `my_table` does not exist, the replacement scan callback will be called with `my_table` as parameter. The replacement scan can then insert a table function with a specific parameter to replace the read of the table.
@@ -40858,6 +40933,7 @@ layout: docu
 title: Table Functions
 redirect_from:
 - /docs/api/c/table_functions
+- /docs/api/c/table_functions/
 ---
 
 The table function API can be used to define a table function that can then be called from within DuckDB in the `FROM` clause of a query.
@@ -41591,6 +41667,7 @@ layout: docu
 title: Types
 redirect_from:
 - /docs/api/c/types
+- /docs/api/c/types/
 ---
 
 DuckDB is a strongly typed database system. As such, every column has a single type specified. This type is constant
@@ -42891,6 +42968,7 @@ layout: docu
 title: Values
 redirect_from:
 - /docs/api/c/value
+- /docs/api/c/value/
 ---
 
 The value class represents a single value of any type.
@@ -44508,6 +44586,7 @@ layout: docu
 title: Vectors
 redirect_from:
 - /docs/api/c/vector
+- /docs/api/c/vector/
 ---
 
 Vectors represent a horizontal slice of a column. They hold a number of values of a specific type, similar to an array. Vectors are the core data representation used in DuckDB. Vectors are typically stored within [data chunks]({% link docs/clients/c/data_chunk.md %}).
@@ -45272,6 +45351,7 @@ layout: docu
 title: Data Ingestion
 redirect_from:
 - /docs/api/wasm/data_ingestion
+- /docs/api/wasm/data_ingestion/
 ---
 
 DuckDB-Wasm has multiple ways to import data, depending on the format of the data.
@@ -45459,6 +45539,7 @@ layout: docu
 title: Extensions
 redirect_from:
 - /docs/api/wasm/extensions
+- /docs/api/wasm/extensions/
 ---
 
 DuckDB-Wasm's (dynamic) extension loading is modeled after the regular DuckDB's extension loading, with a few relevant differences due to the difference in platform.
@@ -45546,6 +45627,7 @@ layout: docu
 title: Instantiation
 redirect_from:
 - /docs/api/wasm/instantiation
+- /docs/api/wasm/instantiation/
 ---
 
 DuckDB-Wasm has multiple ways to be instantiated depending on the use case.
@@ -45662,6 +45744,7 @@ redirect_from:
 - /docs/api/wasm
 - /docs/api/wasm/
 - /docs/api/wasm/overview
+- /docs/api/wasm/overview/
 ---
 
 DuckDB has been compiled to WebAssembly, so it can run inside any browser on any device.
@@ -45692,6 +45775,7 @@ layout: docu
 title: Query
 redirect_from:
 - /docs/api/wasm/query
+- /docs/api/wasm/query/
 ---
 
 DuckDB-Wasm provides functions for querying data. Queries are run sequentially.
@@ -45782,6 +45866,7 @@ title: ODBC Configuration
 github_repository: https://github.com/duckdb/duckdb-odbc
 redirect_from:
 - /docs/api/odbc/configuration
+- /docs/api/odbc/configuration/
 ---
 
 This page documents the files using the ODBC configuration, [`odbc.ini`](#odbcini-and-odbcini) and [`odbcinst.ini`](#odbcinstini-and-odbcinstini).
@@ -45842,6 +45927,7 @@ title: ODBC API on Linux
 github_repository: https://github.com/duckdb/duckdb-odbc
 redirect_from:
 - /docs/api/odbc/linux
+- /docs/api/odbc/linux/
 ---
 
 ## Driver Manager
@@ -45936,6 +46022,7 @@ title: ODBC API on macOS
 github_repository: https://github.com/duckdb/duckdb-odbc
 redirect_from:
 - /docs/api/odbc/macos
+- /docs/api/odbc/macos/
 ---
 
 1. A driver manager is required to manage communication between applications and the ODBC driver. DuckDB supports `unixODBC`, which is a complete ODBC driver manager for macOS and Linux. Users can install it from the command line via [Homebrew](https://brew.sh/):
@@ -46014,6 +46101,7 @@ redirect_from:
 - /docs/api/odbc
 - /docs/api/odbc/
 - /docs/api/odbc/overview
+- /docs/api/odbc/overview/
 ---
 
 The ODBC (Open Database Connectivity) is a C-style API that provides access to different flavors of Database Management Systems (DBMSs).
@@ -46041,6 +46129,7 @@ title: ODBC API on Windows
 github_repository: https://github.com/duckdb/duckdb-odbc
 redirect_from:
 - /docs/api/odbc/windows
+- /docs/api/odbc/windows/
 ---
 
 Using the DuckDB ODBC API on Windows requires the following steps:
@@ -46139,6 +46228,7 @@ layout: docu
 title: Node.js Client (Neo)
 redirect_from:
 - /docs/api/node_neo/overview
+- /docs/api/node_neo/overview/
 ---
 
 An API for using [DuckDB]({% link index.html %}) in [Node.js](https://nodejs.org/).
@@ -46584,6 +46674,7 @@ layout: docu
 title: Command Line Arguments
 redirect_from:
 - /docs/cli/arguments
+- /docs/cli/arguments/
 ---
 
 The table below summarizes DuckDB's command line options.
@@ -46642,6 +46733,7 @@ layout: docu
 title: Autocomplete
 redirect_from:
 - /docs/api/cli/autocomplete
+- /docs/api/cli/autocomplete/
 ---
 
 The shell offers context-aware autocomplete of SQL queries through the [`autocomplete` extension]({% link docs/extensions/autocomplete.md %}). autocomplete is triggered by pressing `Tab`.
@@ -46705,7 +46797,9 @@ layout: docu
 title: Dot Commands
 redirect_from:
 - /docs/api/cli/dot-commands
+- /docs/api/cli/dot-commands/
 - /docs/api/cli/dot_commands
+- /docs/api/cli/dot_commands/
 ---
 
 Dot commands are available in the DuckDB CLI client. To use one of these commands, begin the line with a period (`.`) immediately followed by the name of the command you wish to execute. Additional arguments to the command are entered, space separated, after the command. If an argument must contain a space, either single or double quotes may be used to wrap that parameter. Dot commands must be entered on a single line, and no whitespace may occur before the period. No semicolon is required at the end of the line. To see available commands, use the `.help` command.
@@ -46955,6 +47049,7 @@ layout: docu
 title: Editing
 redirect_from:
 - /docs/api/cli/editing
+- /docs/api/cli/editing/
 ---
 
 > The linenoise-based CLI editor is currently only available for macOS and Linux.
@@ -47051,7 +47146,9 @@ layout: docu
 title: Output Formats
 redirect_from:
 - /docs/api/cli/output-formats
+- /docs/api/cli/output-formats/
 - /docs/api/cli/output_formats
+- /docs/api/cli/output_formats/
 ---
 
 The `.mode` [dot command]({% link docs/clients/cli/dot_commands.md %}) may be used to change the appearance of the tables returned in the terminal output. In addition to customizing the appearance, these modes have additional benefits. This can be useful for presenting DuckDB output elsewhere by redirecting the terminal [output to a file]({% link docs/clients/cli/dot_commands.md %}#output-writing-results-to-a-file). Using the `insert` mode will build a series of SQL statements that can be used to insert the data at a later point.
@@ -47137,6 +47234,7 @@ redirect_from:
 - /docs/api/cli
 - /docs/api/cli/
 - /docs/api/cli/overview
+- /docs/api/cli/overview/
 ---
 
 ## Installation
@@ -47456,6 +47554,7 @@ layout: docu
 title: Syntax Highlighting
 redirect_from:
 - /docs/api/cli/syntax_highlighting
+- /docs/api/cli/syntax_highlighting/
 ---
 
 > Syntax highlighting in the CLI is currently only available for macOS and Linux.
@@ -47525,6 +47624,7 @@ redirect_from:
 - /docs/api/nodejs
 - /docs/api/nodejs/
 - /docs/api/nodejs/overview
+- /docs/api/nodejs/overview/
 ---
 
 > Deprecated The old DuckDB Node.js package is deprecated.
@@ -47705,6 +47805,7 @@ layout: docu
 title: Node.js API
 redirect_from:
 - /docs/api/nodejs/reference
+- /docs/api/nodejs/reference/
 ---
 
 ## Modules
@@ -49118,7 +49219,8 @@ duckdb/docs/extensions/core_extensions.md
 layout: docu
 title: Core Extensions
 redirect_from:
-- docs/extensions/official_extensions
+- /docs/extensions/official_extensions
+- /docs/extensions/official_extensions/
 ---
 
 ## List of Core Extensions
@@ -50579,8 +50681,10 @@ layout: docu
 title: PostgreSQL Extension
 github_repository: https://github.com/duckdb/duckdb-postgres
 redirect_from:
-- docs/extensions/postgres_scanner
-- docs/extensions/postgresql
+- /docs/extensions/postgres_scanner
+- /docs/extensions/postgres_scanner/
+- /docs/extensions/postgresql
+- /docs/extensions/postgresql/
 ---
 
 The `postgres` extension allows DuckDB to directly read and write data from a running PostgreSQL database instance. The data can be queried directly from the underlying PostgreSQL database. Data can be loaded from PostgreSQL tables into DuckDB tables, or vice versa. See the [official announcement]({% post_url 2022-09-30-postgres-scanner %}) for implementation details and background.
@@ -50973,7 +51077,8 @@ layout: docu
 title: SQLite Extension
 github_repository: https://github.com/duckdb/duckdb-sqlite
 redirect_from:
-- docs/extensions/sqlite_scanner
+- /docs/extensions/sqlite_scanner
+- /docs/extensions/sqlite_scanner/
 ---
 
 The SQLite extension allows DuckDB to directly read and write data from a SQLite database file. The data can be queried directly from the underlying SQLite tables. Data can be loaded from SQLite tables into DuckDB tables, or vice versa.
@@ -56221,6 +56326,7 @@ layout: docu
 title: CSV Import
 redirect_from:
 - /docs/data/csv
+- /docs/data/csv/
 ---
 
 ## Examples
@@ -56449,7 +56555,6 @@ duckdb/docs/data/csv/reading_faulty_csv_files.md
 ---
 layout: docu
 title: Reading Faulty CSV Files
-redirect_from:
 ---
 
 CSV files can come in all shapes and forms, with some presenting many errors that make the process of cleanly reading them inherently difficult. To help users read these files, DuckDB supports detailed error messages, the ability to skip faulty lines, and the possibility of storing faulty lines in a temporary table to assist users with a data cleaning step.
@@ -57694,6 +57799,7 @@ layout: docu
 title: JSON Type
 redirect_from:
 - /docs/sql/data_types/json
+- /docs/sql/data_types/json/
 ---
 
 DuckDB supports `json` via the `JSON` logical type.
@@ -58097,7 +58203,9 @@ layout: docu
 title: JSON Overview
 redirect_from:
 - /docs/data/json
+- /docs/data/json/
 - /docs/extensions/json
+- /docs/extensions/json/
 ---
 
 DuckDB supports SQL functions that are useful for reading values from existing JSON and creating new JSON data.
@@ -58535,7 +58643,9 @@ layout: docu
 title: Reading and Writing Parquet Files
 redirect_from:
 - /docs/data/parquet
+- /docs/data/parquet/
 - /docs/extensions/parquet
+- /docs/extensions/parquet/
 ---
 
 ## Examples
@@ -59007,6 +59117,7 @@ layout: docu
 title: Reading Multiple Files
 redirect_from:
 - /docs/data/csv/multiple_files
+- /docs/data/csv/multiple_files/
 ---
 
 DuckDB can read multiple files of different types (CSV, Parquet, JSON files) at the same time using either the glob syntax, or by providing a list of files to read.
@@ -59174,6 +59285,7 @@ layout: docu
 title: Overview of DuckDB Internals
 redirect_from:
 - /internals/overview
+- /internals/overview/
 ---
 On this page is a brief description of the internals of the DuckDB engine.
 
@@ -59382,6 +59494,7 @@ layout: docu
 title: Storage Versions and Format
 redirect_from:
 - /internals/storage
+- /internals/storage/
 ---
 
 ## Compatibility
@@ -59523,6 +59636,7 @@ layout: docu
 title: Execution Format
 redirect_from:
 - /internals/vector
+- /internals/vector/
 ---
 
 `Vector` is the container format used to store in-memory data during execution.
@@ -59709,7 +59823,7 @@ layout: docu
 title: Connect
 redirect_from:
 - /docs/connect
-- /docs/connect.html
+- /docs/connect/
 ---
 
 ## Connect or Create a Database
@@ -59744,7 +59858,9 @@ layout: docu
 title: Configuration
 redirect_from:
 - /docs/configuration
+- /docs/configuration/
 - /docs/sql/configuration
+- /docs/sql/configuration/
 ---
 
 DuckDB has a number of configuration options that can be used to change the behavior of the system.
@@ -60739,6 +60855,7 @@ layout: docu
 title: Benchmark Suite
 redirect_from:
 - /dev/benchmark
+- /dev/benchmark/
 ---
 
 DuckDB has an extensive benchmark suite.
@@ -60863,6 +60980,7 @@ layout: docu
 title: Profiling
 redirect_from:
 - /dev/profiling
+- /dev/profiling/
 ---
 
 Profiling is essential to help understand why certain queries exhibit specific performance characteristics.
@@ -61181,6 +61299,7 @@ layout: docu
 title: DuckDB Repositories
 redirect_from:
 - /internals/repositories
+- /internals/repositories/
 ---
 
 Several components of DuckDB are maintained in separate repositories.
@@ -61225,6 +61344,7 @@ layout: docu
 title: Catch C/C++ Tests
 redirect_from:
 - /dev/sqllogictest/catch
+- /dev/sqllogictest/catch/
 ---
 
 While we prefer the sqllogic tests for testing most functionality, for certain tests only SQL is not sufficient. This typically happens when you want to test the C++ API. When using pure SQL is really not an option it might be necessary to make a C++ test using Catch.
@@ -61275,6 +61395,7 @@ layout: docu
 title: Debugging
 redirect_from:
 - /dev/sqllogictest/debugging
+- /dev/sqllogictest/debugging/
 ---
 
 The purpose of the tests is to figure out when things break. Inevitably changes made to the system will cause one of the tests to fail, and when that happens the test needs to be debugged.
@@ -61352,6 +61473,7 @@ layout: docu
 title: sqllogictest Introduction
 redirect_from:
 - /dev/sqllogictest/intro
+- /dev/sqllogictest/intro/
 ---
 
 For testing plain SQL, we use an extended version of the SQL logic test suite, adopted from [SQLite](https://www.sqlite.org/sqllogictest/doc/trunk/about.wiki). Every test is a single self-contained file located in the `test/sql` directory.
@@ -61431,6 +61553,7 @@ layout: docu
 title: Loops
 redirect_from:
 - /dev/sqllogictest/loops
+- /dev/sqllogictest/loops/
 ---
 
 Loops can be used in sqllogictests when it is required to execute the same query many times but with slight modifications in constant values. For example, suppose we want to fire off 100 queries that check for the presence of the values `0..100` in a table:
@@ -61512,6 +61635,7 @@ layout: docu
 title: Multiple Connections
 redirect_from:
 - /dev/sqllogictest/multiple_connections
+- /dev/sqllogictest/multiple_connections/
 ---
 
 For tests whose purpose is to verify that the transactional management or versioning of data works correctly, it is generally necessary to use multiple connections. For example, if we want to verify that the creation of tables is correctly transactional, we might want to start a transaction and create a table in `con1`, then fire a query in `con2` that checks that the table is not accessible yet until committed.
@@ -61569,6 +61693,7 @@ layout: docu
 title: Overview
 redirect_from:
 - /dev/testing
+- /dev/testing/
 ---
 
 ## How is DuckDB Tested?
@@ -61586,6 +61711,7 @@ layout: docu
 title: Persistent Testing
 redirect_from:
 - /dev/sqllogictest/persistent_testing
+- /dev/sqllogictest/persistent_testing/
 ---
 
 By default, all tests are run in in-memory mode (unless `--force-storage` is enabled). In certain cases, we want to force the usage of a persistent database. We can initiate a persistent database using the `load` command, and trigger a reload of the database using the `restart` command.
@@ -61633,6 +61759,7 @@ layout: docu
 title: Result Verification
 redirect_from:
 - /dev/sqllogictest/result_verification
+- /dev/sqllogictest/result_verification/
 ---
 
 The standard way of verifying results of queries is using the `query` statement, followed by the letter `I` times the number of columns that are expected in the result. After the query, four dashes (`----`) are expected followed by the result values separated by tabs. For example,
@@ -61796,6 +61923,7 @@ layout: docu
 title: Writing Tests
 redirect_from:
 - /dev/writing_tests
+- /dev/writing_tests/
 ---
 
 ## Development and Testing
@@ -62421,10 +62549,15 @@ layout: docu
 title: Building DuckDB from Source
 redirect_from:
 - /dev/building
+- /dev/building/
 - /docs/dev/building
+- /docs/dev/building/
 - /docs/dev/building/build_instructions
+- /docs/dev/building/build_instructions/
 - /docs/dev/building/platforms
+- /docs/dev/building/platforms/
 - /docs/dev/building/supported_platforms
+- /docs/dev/building/supported_platforms/
 ---
 
 ## When Should You Build DuckDB?
