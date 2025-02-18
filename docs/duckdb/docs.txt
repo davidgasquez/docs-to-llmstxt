@@ -7958,7 +7958,7 @@ There are dedicated extraction functions to get certain subfields:
 | [`second(date)`](#seconddate) | Seconds. |
 | [`timezone_hour(date)`](#timezone_hourdate) | Time zone offset hour portion. |
 | [`timezone_minute(date)`](#timezone_minutedate) | Time zone offset minutes portion. |
-| [`timezone(date)`](#timezonedate) | Time Zone offset in minutes. |
+| [`timezone(date)`](#timezonedate) | Time zone offset in minutes. |
 | [`week(date)`](#weekdate) | ISO Week. |
 | [`weekday(date)`](#weekdaydate) | Numeric weekday synonym (Sunday = 0, Saturday = 6). |
 | [`weekofyear(date)`](#weekofyeardate) | ISO Week (synonym). |
@@ -8129,7 +8129,7 @@ There are dedicated extraction functions to get certain subfields:
 
 
 
-| **Description** | Time Zone offset in minutes. |
+| **Description** | Time zone offset in minutes. |
 | **Example** | `timezone(DATE '1992-02-15')` |
 | **Result** | `0` |
 
@@ -21542,7 +21542,7 @@ While the results of the queries are the same for all both experiments, their ru
 The results below show that joining on `BIGINT` columns is approx. 1.8Ã— faster than performing the same join on `VARCHAR`-typed columns encoding the same value.
 
 | Join column payload type | Join column schema type | Example value | Query time |
-| ------------------------ | ----------------------- | ---------------------------------------- | ---------: |
+| ------------------------ | ----------------------- | ------------------ | ---------: |
 | `BIGINT` | `BIGINT` | `70368755640078` | 1.2 s |
 | `BIGINT` | `VARCHAR` | `'70368755640078'` | 2.1 s |
 
@@ -21556,16 +21556,24 @@ DuckDB allows defining [constraints]({% link docs/sql/constraints.md %}) such as
 
 ### Microbenchmark: The Effect of Primary Keys
 
-We illustrate the effect of using primary keys with the [LDBC Comment table at scale factor 300](https://blobs.duckdb.org/data/ldbc-sf300-comments.tar.zst). This table has approx. 554 million entries. We first create the schema without a primary key, then load the data. In the second experiment, we create the schema with a primary key, then load the data. In both cases, we take the data from `.csv.gz` files, and measure the time required to perform the loading.
+We illustrate the effect of using primary keys with the [LDBC Comment table at scale factor 300](https://blobs.duckdb.org/data/ldbc-sf300-comments.tar.zst).
+This table has approx. 554 million entries.
+In the first experiments, we create the schema *without* a primary key, then load the data.
+In the second experiment, we create the schema *with* a primary key, then load the data.
+In the third case, we create the schema *without* a primary key, load the data and then add the primary key constraint.
+In all cases, we take the data from `.csv.gz` files, and measure the time required to perform the loading.
 
-| Operation | Execution time |
-| ------------------------ | -------------: |
-| Load without primary key | 92.2 s |
-| Load with primary key | 286.8 s |
+| Operation | Execution Time |
+|-----------------------------------------------|---------------:|
+| Load with primary key | 461.6 s |
+| Load without primary key | 121.0 s |
+| Load without primary key then add primary key | 242.0 s |
 
-In this case, primary keys will only have a (small) positive effect on highly selective queries such as when filtering on a single identifier. They do not have an effect on join and aggregation operators.
+For this data set, primary keys will only have a (small) positive effect on highly selective queries such as when filtering on a single identifier.
+Definining primary keys (or indexes) will not have an effect on join and aggregation operators.
 
-> Bestpractice For best bulk load performance, avoid defining primary key constraints if possible.
+> Bestpractice For best bulk load performance, avoid primary key constraints.
+> If they are required, define them after the bulk loading step.
 
 ---
 duckdb/docs/guides/python/execute_sql.md
@@ -26551,7 +26559,7 @@ DuckDB is an in-process database system and offers client APIs (also known as â
 | [Crystal](https://github.com/amauryt/crystal-duckdb) | [amauryt](https://github.com/amauryt) | Tertiary | |
 | [Elixir](https://github.com/AlexR2D2/duckdbex) | [AlexR2D2](https://github.com/AlexR2D2/duckdbex) | Tertiary | |
 | [Erlang](https://github.com/mmzeeman/educkdb) | [MM Zeeman](https://github.com/mmzeeman) | Tertiary | |
-| [Ruby](https://github.com/suketa/ruby-duckdb) | [suketa](https://github.com/suketa) | Tertiary | |
+| [Ruby](https://suketa.github.io/ruby-duckdb/) | [suketa](https://github.com/suketa) | Tertiary | |
 | [Zig](https://github.com/karlseguin/zuckdb.zig) | [karlseguin](https://github.com/karlseguin) | Tertiary | |
 
 ## Support Tiers
@@ -46689,7 +46697,7 @@ For a list of dot commands available in the CLI shell, see the [Dot Commands pag
 
 
 | Argument | Description |
-|---|-------|
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
 | `-append` | Append the database to the end of the file |
 | `-ascii` | Set [output mode]({% link docs/clients/cli/output_formats.md %}) to `ascii` |
 | `-bail` | Stop after hitting an error |
@@ -46700,6 +46708,7 @@ For a list of dot commands available in the CLI shell, see the [Dot Commands pag
 | `-c COMMAND` | Run `COMMAND` and exit |
 | `-csv` | Set [output mode]({% link docs/clients/cli/output_formats.md %}) to `csv` |
 | `-echo` | Print commands before execution |
+| `-f FILENAME` | Run the script in `FILENAME` and exit. Note that the `~/.duckdbrc` is read and executed first (if it exists) |
 | `-init FILENAME` | Run the script in `FILENAME` upon startup (instead of `~/.duckdbrc`) |
 | `-header` | Turn headers on |
 | `-help` | Show this message |
@@ -46831,7 +46840,8 @@ Dot commands are available in the DuckDB CLI client. To use one of these command
 | `.indexes ?TABLE?` | Show names of indexes |
 | `.keyword ?COLOR?` | Sets the syntax highlighting color used for keywords |
 | `.keywordcode ?CODE?` | Sets the syntax highlighting terminal code used for keywords |
-| `.lint OPTIONS` | Report potential schema issues. |
+| `.large_number_rendering all|footer|off` | Toggle readable rendering of large numbers (duckbox only) |
+| `.lint OPTIONS` | Report potential schema issues |
 | `.log FILE|off` | Turn logging `on` or `off`. `FILE` can be `stderr` / `stdout` |
 | `.maxrows COUNT` | Sets the maximum number of rows for display. Only for [duckbox mode]({% link docs/clients/cli/output_formats.md %}) |
 | `.maxwidth COUNT` | Sets the maximum width in characters. 0 defaults to terminal width. Only for [duckbox mode]({% link docs/clients/cli/output_formats.md %}) |
@@ -46856,7 +46866,7 @@ Dot commands are available in the DuckDB CLI client. To use one of these command
 | `.system CMD ARGS...` | Run `CMD ARGS...` in a system shell |
 | `.tables ?TABLE?` | List names of tables [matching LIKE pattern]({% link docs/sql/functions/pattern_matching.md %}) `TABLE` |
 | `.testcase NAME` | Begin redirecting output to `NAME` |
-| `.timer on|off` | Turn SQL timer `on` or `off`. SQL statements separated by `;` but *not* separated via newline are measured together. |
+| `.timer on|off` | Turn SQL timer `on` or `off`. SQL statements separated by `;` but *not* separated via newline are measured together |
 | `.width NUM1 NUM2 ...` | Set minimum column widths for columnar output |
 
 ## Using the `.help` Command
