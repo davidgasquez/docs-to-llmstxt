@@ -1658,7 +1658,7 @@ Enum types are created from either a hardcoded set of values or from a select st
 Create enum using hardcoded values:
 
 ```sql
-CREATE TYPE âŸ¨enum_nameâŸ© AS ENUM ([âŸ¨value_1âŸ©, âŸ¨value_2âŸ©,...]);
+CREATE TYPE âŸ¨enum_nameâŸ© AS ENUM ([âŸ¨value_1âŸ©, âŸ¨value_2âŸ©, ...]);
 ```
 
 Create enum using a `SELECT` statement that returns a single column of `VARCHAR`s:
@@ -1667,30 +1667,18 @@ Create enum using a `SELECT` statement that returns a single column of `VARCHAR`
 CREATE TYPE âŸ¨enum_nameâŸ© AS ENUM (select_expressionâŸ©);
 ```
 
-For example:
+Enums can also be created on the fly during [casting]({% link docs/sql/expressions/cast.md %}):
 
-Creates new user defined type 'mood' as an enum:
+```sql
+SELECT 'some_string'::ENUM ([âŸ¨value_1âŸ©, âŸ¨value_2âŸ©, ...]);
+```
+
+### Exaples
+
+Creates new user defined type `mood` as an enum:
 
 ```sql
 CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');
-```
-
-This will fail since the `mood` type already exists:
-
-```sql
-CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy', 'anxious');
-```
-
-This will fail since enums cannot hold `NULL` values:
-
-```sql
-CREATE TYPE breed AS ENUM ('maltese', NULL);
-```
-
-This will fail since enum values must be unique:
-
-```sql
-CREATE TYPE breed AS ENUM ('maltese', 'maltese');
 ```
 
 Create an enum from a select statement. First create an example table of values:
@@ -1698,6 +1686,24 @@ Create an enum from a select statement. First create an example table of values:
 ```sql
 CREATE TABLE my_inputs AS
 FROM (VALUES ('duck'), ('duck'), ('goose')) t(my_varchar);
+```
+
+Create an anonymous enum value on the fly:
+
+```sql
+SELECT 'happy'::ENUM ('sad', 'ok', 'happy');
+```
+
+This statement will fail since enums cannot hold `NULL` values:
+
+```sql
+CREATE TYPE breed AS ENUM ('maltese', NULL);
+```
+
+This statement will fail since enum values must be unique:
+
+```sql
+CREATE TYPE breed AS ENUM ('maltese', 'maltese');
 ```
 
 Create an enum using the unique string values in the `my_varchar` column:
@@ -2680,7 +2686,7 @@ sqrt(2) > '-inf',
 
 
 | `(sqrt(2) > '-inf')` | `('nan' > sqrt(2))` |
-|---------------------:|----------------- -: |
+|---------------------:|--------------------:|
 | true | true |
 
 ## Universally Unique Identifiers (`UUID`s)
@@ -11235,7 +11241,7 @@ In general, if the function needs to examine the parts of the infinite date, the
 
 
 | **Description** | Returns the total number of milliseconds since the epoch. |
-| **Example** | `epoch_ms(timestamp '2021-08-03 11:59:44.123456')` |
+| **Example** | `epoch_ms(TIMESTAMP '2021-08-03 11:59:44.123456')` |
 | **Result** | `1627991984123` |
 
 #### `epoch_ns(timestamp)`
@@ -11243,7 +11249,7 @@ In general, if the function needs to examine the parts of the infinite date, the
 
 
 | **Description** | Return the total number of nanoseconds since the epoch. |
-| **Example** | `epoch_ns(timestamp '2021-08-03 11:59:44.123456')` |
+| **Example** | `epoch_ns(TIMESTAMP '2021-08-03 11:59:44.123456')` |
 | **Result** | `1627991984123456000` |
 
 #### `epoch_us(timestamp)`
@@ -11251,7 +11257,7 @@ In general, if the function needs to examine the parts of the infinite date, the
 
 
 | **Description** | Returns the total number of microseconds since the epoch. |
-| **Example** | `epoch_us(timestamp '2021-08-03 11:59:44.123456')` |
+| **Example** | `epoch_us(TIMESTAMP '2021-08-03 11:59:44.123456')` |
 | **Result** | `1627991984123456` |
 
 #### `epoch(timestamp)`
@@ -16476,6 +16482,10 @@ DROP INDEX title_idx;
 
 
 
+## Limitations
+
+The `CREATE INDEX` clause does not support the `OR REPLACE` modifier.
+
 ---
 duckdb/docs/sql/statements/create_macro.md
 ---
@@ -16789,6 +16799,12 @@ Create a schema if it does not exist yet:
 CREATE SCHEMA IF NOT EXISTS s2;
 ```
 
+Create a schema or replace a schema if it exists:
+
+```sql
+CREATE OR REPLACE SCHEMA s2;
+```
+
 Create table in the schemas:
 
 ```sql
@@ -16994,6 +17010,33 @@ After a sequence is created, you use the function `nextval` to operate on the se
 | `TEMPORARY` or `TEMP` | If specified, the sequence object is created only for this session, and is automatically dropped on session exit. Existing permanent sequences with the same name are not visible (in this session) while the temporary sequence exists, unless they are referenced with schema-qualified names. |
 
 > Sequences are based on `BIGINT` arithmetic, so the range cannot exceed the range of an eight-byte integer (-9223372036854775808 to 9223372036854775807).
+
+## Limitations
+
+Due to limitations in DuckDB's dependency manager, `DROP SEQUENCE` will fail in some corner cases.
+For example, deleting a column that uses a sequence should allow the sequence to be dropped but this currently returns an error:
+
+```sql
+CREATE SEQUENCE id_sequence START 1;
+CREATE TABLE tbl (id INTEGER DEFAULT nextval('id_sequence'), s VARCHAR);
+
+ALTER TABLE tbl DROP COLUMN id;
+DROP SEQUENCE id_sequence;
+```
+
+```console
+Dependency Error:
+Cannot drop entry "id_sequence" because there are entries that depend on it.
+table "tbl" depends on index "id_sequence".
+Use DROP...CASCADE to drop all dependents.
+```
+
+This can be worked around by using the `CASCADE` modifier.
+The following command drops the sequence:
+
+```sql
+DROP SEQUENCE id_sequence CASCADE;
+```
 
 ---
 duckdb/docs/sql/statements/create_table.md
@@ -17334,8 +17377,10 @@ These new types can then be inspected in the [`duckdb_types` table]({% link docs
 
 ## Limitations
 
-Extending types to support custom operators (such as the PostgreSQL `&&` operator) is not possible via plain SQL.
+* Extending types to support custom operators (such as the PostgreSQL `&&` operator) is not possible via plain SQL.
 Instead, it requires adding additional C++ code. To do this, create an [extension]({% link docs/extensions/overview.md %}).
+
+* The `CREATE TYPE` clause does not support the `OR REPLACE` modifier.
 
 ---
 duckdb/docs/sql/statements/create_view.md
@@ -20247,7 +20292,7 @@ However, the case insensitive matching in the system for identifiers cannot be t
 
 ## Using Double Equality Sign for Comparison
 
-DuckDB supports both `=` and `==` for quality comparison, while Postgres only supports `=`.
+DuckDB supports both `=` and `==` for quality comparison, while PostgreSQL only supports `=`.
 
 ```sql
 SELECT 1 == 1 AS t;
@@ -20261,7 +20306,7 @@ DuckDB returns:
 |-----:|
 | true |
 
-Postgres returns:
+PostgreSQL returns:
 
 ```console
 postgres=# SELECT 1 == 1 AS t;
@@ -46758,6 +46803,23 @@ For a list of dot commands available in the CLI shell, see the [Dot Commands pag
 
 
 
+## Passing a Sequence of Arguments
+
+Note that the CLI arguments are processed in order, similarly to the behavior of the SQLite CLI.
+For example:
+
+```bash
+duckdb -csv -c 'SELECT 42 AS hello' -json -c 'SELECT 84 AS world'
+```
+
+Returns the following:
+
+```text
+hello
+42
+[{"world":84}]
+```
+
 ---
 duckdb/docs/clients/cli/autocomplete.md
 ---
@@ -46881,9 +46943,9 @@ Dot commands are available in the DuckDB CLI client. To use one of these command
 | `.quit` | Exit this program |
 | `.read FILE` | Read input from `FILE` |
 | `.rows` | Row-wise rendering of query results (default) |
+| `.safe_mode` | Activates [safe mode]({% link docs/clients/cli/safe_mode.md %}) |
 | `.schema ?PATTERN?` | Show the `CREATE` statements matching `PATTERN` |
 | `.separator COL ?ROW?` | Change the column and row separators |
-| `.sha3sum ...` | Compute a SHA3 hash of database content |
 | `.shell CMD ARGS...` | Run `CMD ARGS...` in a system shell |
 | `.show` | Show the current values for various settings |
 | `.singleline` | Set single-line mode |
@@ -47044,6 +47106,24 @@ To configure the color used to highlight keywords:
 ```text
 .keywordcode [terminal_code]
 ```
+
+## Shorthands
+
+DuckDB's CLI allows using shorthands for dot commands.
+Once a sequence of characters can unambiguously completed to a dot command or an argument, the CLI (silently) autocompletes them.
+For example:
+
+```text
+.mo ma
+```
+
+Is equivalent to:
+
+```text
+.mode markdown
+```
+
+> Tip Avoid using shorthands in SQL scripts to improve readability and ensure that the scripts and futureproof.
 
 ## Importing Data from CSV
 
@@ -47581,6 +47661,39 @@ It is only available in the CLI client and is not supported in other DuckDB clie
 
 The DuckDB CLI supports executing [prepared statements]({% link docs/sql/query_syntax/prepared_statements.md %}) in addition to regular `SELECT` statements.
 To create and execute a prepared statement in the CLI client, use the `PREPARE` clause and the `EXECUTE` statement.
+
+---
+duckdb/docs/clients/cli/safe_mode.md
+---
+---
+layout: docu
+title: Safe Mode
+---
+
+The DuckDB CLI client supports â€œsafe modeâ€�.
+In safe mode, the CLI is prevented from accessing external files other than the database file that it was initially connected to and prevented from interacting with the host file system.
+
+This has the following effects:
+
+* The following [dot commands]({% link docs/clients/cli/dot_commands.md %}) are disabled:
+* `.cd`
+* `.excel`
+* `.import`
+* `.log`
+* `.once`
+* `.open`
+* `.output`
+* `.read`
+* `.sh`
+* `.system`
+* Auto-complete no longer scans the file system for files to suggest as auto-complete targets.
+* The [`getenv` function]({% link docs/clients/cli/overview.md %}#reading-environment-variables) is disabled.
+* The [`enable_external_access` option]({% link docs/configuration/overview.md %}#configuration-reference) is set to `false`. This implies that:
+* `ATTACH` cannot attach a database from an on-disk file.
+* `COPY` cannot read to/write from files.
+* `read_csv`, `read_parquet`, `read_json`, etc. cannot read from disk.
+
+Once safe mode is activated, it cannot be deactivated in the same DuckDB CLI session.
 
 ---
 duckdb/docs/clients/cli/syntax_highlighting.md
@@ -49784,24 +49897,29 @@ FROM iceberg_scan('data/iceberg/lineitem_iceberg', allow_moved_paths = true);
 ```
 
 | count_star() |
-|--------------|
+|-------------:|
 | 51793 |
 
 > The `allow_moved_paths` option ensures that some path resolution is performed, which allows scanning Iceberg tables that are moved.
 
 You can also address specify the current manifest directly in the query, this may be resolved from the catalog prior to the query, in this example the manifest version is a UUID.
+To do so, navigate to the `data/iceberg` directory and run:
 
 ```sql
 SELECT count(*)
-FROM iceberg_scan('data/iceberg/lineitem_iceberg/metadata/02701-1e474dc7-4723-4f8d-a8b3-b5f0454eb7ce.metadata.json');
+FROM iceberg_scan('lineitem_iceberg/metadata/v1.metadata.json');
 ```
 
-This extension can be paired with the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) to access Iceberg tables in object stores such as S3.
+| count_star() |
+|-------------:|
+| 60175 |
+
+The `iceberg` extension can be paired with the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}) to access Iceberg tables in object stores such as S3.
 
 ```sql
 SELECT count(*)
 FROM iceberg_scan(
-'s3://bucketname/lineitem_iceberg/metadata/02701-1e474dc7-4723-4f8d-a8b3-b5f0454eb7ce.metadata.json',
+'s3://bucketname/lineitem_iceberg/metadata/v1.metadata.json',
 allow_moved_paths = true
 );
 ```
@@ -50797,13 +50915,13 @@ PASSWORD ''
 );
 ```
 
-The information from the secret will be used when `ATTACH` is called. We can leave the Postgres connection string empty to use all of the information stored in the secret.
+The information from the secret will be used when `ATTACH` is called. We can leave the PostgreSQL connection string empty to use all of the information stored in the secret.
 
 ```sql
 ATTACH '' AS postgres_db (TYPE POSTGRES);
 ```
 
-We can use the Postgres connection string to override individual options. For example, to connect to a different database while still using the same credentials, we can override only the database name in the following manner.
+We can use the PostgreSQL connection string to override individual options. For example, to connect to a different database while still using the same credentials, we can override only the database name in the following manner.
 
 ```sql
 ATTACH 'dbname=my_other_db' AS postgres_db (TYPE POSTGRES);
@@ -50813,7 +50931,7 @@ By default, created secrets are temporary. Secrets can be persisted using the [`
 
 #### Managing Multiple Secrets
 
-Named secrets can be used to manage connections to multiple Postgres database instances. Secrets can be given a name upon creation.
+Named secrets can be used to manage connections to multiple PostgreSQL database instances. Secrets can be given a name upon creation.
 
 ```sql
 CREATE SECRET postgres_secret_one (
@@ -55657,6 +55775,19 @@ If you plan to embed DuckDB in your application, please consult the [â€œEmbe
 
 If you discover a potential vulnerability, please [report it confidentially via GitHub](https://github.com/duckdb/duckdb/security/advisories/new).
 
+## Safe Mode (CLI)
+
+DuckDB's CLI client supports [â€œsafe modeâ€�]({% link docs/clients/cli/safe_mode.md %}), which prevents DuckDB from accessing external files other than the database file.
+This can be activated via a command line argument or a [dot command]({% link docs/clients/cli/dot_commands.md %}):
+
+```bash
+duckdb -safe ...
+```
+
+```plsql
+.safe_mode
+```
+
 ## Disabling File Access
 
 DuckDB can list directories and read arbitrary files via its CSV parserâ€™s [`read_csv` function]({% link docs/data/csv/overview.md %}) or read text via the [`read_text` function]({% link docs/sql/functions/char.md %}#read_textsource). For example:
@@ -56184,7 +56315,19 @@ This step is necessary because CSV files are not self-describing and come in man
 
 By default the system will try to auto-detect all options. However, options can be individually overridden by the user. This can be useful in case the system makes a mistake. For example, if the delimiter is chosen incorrectly, we can override it by calling the `read_csv` with an explicit delimiter (e.g., `read_csv('file.csv', delim = '|')`).
 
-The detection works by operating on a sample of the file. The size of the sample can be modified by setting the `sample_size` parameter. The default sample size is `20480` rows. Setting the `sample_size` parameter to `-1` means the entire file is read for sampling. The way sampling is performed depends on the type of file. If we are reading from a regular file on disk, we will jump into the file and try to sample from different locations in the file. If we are reading from a file in which we cannot jump â€“ such as a `.gz` compressed CSV file or `stdin` â€“ samples are taken only from the beginning of the file.
+## Sample Size
+
+The type detection works by operating on a sample of the file.
+The size of the sample can be modified by setting the `sample_size` parameter.
+The default sample size is 20,480 rows.
+Setting the `sample_size` parameter to `-1` means the entire file is read for sampling:
+
+```sql
+SELECT * FROM read_csv('my_csv_file.csv', sample_size = -1);
+```
+
+The way sampling is performed depends on the type of file. If we are reading from a regular file on disk, we will jump into the file and try to sample from different locations in the file.
+If we are reading from a file in which we cannot jump â€“ such as a `.gz` compressed CSV file or `stdin` â€“ samples are taken only from the beginning of the file.
 
 ## `sniff_csv` Function
 
@@ -56279,7 +56422,8 @@ The type detection works by attempting to convert the values in each column to t
 | TIMESTAMP |
 | VARCHAR |
 
-Note everything can be cast to `VARCHAR`. This type has the lowest priority, i.e., columns are converted to `VARCHAR` if they cannot be cast to anything else. In [`flights.csv`](/data/flights.csv) the `FlightDate` column will be cast to a `DATE`, while the other columns will be cast to `VARCHAR`.
+Everything can be cast to `VARCHAR`, therefore, this type has the lowest priority meaning that all columns are converted to `VARCHAR` if they cannot be cast to anything else.
+In [`flights.csv`](/data/flights.csv) the `FlightDate` column will be cast to a `DATE`, while the other columns will be cast to `VARCHAR`.
 
 The set of candidate types that should be considered by the CSV reader can be explicitly specified using the [`auto_type_candidates`]({% link docs/data/csv/overview.md %}#auto_type_candidates-details) option.
 
@@ -56298,6 +56442,9 @@ In addition to the default set of candidate types, other types that may be speci
 Even though the set of data types that can be automatically detected may appear quite limited, the CSV reader can configured to read arbitrarily complex types by using the `types`-option described in the next section.
 
 Type detection can be entirely disabled by using the `all_varchar` option. If this is set all columns will remain as `VARCHAR` (as they originally occur in the CSV file).
+
+Note that using quote characters vs. no quote characters (e.g., `"42"` and `42`) does not make a difference for type detection.
+Quoted fields will not be converted to `VARCHAR`, instead, the sniffer will try to find the type candidate with the highest priority.
 
 #### Overriding Type Detection
 
@@ -56854,6 +57001,15 @@ The `union_by_name` option can be used to unify the schema of files that have di
 
 ```sql
 SELECT * FROM read_csv('flights*.csv', union_by_name = true);
+```
+
+## Sample Size
+
+If the [CSV sniffer](({% post_url 2023-10-27-csv-sniffer %})) is not detecting the correct type, try increasing the sample size.
+The option `sample_size = -1` forces the sniffer to read the entire file:
+
+```sql
+SELECT * FROM read_csv('my_csv_file.csv', sample_size = -1);
 ```
 
 ---
@@ -58932,7 +59088,7 @@ TO 'row-groups-zstd.parquet'
 (FORMAT PARQUET, COMPRESSION ZSTD, ROW_GROUP_SIZE 100_000);
 ```
 
-Write a CSV file to an `LZ4_RAW`-compressed Parquet file:
+Write data to an `LZ4_RAW`-compressed Parquet file:
 
 ```sql
 COPY
@@ -58941,7 +59097,7 @@ TO 'result-lz4.parquet'
 (FORMAT PARQUET, COMPRESSION LZ4);
 ```
 
-Or:
+Or, equivalently:
 
 ```sql
 COPY
@@ -58950,7 +59106,16 @@ TO 'result-lz4.parquet'
 (FORMAT PARQUET, COMPRESSION LZ4_RAW);
 ```
 
-DuckDB's `EXPORT` command can be used to export an entire database to a series of Parquet files. See the [Export statement documentation]({% link docs/sql/statements/export.md %}) for more details:
+Write data to a `BROTLI`-compressed Parquet file:
+
+```sql
+COPY
+(FROM generate_series(100_000))
+TO 'result-brotli.parquet'
+(FORMAT PARQUET, COMPRESSION BROTLI);
+```
+
+DuckDB's `EXPORT` command can be used to export an entire database to a series of Parquet files. See the [â€œ`EXPORT` statementâ€� page]({% link docs/sql/statements/export.md %}) for more details:
 
 Export the table contents of the entire database as Parquet:
 
