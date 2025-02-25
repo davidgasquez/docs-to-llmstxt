@@ -4181,7 +4181,7 @@ Integer literals (such as `42`) and string literals (such as `'string'`) have sp
 
 ### Lists / Arrays
 
-Lists can be explicitly cast to other lists using the same casting rules. The cast is applied to the children of the list. For example, if we convert a `INTEGER[]` list to a `VARCHAR[]` list, the child `INTEGER` elements are individually cast to `VARCHAR` and a new list is constructed.
+Lists can be explicitly cast to other lists using the same casting rules. The cast is applied to the children of the list. For example, if we convert an `INTEGER[]` list to a `VARCHAR[]` list, the child `INTEGER` elements are individually cast to `VARCHAR` and a new list is constructed.
 
 ```sql
 SELECT CAST([1, 2, 3] AS VARCHAR[]);
@@ -18799,7 +18799,8 @@ SELECT rowid, id, content FROM t;
 | 0 | 42 | hello |
 | 1 | 43 | world |
 
-In the current storage, these identifiers are contiguous unsigned integers (0, 1, ...) if no rows were deleted. Deletions introduce gaps in the rowids which may be reclaimed later:
+In the current storage, these identifiers are contiguous unsigned integers (0, 1, ...) if no rows were deleted.
+Deletions introduce gaps in the rowids which may be reclaimed later:
 
 ```sql
 CREATE OR REPLACE TABLE t AS (FROM range(10) r(i));
@@ -18815,9 +18816,9 @@ SELECT rowid FROM t;
 | 7 |
 | 9 |
 
-It is strongly to *avoid using rowids as identifiers*.
+The `rowid` values are stable within a transaction.
 
-> Tip The `rowid` values are stable within a transaction.
+> Bestpractice It is strongly advised to avoid using rowids as identifiers.
 
 > If there is a user-defined column named `rowid`, it shadows the `rowid` pseudocolumn.
 
@@ -24346,6 +24347,50 @@ FROM stations_db.stations;
 * Only read-only connections are allowed, writing the database via the HTTPS protocol or the S3 API is not possible.
 
 ---
+duckdb/docs/guides/network_cloud_storage/fastly_object_storage_import.md
+---
+---
+layout: docu
+title: Fastly Object Storage Import
+redirect_from:
+- /docs/guides/import/fastly_object_storage_import
+---
+
+## Prerequisites
+
+For Fastly Object Storage, the [S3 Compatibility API](https://docs.fastly.com/products/object-storage) allows you to use DuckDB's S3 support to read and write from Fastly buckets.
+
+This requires the [`httpfs` extension]({% link docs/extensions/httpfs/overview.md %}), which can be installed using the `INSTALL` SQL command. This only needs to be run once.
+
+## Credentials and Configuration
+
+You will need to [generate an S3 auth token](https://docs.fastly.com/en/guides/working-with-object-storage#creating-an-object-storage-access-key) and create an `S3` secret in DuckDB:
+
+```sql
+CREATE SECRET my_secret (
+TYPE S3,
+KEY_ID 'AKIAIOSFODNN7EXAMPLE',
+SECRET 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+URL_STYLE 'path',
+REGION 'us-east',
+ENDPOINT 'us-east.object.fastlystorage.app' -- see note below
+);
+```
+
+* `ENDPOINT` needs to point to the [Fastly endpoint for the region](https://docs.fastly.com/en/guides/working-with-object-storage#working-with-the-s3-compatible-api) you want to use (e.g `eu-central.object.fastlystorage.app`).
+* `REGION` must use the same region mentioned in `ENDPOINT`.
+* `URL_STYLE` needs to use `path`.
+
+## Querying
+
+After setting up the Fastly Object Storage credentials, you can query the data there using DuckDB's built-in methods, such as `read_csv` or `read_parquet`:
+
+```sql
+SELECT * FROM 's3://âŸ¨fastly_bucket_nameâŸ©/(file).csv';
+SELECT * FROM read_parquet('s3://âŸ¨fastly_bucket_nameâŸ©/âŸ¨fileâŸ©.parquet');
+```
+
+---
 duckdb/docs/guides/network_cloud_storage/gcs_import.md
 ---
 ---
@@ -24837,13 +24882,11 @@ Note that the separator is not the pipe character `|`, instead it is the [â€�
 First, we save the table above as `duckbox.csv`.
 Then, we clean it using `sed`:
 
-```bash
+```batch
 echo -n > duckbox-cleaned.csv
 sed -n "2s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/p;2q" duckbox.csv >> duckbox-cleaned.csv
 sed "1,4d;\$d;s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/g" duckbox.csv >> duckbox-cleaned.csv
 ```
-
-> The script is compatible with both BSD `sed` (which is the default on macOS) and GNU `sed` (which is the default on Linux and available on macOS as `gsed`).
 
 The `duckbox-cleaned.csv` file looks as follows:
 
@@ -24871,11 +24914,9 @@ hello,42
 world,84
 ```
 
-> This approach only works if the table does not have long pipe `â”‚` characters.
-
 ## Using `shellfs`
 
-To implement this in a single `read_csv` without any temporary files, we can use the [`shellfs` Community Extension]({% link community_extensions/extensions/shellfs.md %}):
+To parse duckbox tables with a single `read_csv` call â€“ and without creating any temporary files â€“, we can use the [`shellfs` Community Extension]({% link community_extensions/extensions/shellfs.md %}):
 
 ```sql
 INSTALL shellfs FROM community;
@@ -24883,7 +24924,8 @@ LOAD shellfs;
 FROM read_csv(
 '(sed -n "2s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/p;2q" duckbox.csv; ' ||
 'sed "1,4d;\$d;s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/g" duckbox.csv) |',
-delim = 'â”‚');
+delim = 'â”‚'
+);
 ```
 
 We can also create a [table macro]({% link docs/sql/statements/create_macro.md %}#table-macros):
@@ -24894,7 +24936,8 @@ FROM read_csv(
 printf('(sed -n "2s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/p;2q" %s; ' ||
 'sed "1,4d;\$d;s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/g" %s) |',
 path, path),
-delim = 'â”‚');
+delim = 'â”‚'
+);
 ```
 
 Then, reading a duckbox table is as simple as:
@@ -24902,6 +24945,22 @@ Then, reading a duckbox table is as simple as:
 ```sql
 FROM read_duckbox('duckbox.csv');
 ```
+
+> `shellfs` is a Community Extension and it comes without any support or guarantees.
+> Only use it if you can ensure that its inputs are appropriately sanitized.
+> Please consult the [Securing DuckDB page]({% link docs/operations_manual/securing_duckdb/overview.md %}) for more details.
+
+## Limitations
+
+Please consider the following limitations when running this script:
+
+* This approach only works if the table does not have long pipe `â”‚` characters.
+It also trims spaces from the table cell values.
+Make sure to factor in these assumptions when running the script.
+
+* The script is compatible with both BSD `sed` (which is the default on macOS) and GNU `sed` (which is the default on Linux and available on macOS as `gsed`).
+
+* Only the data types [supported by the CSV sniffer]({% link docs/data/csv/auto_detection.md %}#type-detection) are parsed correctly. Values containing nested data will be parsed as a `VARCHAR`.
 
 ---
 duckdb/docs/guides/file_formats/excel_export.md
@@ -26739,7 +26798,7 @@ DuckDB is an in-process database system and offers client APIs (also known as â
 
 Since there is such a wide variety of clients, the DuckDB team focuses their development effort on the most popular clients.
 To reflect this, we distinguish three tiers of support for clients.
-Primary clients are the first to receive new features and are covered by [community support](https://duckdblabs.com/news/2023/10/02/support-policy).
+Primary clients are the first to receive new features and are covered by [community support](https://duckdblabs.com/community_support_policy).
 Secondary clients receive new features but are not covered by community support.
 Finally, all tertiary clients are maintained by third parties, so there are no feature or support guarantees for them.
 
@@ -47052,7 +47111,7 @@ Dot commands are available in the DuckDB CLI client. To use one of these command
 | `.show` | Show the current values for various settings |
 | `.singleline` | Set single-line mode |
 | `.system CMD ARGS...` | Run `CMD ARGS...` in a system shell |
-| `.tables ?TABLE?` | List names of tables [matching LIKE pattern]({% link docs/sql/functions/pattern_matching.md %}) `TABLE` |
+| `.tables ?TABLE?` | List names of tables [matching `LIKE` pattern]({% link docs/sql/functions/pattern_matching.md %}) `TABLE` |
 | `.testcase NAME` | Begin redirecting output to `NAME` |
 | `.timer on|off` | Turn SQL timer `on` or `off`. SQL statements separated by `;` but *not* separated via newline are measured together |
 | `.width NUM1 NUM2 ...` | Set minimum column widths for columnar output |
@@ -52018,7 +52077,7 @@ FROM range(1, 10) ra(a), range(1, 10) rb(b), range(1, 10) rc(c);
 CREATE INDEX my_hnsw_index ON my_vector_table USING HNSW (vec);
 ```
 
-The index will then be used to accelerate queries that use a `ORDER BY` clause evaluating one of the supported distance metric functions against the indexed columns and a constant vector, followed by a `LIMIT` clause. For example:
+The index will then be used to accelerate queries that use an `ORDER BY` clause evaluating one of the supported distance metric functions against the indexed columns and a constant vector, followed by a `LIMIT` clause. For example:
 
 ```sql
 SELECT *
@@ -52030,12 +52089,15 @@ LIMIT 3;
 Additionally, the overloaded `min_by(col, arg, n)` can also be accelerated with the `HNSW` index if the `arg` argument is a matching distance metric function. This can be used to do quick one-shot nearest neighbor searches. For example, to get the top 3 rows with the closest vectors to `[1, 2, 3]`:
 
 ```sql
-SELECT min_by(my_vector_table, array_distance(vec, [1, 2, 3]::FLOAT[3]), 3) AS result
+SELECT min_by(my_vector_table, array_distance(vec, [1, 2, 3]::FLOAT[3]), 3 ORDER BY vec) AS result
 FROM my_vector_table;
----- [{'vec': [1.0, 2.0, 3.0]}, {'vec': [1.0, 2.0, 4.0]}, {'vec': [2.0, 2.0, 3.0]}]
 ```
 
-Note how we pass the table name as the first argument to `min_by` to return a struct containing the entire matched row.
+```text
+[{'vec': [1.0, 2.0, 3.0]}, {'vec': [2.0, 2.0, 3.0]}, {'vec': [1.0, 2.0, 4.0]}]
+```
+
+Note how we pass the table name as the first argument to [`min_by`]({% link docs/sql/functions/aggregates.md %}#min_byarg-val-n) to return a struct containing the entire matched row.
 
 We can verify that the index is being used by checking the `EXPLAIN` output and looking for the `HNSW_INDEX_SCAN` node in the plan:
 
@@ -52163,12 +52225,11 @@ FROM vss_join(needle, haystack, search_vec, vec, 3) res;
 â””â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
+Alternatively, we can use the `vss_match` macro as a â€œlateral joinâ€� to get the matches already grouped by the left table.
+Note that this requires us to specify the left table first, and then the `vss_match` macro which references the search column from the left
+table (in this case, `search_vec`):
+
 ```sql
--- Alternatively, we can use the vss_match macro as a "lateral join"
--- to get the matches already grouped by the left table.
--- Note that this requires us to specify the left table first, and then
--- the vss_match macro which references the search column from the left
--- table (in this case, `search_vec`).
 SELECT *
 FROM needle, vss_match(haystack, search_vec, vec, 3) res;
 ```
@@ -60704,7 +60765,7 @@ PRAGMA enable_profiling;
 PRAGMA enable_profile;
 ```
 
-##### Profiling Format
+### Profiling Format
 
 The format of `enable_profiling` can be specified as `query_tree`, `json`, `query_tree_optimizer`, or `no_output`.
 Each format prints its output to the configured output, except `no_output`.
@@ -60721,6 +60782,8 @@ Alternatively, `json` returns the physical query plan as JSON:
 ```sql
 SET enable_profiling = 'json';
 ```
+
+> Tip To visualize query plans, consider using the [DuckDB execution plan visualizer](https://db.cs.uni-tuebingen.de/explain/) developed by the [Database Systems Research Group at the University of TÃ¼bingen](https://github.com/DBatUTuebingen).
 
 To return the physical query plan, including optimizer and planner metrics:
 
@@ -61531,6 +61594,8 @@ Join operators in the query plan show the join type used:
 * Inner joins are denoted as `INNER`.
 * Left outer joins and right outer joins are denoted as `LEFT` and `RIGHT`, respectively.
 * Full outer joins are denoted as `FULL`.
+
+> Tip To visualize query plans, consider using the [DuckDB execution plan visualizer](https://db.cs.uni-tuebingen.de/explain/) developed by the [Database Systems Research Group at the University of TÃ¼bingen](https://github.com/DBatUTuebingen).
 
 ---
 duckdb/docs/dev/release_calendar.md
@@ -62913,7 +62978,7 @@ For some platforms, DuckDB binaries and extensions (or a [subset of extensions](
 | `windows_amd64_rtools` | Windows 10+ AMD64 (x86_64) for [RTools](https://cran.r-project.org/bin/windows/Rtools/) (deprecated) |
 | `windows_arm64_mingw` | Windows 10+ ARM64 (AArch64) with MinGW |
 
-> These platforms are not covered by DuckDB's community support. For details on commercial support, see the [support policy blog post](https://duckdblabs.com/news/2023/10/02/support-policy#platforms).
+> These platforms are not covered by DuckDB's community support. For details on commercial support, see the [support policy page](https://duckdblabs.com/community_support_policy#platforms).
 
 Below, we provide detailed build instructions for some platforms:
 
@@ -63132,7 +63197,7 @@ Note that 32-bit platforms are limited to using 4 GiB RAM due to the amount of a
 
 ## Big-Endian Architectures
 
-[Big-endian architectures](https://en.wikipedia.org/wiki/Endianness) (such as PowerPC) are [not supported](https://duckdblabs.com/news/2023/10/02/support-policy#architectures) by DuckDB.
+[Big-endian architectures](https://en.wikipedia.org/wiki/Endianness) (such as PowerPC) are [not supported](https://duckdblabs.com/community_support_policy#architectures) by DuckDB.
 While DuckDB can likely be built on such architectures,
 the resulting binary may exhibit [correctness](https://github.com/duckdb/duckdb/issues/5548) [errors](https://github.com/duckdb/duckdb/issues/9714) on certain operations.
 Therefore, it's use is not recommended.
