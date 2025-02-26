@@ -125,7 +125,7 @@ Primary key constraints and unique constraints are identical except for two poin
 ```sql
 CREATE TABLE students (id INTEGER PRIMARY KEY, name VARCHAR, email VARCHAR UNIQUE);
 INSERT INTO students VALUES (1, 'Student 1', 'student1@uni.com');
-INSERT INTO students values (2, 'Student 2', 'student1@uni.com');
+INSERT INTO students VALUES (2, 'Student 2', 'student1@uni.com');
 ```
 
 ```console
@@ -4259,7 +4259,7 @@ Create a table with a `UNION` column:
 
 ```sql
 CREATE TABLE tbl1 (u UNION(num INTEGER, str VARCHAR));
-INSERT INTO tbl1 values (1), ('two'), (union_value(str := 'three'));
+INSERT INTO tbl1 VALUES (1), ('two'), (union_value(str := 'three'));
 ```
 
 Any type can be implicitly cast to a `UNION` containing the type. Any `UNION` can also be implicitly cast to another `UNION` if the source `UNION` members are a subset of the target's (if the cast is unambiguous).
@@ -5740,7 +5740,7 @@ The table below shows the available general aggregate functions.
 
 
 | **Description** | Returns a `LIST` containing the `arg` expressions for the "top" `n` rows ordered by `val` descending. |
-| **Example** | `max_by_n(A, B, 2)` |
+| **Example** | `max_by(A, B, 2)` |
 | **Alias(es)** | `argMax(arg, val, n)`, `arg_max(arg, val, n)` |
 
 #### `min(arg)`
@@ -13077,6 +13077,13 @@ SELECT tn.*
 FROM table_name tn;
 ```
 
+Use a prefix alias:
+
+```sql
+SELECT tn.*
+FROM tn: table_name;
+```
+
 Select all columns from the table `table_name` in the schema `schema_name`:
 
 ```sql
@@ -14373,6 +14380,15 @@ Perform arithmetic on the columns in a table, and provide an alias:
 
 ```sql
 SELECT col1 + col2 AS res, sqrt(col1) AS root FROM table_name;
+```
+
+Use prefix aliases:
+
+```sql
+SELECT
+res: col1 + col2,
+root: sqrt(col1)
+FROM table_name;
 ```
 
 Select all unique cities from the `addresses` table:
@@ -19724,13 +19740,14 @@ DuckDB offers several advanced SQL features and syntactic sugar to make SQL quer
 * Describing tables and computing statistics:
 * [`DESCRIBE`]({% link docs/guides/meta/describe.md %}): provides a succinct summary of the schema of a table or query.
 * [`SUMMARIZE`]({% link docs/guides/meta/summarize.md %}): returns summary statistics for a table or query.
-* Making SQL clauses more compact:
+* Making SQL clauses more compact and readable:
 * [`FROM`-first syntax with an optional `SELECT` clause]({% link docs/sql/query_syntax/from.md %}#from-first-syntax): DuckDB allows queries in the form of `FROM tbl` which selects all columns (performing a `SELECT *` statement).
 * [`GROUP BY ALL`]({% link docs/sql/query_syntax/groupby.md %}#group-by-all): omit the group-by columns by inferring them from the list of attributes in the `SELECT` clause.
 * [`ORDER BY ALL`]({% link docs/sql/query_syntax/orderby.md %}#order-by-all): shorthand to order on all columns (e.g., to ensure deterministic results).
 * [`SELECT * EXCLUDE`]({% link docs/sql/expressions/star.md %}#exclude-clause): the `EXCLUDE` option allows excluding specific columns from the `*` expression.
 * [`SELECT * REPLACE`]({% link docs/sql/expressions/star.md %}#replace-clause): the `REPLACE` option allows replacing specific columns with different expressions in a `*` expression.
 * [`UNION BY NAME`]({% link docs/sql/query_syntax/setops.md %}#union-all-by-name): perform the `UNION` operation along the names of columns (instead of relying on positions).
+* [Prefix aliases in the `SELECT` and `FROM` clauses]({% link docs/sql/query_syntax/select.md %}): write `x: 42` instead of `42 AS x` for improved readability.
 * Transforming tables:
 * [`PIVOT`]({% link docs/sql/statements/pivot.md %}) to turn long tables to wide tables.
 * [`UNPIVOT`]({% link docs/sql/statements/unpivot.md %}) to turn wide tables to long tables.
@@ -23467,6 +23484,123 @@ curl -sL "https://api.github.com/users/dacort/events?per_page=100" \
 ![github-events](/images/guides/youplot/github-events.png)
 
 ---
+duckdb/docs/guides/snippets/analyze_git_repository.md
+---
+---
+layout: docu
+title: Analyzing a Git Repository
+---
+
+You can use DuckDB to analyze Git logs using the output of the [`git log` command](https://git-scm.com/docs/git-log).
+
+We start by using a trick:
+we select a character that doesn't occur in any part of commit log (author names, messages, etc).
+Since version v1.2.0, DuckDB's CSV reader supports 4-byte delimiters, making it possible to use emojis.
+
+We assume that the [Fish Cake with Swirl emoji (ðŸ�¥)](https://emojipedia.org/fish-cake-with-swirl) is not a common occurrence in codebases and export the log as follows:
+
+```bash
+git log --date=iso-strict --pretty=format:%adðŸ�¥%hðŸ�¥%anðŸ�¥%s > git-log.csv
+```
+
+The resulting file looks like this:
+
+```text
+2025-02-21T16:59:07+01:00ðŸ�¥cd0d0da9b1ðŸ�¥MarkðŸ�¥docs: tweak explanation of median for even cardinality inputs (#13726)
+2025-02-21T16:53:53+01:00ðŸ�¥c8a53c3307ðŸ�¥MarkðŸ�¥Linux CLI: override platform for ARM manylinux (#16347)
+2025-02-21T16:53:29+01:00ðŸ�¥0e98b26009ðŸ�¥MarkðŸ�¥[chore] No ccache for OSX Python (#16348)
+2025-02-21T15:01:33+01:00ðŸ�¥96db35892aðŸ�¥Carlo PiovesanðŸ�¥[chore] No ccache for OSX Python
+2025-02-21T14:26:56+01:00ðŸ�¥4addad3422ðŸ�¥Carlo PiovesanðŸ�¥Linux CLI: override platform for ARM manylinux
+```
+
+Start DuckDB and read the log as a CSV (or â€œðŸ�¥SVâ€�) file:
+
+```sql
+CREATE TABLE commits AS
+FROM read_csv(
+'git-log.csv',
+delim = 'ðŸ�¥',
+header = false,
+column_names = ['timestamp', 'hash', 'author', 'message']
+);
+```
+
+This will result in a nice DuckDB table:
+
+```sql
+SELECT timestamp, author, message
+FROM commits
+LIMIT 5;
+```
+
+```text
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ timestamp â”‚ author â”‚ message â”‚
+â”‚ timestamp â”‚ varchar â”‚ varchar â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ 2025-02-21 15:59:07 â”‚ Mark â”‚ docs: tweak explanation of median for even cardinality inputs (#13726) â”‚
+â”‚ 2025-02-21 15:53:53 â”‚ Mark â”‚ Linux CLI: override platform for ARM manylinux (#16347) â”‚
+â”‚ 2025-02-21 15:53:29 â”‚ Mark â”‚ [chore] No ccache for OSX Python (#16348) â”‚
+â”‚ 2025-02-21 14:01:33 â”‚ Carlo Piovesan â”‚ [chore] No ccache for OSX Python â”‚
+â”‚ 2025-02-21 13:26:56 â”‚ Carlo Piovesan â”‚ Linux CLI: override platform for ARM manylinux â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+We can analyze this table as any other in DuckDB.
+For example, we can ask: **which topics were most commonly mentioned in the commit messages â€“ CI, CLI, or Python?**
+
+```sql
+SELECT
+message.lower().regexp_extract('\b(ci|cli|python)\b') AS topic,
+count(*) AS num_commits
+FROM commits
+WHERE topic <> ''
+GROUP BY ALL
+ORDER BY num_commits DESC;
+```
+
+```text
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ topic â”‚ num_commits â”‚
+â”‚ varchar â”‚ int64 â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ ci â”‚ 826 â”‚
+â”‚ python â”‚ 664 â”‚
+â”‚ cli â”‚ 47 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+We can also visualize the number of commits each year:
+
+```sql
+SELECT
+year(timestamp) AS year,
+count(*) AS num_commits,
+num_commits.bar(0, 20_000) AS num_commits_viz
+FROM commits
+GROUP BY ALL
+ORDER BY ALL;
+```
+
+```text
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ year â”‚ num_commits â”‚ num_commits_viz â”‚
+â”‚ int64 â”‚ int64 â”‚ varchar â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚ 2018 â”‚ 870 â”‚ â–ˆâ–ˆâ–ˆâ–� â”‚
+â”‚ 2019 â”‚ 1621 â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–� â”‚
+â”‚ 2020 â”‚ 3484 â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‰ â”‚
+â”‚ 2021 â”‚ 6488 â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‰ â”‚
+â”‚ 2022 â”‚ 9817 â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–Ž â”‚
+â”‚ 2023 â”‚ 14585 â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–Ž â”‚
+â”‚ 2024 â”‚ 15949 â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–Š â”‚
+â”‚ 2025 â”‚ 1680 â”‚ â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–‹ â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+
+Enjoy!
+
+---
 duckdb/docs/guides/snippets/create_synthetic_data.md
 ---
 ---
@@ -24933,9 +25067,11 @@ We can also create a [table macro]({% link docs/sql/statements/create_macro.md %
 ```sql
 CREATE MACRO read_duckbox(path) AS TABLE
 FROM read_csv(
-printf('(sed -n "2s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/p;2q" %s; ' ||
+printf(
+'(sed -n "2s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/p;2q" %s; ' ||
 'sed "1,4d;\$d;s/^â”‚ *//;s/ *â”‚$//;s/ *â”‚ */â”‚/g" %s) |',
-path, path),
+path, path
+),
 delim = 'â”‚'
 );
 ```
@@ -46642,7 +46778,7 @@ const rows = reader.getRows();
 Run and read up to (at least) some number of rows:
 
 ```ts
-const reader = await connection.runAndReadUtil('FROM range(5000)', 1000);
+const reader = await connection.runAndReadUntil('FROM range(5000)', 1000);
 const rows = reader.getRows();
 // rows.length === 2048. (Rows are read in chunks of 2048.)
 ```
