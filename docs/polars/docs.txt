@@ -2252,13 +2252,9 @@ polars/docs/source/_build/snippets/under_construction.md
 This section is still under development. Want to help out? Consider contributing and making a [pull request](https://github.com/pola-rs/polars) to our repository.
 Please read our [contributing guide](https://docs.pola.rs/development/contributing/) on how to proceed.
 ---
-polars/docs/source/api/index.md
+polars/docs/source/api/reference.md
 ---
----
-hide:
-- navigation
----
-# API reference
+# Reference guide
 The API reference contains detailed descriptions of all public functions and objects. It's the best
 place to look if you need information on a specific function.
 ## Python
@@ -2866,64 +2862,6 @@ Also activates `pivot` and `transpose` operations.
 - `propagate_nans` - `NaN`-propagating min/max aggregations.
 - Dataframe pretty printing:
 - `fmt` - Activate dataframe formatting.
----
-polars/docs/source/user-guide/polars_llms.md
----
-# Generating Polars code with LLMs
-Large Language Models (LLMs) can sometimes return Pandas code or invalid Polars code in their
-output. This guide presents approaches that help LLMs generate valid Polars code more consistently.
-These approaches have been developed by the Polars community through testing model responses to
-various inputs. If you find additional effective approaches for generating Polars code from LLMs,
-please raise a [pull request](https://github.com/pola-rs/polars/pulls).
-## System prompt
-Many LLMs allow you to provide a system prompt that is included with every individual prompt you
-send to the model. In the system prompt, you can specify your preferred defaults, such as "Use
-Polars as the default dataframe library". Including such a system prompt typically leads to models
-consistently generating Polars code rather than Pandas code.
-You can set this system prompt in the settings menu of both web-based LLMs like ChatGPT and
-IDE-based LLMs like Cursor. Refer to each application's documentation for specific instructions.
-## Enable web search
-Some LLMs can search the web to access information beyond their pre-training data. Enabling web
-search allows an LLM to reference up-to-date Polars documentation for the current API.
-Some IDE-based LLMs can index the Polars API documentation and reference this when generating code.
-For example, in Cursor you can add Polars as a custom docs source and instruct the agent to
-reference the Polars documentation in a prompt.
-However, web search does not yet guarantee that valid code will be produced. If a model is confident
-in a result based on its pre-training data, it may not incorporate web search results in its output.
-The Polars API pages also have AI-enabled search to help you find the information you need more
-easily.
-## Provide examples
-You can guide LLMs to use correct syntax by including relevant examples in your prompt.
-For instance, this basic query:
-```python
-df = pl.DataFrame({
-"id": ["a", "b", "a", "b", "c"],
-"score": [1, 2, 1, 3, 3],
-"year": [2020, 2020, 2021, 2021, 2021],
-})
-# Compute average of score by id
-```
-Often results in outdated `groupby` syntax instead of the correct `group_by`.
-However, including a simple example from the Polars `group_by` documentation (preferably with web
-search enabled) like this:
-```python
-df = pl.DataFrame({
-"id": ["a", "b", "a", "b", "c"],
-"score": [1, 2, 1, 3, 3],
-"year": [2020, 2020, 2021, 2021, 2021],
-})
-# Compute average of score by id
-# Examples of Polars code:
-# df.group_by("a").agg(pl.col("b").mean())
-```
-Produces valid outputs more often. This approach has been validated across several leading models.
-The combination of web search and examples is more effective than either independently. Model
-outputs indicate that when an example contradicts the model's pre-trained expectations, it seems
-more likely to trigger a web search for verification.
-Additionally, explicit instructions like "use `group_by` instead of `groupby`" can be effective in
-guiding the model to use correct syntax.
-Common examples such as `df.group_by("a").agg(pl.col("b").mean())` can also be added the system
-prompt for more consistency.
 ---
 polars/docs/source/user-guide/expressions/aggregation.md
 ---
@@ -6963,6 +6901,64 @@ not an issue for typical projects, but during quick experimentation in notebooks
 1. https://pubs.opengroup.org/onlinepubs/9699919799/functions/fork.html
 1. https://bnikolic.co.uk/blog/python/parallelism/2019/11/13/python-forkserver-preload.html
 ---
+polars/docs/source/user-guide/misc/polars_llms.md
+---
+# Generating Polars code with LLMs
+Large Language Models (LLMs) can sometimes return Pandas code or invalid Polars code in their
+output. This guide presents approaches that help LLMs generate valid Polars code more consistently.
+These approaches have been developed by the Polars community through testing model responses to
+various inputs. If you find additional effective approaches for generating Polars code from LLMs,
+please raise a [pull request](https://github.com/pola-rs/polars/pulls).
+## System prompt
+Many LLMs allow you to provide a system prompt that is included with every individual prompt you
+send to the model. In the system prompt, you can specify your preferred defaults, such as "Use
+Polars as the default dataframe library". Including such a system prompt typically leads to models
+consistently generating Polars code rather than Pandas code.
+You can set this system prompt in the settings menu of both web-based LLMs like ChatGPT and
+IDE-based LLMs like Cursor. Refer to each application's documentation for specific instructions.
+## Enable web search
+Some LLMs can search the web to access information beyond their pre-training data. Enabling web
+search allows an LLM to reference up-to-date Polars documentation for the current API.
+Some IDE-based LLMs can index the Polars API documentation and reference this when generating code.
+For example, in Cursor you can add Polars as a custom docs source and instruct the agent to
+reference the Polars documentation in a prompt.
+However, web search does not yet guarantee that valid code will be produced. If a model is confident
+in a result based on its pre-training data, it may not incorporate web search results in its output.
+The Polars API pages also have AI-enabled search to help you find the information you need more
+easily.
+## Provide examples
+You can guide LLMs to use correct syntax by including relevant examples in your prompt.
+For instance, this basic query:
+```python
+df = pl.DataFrame({
+"id": ["a", "b", "a", "b", "c"],
+"score": [1, 2, 1, 3, 3],
+"year": [2020, 2020, 2021, 2021, 2021],
+})
+# Compute average of score by id
+```
+Often results in outdated `groupby` syntax instead of the correct `group_by`.
+However, including a simple example from the Polars `group_by` documentation (preferably with web
+search enabled) like this:
+```python
+df = pl.DataFrame({
+"id": ["a", "b", "a", "b", "c"],
+"score": [1, 2, 1, 3, 3],
+"year": [2020, 2020, 2021, 2021, 2021],
+})
+# Compute average of score by id
+# Examples of Polars code:
+# df.group_by("a").agg(pl.col("b").mean())
+```
+Produces valid outputs more often. This approach has been validated across several leading models.
+The combination of web search and examples is more effective than either independently. Model
+outputs indicate that when an example contradicts the model's pre-trained expectations, it seems
+more likely to trigger a web search for verification.
+Additionally, explicit instructions like "use `group_by` instead of `groupby`" can be effective in
+guiding the model to use correct syntax.
+Common examples such as `df.group_by("a").agg(pl.col("b").mean())` can also be added the system
+prompt for more consistency.
+---
 polars/docs/source/user-guide/misc/styling.md
 ---
 # Styling
@@ -7713,4 +7709,723 @@ shape: (2, 2)
 ```
 ## Further reading
 - [Rust example (distribution source)](https://github.com/pola-rs/pyo3-polars/tree/main/example/io_plugin)
+---
+polars/docs/source/polars-cloud/cli.md
+---
+# CLI
+Polars cloud comes with a command line interface (CLI) out of the box. This allows you to interact
+with polars cloud resources from the terminal.
+```bash
+pc --help
+```
+```
+usage: pc [-h] [-v] [-V] {login,workspace,compute} ...
+positional arguments:
+{login,workspace,compute}
+login Authenticate with Polars Cloud by logging in through the browser
+workspace Manage Polars Cloud workspaces.
+compute Manage Polars Cloud compute clusters.
+options:
+-h, --help show this help message and exit
+-v, --verbose Output debug logging messages.
+-V, --version Display the version of the Polars Cloud client.
+```
+### Authentication
+You can authenticate with Polars Cloud from the CLI using
+```bash
+pc login
+```
+This refreshes your access token and saves it to disk.
+### Workspaces
+Create and setup a new workspace
+```bash
+pc workspace setup
+```
+List all workspaces
+```bash
+pc workspace list
+```
+```
+NAME ID STATUS
+test-workspace 0194ac0e-5122-7a90-af5e-b1f60b1989f4 Active
+polars-ci-2025â€¦ 0194287a-e0a5-7642-8058-0f79a39f5b98 Uninitialized
+```
+### Compute
+---
+polars/docs/source/polars-cloud/connect-cloud.md
+---
+# Connect cloud environment
+To use Polars Cloud, you must connect your workspaces to a cloud environment.
+If you log in to the Polars Cloud dashboard for the first time with an account that isnâ€™t connected
+to a cloud environment, you will see a blue bar at the top of the screen. You can explore Polars
+Cloud in this state, but you wonâ€™t be able to execute any queries yet.
+![An overview of the Polars Cloud dashboard showing a button to connect your cloud environment](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/connect-cloud/dashboard.png)
+When you click the blue bar you will be redirected to the start of the set up flow.
+## 1. Set workspace name
+In the first step of the setup flow, youâ€™ll name your workspace. You can keep the default name
+"Personal Workspace" or use the name of your team or department. This workspace name will be used by
+the compute context to run your queries remotely.
+!!! tip "Naming your workspace"
+If youâ€™re unsure, you can use a temporary name. You can change the workspace name later under the workspace settings.
+![Connect your cloud screen where you can input a workspace name](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/connect-cloud/workspace-naming.png)
+## 2. Deploy to AWS
+After naming your workspace, click Deploy to Amazon. This opens a screen in AWS with a
+CloudFormation template. This template installs the necessary roles in your AWS environment.
+![CloudFormation stack image as step of the setupflow](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/connect-cloud/cloudformation.png)
+If you want to learn more about what Polars Cloud installs in your environment, you can read more on
+[the AWS Infrastructure page](providers/aws/infra.md).
+!!! info "No permissions to deploy the stack in AWS"
+If you don't have the required permissions to deploy CloudFormation stacks in your AWS environment, you can copy the URL and share it with your operations team or someone with the permissions. With the URL they can deploy the stack for you.
+## 3. Deploying the environment
+After you click Create stack, the CloudFormation stack will be deployed in your environment. This
+process usually takes around 5 minutes. You can monitor the progress in your AWS environment or in
+the Polars setup flow.
+![Progress screen in the set up flow](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/connect-cloud/progress-page.png)
+When the CloudFormation stack deployment completes, youâ€™ll see a confirmation message.
+![Final screen of the set up flow indication successful deployment](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/connect-cloud/successful-setup.png)
+If you click "Start exploring", you will be redirected to the Polars Cloud dashboard.
+You can now run your Polars query remotely in the cloud. Go to the
+[getting started section](quickstart.md) to your first query in minutes,
+[learn more how to run queries remote](run/compute-context.md) or manage your workspace to invite
+your team.
+!!! info "Only connect a workspace once"
+You only have to connect your workspace once. If you invite your team to a workspace that is connected to a cloud environment they can immediately run queries remotely.
+---
+polars/docs/source/polars-cloud/faq.md
+---
+# FAQ
+On this page you can find answers to some frequently asked questions around Polars Cloud.
+## Who is behind Polars Cloud?
+Polars Cloud is built by the organization behind the open source Polars project. We are committed to
+improve Polars open source for all single machine workloads. Polars Cloud will extend Polars
+functionalities for remote and distributed compute.
+## Where does the compute run?
+All compute runs in your own cloud environment. The main reason is that this ensures that your data
+never leaves your environment and that the compute is always close to your data.
+You can learn more about how this setup in
+[the infrastructure section of the documentation](providers/aws/infra.md).
+## Can you run Polars Cloud on-premise?
+Currently, Polars Cloud is only available to organizations that are on AWS. Support for on-premise
+infrastructure is on our roadmap and will become available soon.
+## What does Polars Cloud offer me beyond Polars?
+Polars Cloud offers a managed service that enables scalable data processing with the flexibility and
+expressiveness of the Polars API. It extends the open source Polars project with the following
+capabilities:
+- Distributed engine to scale workloads horizontally.
+- Cost-optimized serverless architecture that automatically scales compute resources
+- Built-in fault tolerance mechanisms ensuring query completion even during hardware failures or
+system interruptions
+- Comprehensive monitoring and analytics tools providing detailed insights into query performance
+and resource utilization.
+## What are the main use cases for Polars Cloud?
+Polars Cloud offers both a batch as an interactive mode to users. Batch mode can be used for ETL
+workloads or one-off large scale analytic jobs. Interactive mode is for users that are looking to do
+data exploration on a larger scale data processing that requires more compute than their own machine
+can offer.
+## How can Polars Cloud integrate with my workflow?
+One of our key priorities is ensuring that running remote queries feels as native and seamless as
+running them locally. Every user should be able to scale their queries effortlessly.
+Polars Cloud is completely environment agnostic. This allows you to run your queries from anywhere
+such as your own machine, Jupyter/Marimo notebooks, Airflow DAGs, AWS Lambda functions, or your
+servers. By not tying you to a specific platform, Polars Cloud gives you the flexibility to execute
+your queries wherever it best fits your workflow.
+## What is the pricing model of Polars Cloud?
+Polars Cloud is available at no additional cost in this early stage. You only pay for the resources
+you use in your own cloud environment. We are exploring different usage based pricing models that
+are geared towards running queries as fast and efficient as possible.
+## Will the distributed engine be available in open source?
+The distributed engine is only available in Polars Cloud. There are no plans to make it available in
+the open source project. Polars is focused on single node compute, as it makes efficient use of the
+available resources. Users already report utilizing Polars to process hundreds of gigabytes of data
+on single (large) compute instance. The distributed engine is geared towards teams and organizations
+that are I/O bound or want to scale their Polars queries beyond single machines.
+---
+polars/docs/source/polars-cloud/index.md
+---
+![Image showing the Polars Cloud logo](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/polars-cloud.svg)
+# Introducing Polars Cloud
+!!! tip "Polars Cloud is in alpha stage"
+Polars Cloud is currently available to a select group of individuals and companies for early-stage testing. You can learn more about Polars Cloud and its goals in [our recent announcement post](https://pola.rs/posts/polars-cloud-what-we-are-building/).
+DataFrame implementations always differed from SQL and databases. SQL could run anywhere from
+embedded databases to massive data warehouses. Yet, DataFrame users have been forced to choose
+between a solution for local work or solutions geared towards distributed computing, each with their
+own APIs and limitations.
+Polars is bridging this gap with **Polars Cloud**. Build on top of the popular open source project,
+Polars Cloud enables you to write DataFrame code once and run it anywhere. The distributed engine
+available with Polars Cloud allows to scale your Polars queries beyond a single machine.
+## Key Features of Polars Cloud
+- **Unified DataFrame Experience**: Run a Polars query seamlessly on your local machine and at scale
+with our new distributed engine. All from the same API.
+- **Serverless Compute**: Effortlessly start compute resources without managing infrastructure with
+options to execute queries on both CPU and GPU.
+- **Any Environment**: Start a remote query from a notebook on your machine, Airflow DAG, AWS
+Lambda, or your server. Get the flexibility to embed Polars Cloud in any environment.
+## Install Polars Cloud
+Simply extend the capabilities of Polars with:
+```bash
+pip install polars polars_cloud
+```
+## Example query
+To run your query in the cloud, simply write Polars queries like you are used to, but call
+`LazyFrame.remote()` to indicate that the query should be run remotely.
+{{code_block('polars-cloud/index','index',['ComputeContext','LazyFrameExt'])}}
+## Sign up today and start for free
+Polars Cloud is still in an early development stage and available at no additional cost. You only
+pay for the resources you use in your own cloud environment.
+## Cloud availability
+Currently, Polars CLoud is available on AWS. Other cloud providers and on-premise solution is on the
+roadmap and will become available in the upcoming months.
+![AWS logo](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-logo.svg)
+---
+polars/docs/source/polars-cloud/quickstart.md
+---
+# Getting started
+Polars Cloud is a managed compute platform for your Polars queries. It allows you to effortlessly
+run your local queries in your cloud environment, both in an interactive setting as well as for ETL
+or batch jobs. By working in a 'Bring your own Cloud' model the data never leaves your environment.
+## Installation
+Install the Polars Cloud python library in your environment
+```bash
+$ pip install polars polars-cloud
+```
+Create an account and login by running the command below.
+```bash
+$ pc login
+```
+## Connect your cloud
+Polars Cloud currently exclusively supports AWS as a cloud provider.
+Polars Cloud needs permission to manage hardware in your environment. This is done by deploying our
+cloudformation template. See our [infrastructure](providers/aws/infra.md) section for more details.
+To connect your cloud run:
+```bash
+$ pc setup workspace -n 
+```
+This redirects you to the browser where you can connect Polars Cloud to your AWS environment.
+Alternatively, you can follow the steps in the browser and create the workspace there.
+## Run your queries
+Now that we are done with the setup, we can start running queries. The general principle here is
+writing Polars like you're always used to and calling `.remote()` on your `LazyFrame`. The following
+example shows how to create a compute cluster and run a simple Polars query.
+{{code_block('polars-cloud/quickstart','general',['ComputeContext','LazyFrameExt'])}}
+Let us go through the code line by line. First we need to define the hardware the cluster will run
+on. This can be provided in terms of cpu & memory or by specifying the the exact instance type in
+AWS.
+```python
+ctx = pc.ComputeContext(memory=8, cpus=2 , cluster_size=1)
+```
+Then we write a regular lazy Polars query. In this simple example we compute the maximum of column
+`a` over column `b`.
+```python
+df = pl.LazyFrame({
+"a": [1, 2, 3],
+"b": [4, 4, 5]
+})
+lf = df.with_columns(
+c = pl.col("a").max().over("b")
+)
+```
+Finally we are going to run our query on the compute cluster. We use `.remote()` to signify that we
+want to run the query remotely. This gives back a special version of the `LazyFrame` with extension
+methods. Up until this point nothing has executed yet, calling `.write_parquet()` sends the query to
+g
+---
+polars/docs/source/polars-cloud/explain/authentication.md
+---
+# Logging in
+Polars cloud allows authentication through short-lived authentication tokens. There are two ways you
+can obtain an access token:
+- command line interface
+- python client
+After a successful `login` Polars Cloud stores the token in `{$HOME}/.polars`. You can alter this
+path by setting the environment variable `POLARS_CLOUD_ACCESS_TOKEN_PATH`.
+### Command Line Interface (CLI)
+Authenticate with CLI using the following command
+```bash
+pc login
+```
+### Python client
+Authenticate with the Polars Cloud using
+{{code_block('polars-cloud/authentication','login',['login'])}}
+Both methods redirect you to the browser where you can provide your login credentials and continue
+the sign in process.
+## Service accounts
+Both flows described above are for interactive logins where a person is present in the process. For
+non-interactive workflows such as orchestration tools there are service accounts. These allow you to
+login programmatically.
+To create a service account go to the Polars Cloud dashboard under Settings and service accounts.
+Here you can create a new service account for your workspace. To authenticate set the
+`POLARS_CLOUD_CLIENT_ID` and `POLARS_CLOUD_CLIENT_SECRET` environment variables. Polars Cloud will
+automatically pick these up if there are no access tokens present in the path.
+---
+polars/docs/source/polars-cloud/workspace/settings.md
+---
+# Configuring workspace settings
+The Workspace Settings page provides a centralized interface for managing your workspace
+configuration.
+## General
+The General section contains basic information about your workspace:
+- **Workspace Name**: Displays the current name of your workspace. You can modify this by clicking
+the "Edit" button.
+- **Description**: Provides space for a detailed description of your workspace's purpose. The
+description can be modified by clicking the "Edit" button.
+## Default Compute Configuration
+This section allows you to define the default computational resources allocated to jobs and
+processes within your workspace.
+- **Set Cluster Defaults**: Clicking this button lets you configure either a Resource based default
+or Instance based default.
+- With Resource based custom amount of vCPUs, RAM, Storage and cluster size can be defined.
+- Instance based allows to select a default instance type from the cloud service provider.
+## Query and compute labels
+Labels help organize and categorize queries and compute within your workspace. The labels can only
+be set from the dashboard.
+```python
+ctx= plc.ComputeContext(
+workspace="PolarsCloudDemo",
+labels=["marketing", "cltv"],
+)
+```
+- **Create New Label**: Create custom labels that can be applied to various resources for better
+organization and insight in usage.
+## Service Accounts
+The Service Accounts section manages programmatic access to your workspace.
+- **Token Description**: Displays the purpose of each service account token.
+- **Created At**: Shows when a service account was created.
+- **Action**: Provides options to delete service accounts.
+- **Create New Service Account**: Allows you to generate new service accounts for API access and
+automation.
+You can find more information about using Service Accounts in your workflows in the "Use service
+accounts" section.
+## Disable workspace
+Users have the ability to disable the entire workspace. This should be used with caution. Disabling
+the workspace will stop processes, remove access and permanently delete all data and content within
+the workspace.
+---
+polars/docs/source/polars-cloud/workspace/team.md
+---
+# Manage workspace members
+The Team page serves as a central hub for managing who has access to the workspace. Administrators
+are able to invite collaborators, monitor membership status, and manage user permissions.
+## Adding your team to the workspace
+### Email invitations
+The primary method for adding team members is through email invitations:
+1. Enter the email address of the person you wish to add in the provided input field
+2. Click "Send email" to deliver an invitation directly to their inbox
+Invitees will receive in invitation email that they can use to register and get added to the
+workspace.
+### Invitation links
+With an invite link you can share the personal invitation link with an invitee.
+1. Click "Generate invite link" to create a shareable URL
+2. Copy and share the link to the invitee.
+The invitee can use this link to join the workspace without requiring an email invitation.
+!!! info "Inviting existing users"
+Users that are already part of another workspace will get a prompt to join the workspace they are invited for.
+---
+polars/docs/source/polars-cloud/providers/aws/infra.md
+---
+# Infrastructure
+Polars Cloud manages the hardware for you by spinning up and down raw EC2 instances. In order to do
+this it needs permissions in your own cloud environment. None of the resources below have costs
+associated with them. While no compute clusters are running Polars Cloud will not create any AWS
+costs. The recommended way of doing this is running `pc workspace setup`.
+## Recommended setup
+When you deploy Polars Cloud the following infrastructure is setup.
+![AWS infrastructure](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-infra.png)
+1. A `VPC` and `subnet` in which Polars EC2 workers can run.
+1. Two `security groups`. One for batch mode, which does not have any public ports, and one for
+interactive mode, which allows direct communication between your local environment and the
+cluster.
+1. `PolarsWorker` IAM role. Polars EC2 workers run under this IAM role.
+1. `UserInitiated` & `Unattended` IAM role. The `UserInitiated` role has the permissions to start
+Polars EC2 workers in your environment. The `Unattended` role can terminate unused compute
+clusters that you might have forgot about.
+## Security
+By design Polars Cloud never has access to the data inside your cloud environment. The data never
+leaves your environment.
+### IAM permissions
+The list below show an overview of the required permissions for each of the roles.
+??? User Initiated
+- ec2:CreateTags
+- ec2:RunInstances
+- ec2:DescribeInstances
+- ec2:DescribeInstanceTypeOfferings
+- ec2:DescribeInstanceTypes
+- ec2:TerminateInstances
+- ec2:CreateFleet
+- ec2:CreateLaunchTemplate
+- ec2:CreateLaunchTemplateVersion
+- ec2:DescribeLaunchTemplates
+??? Unattended
+- ec2:DescribeInstances
+- ec2:TerminateInstances
+- ec2:DescribeFleets
+- ec2:DeleteLaunchTemplate
+- ec2:DeleteLaunchTemplateVersions
+- ec2:DeleteFleets
+- sts:GetCallerIdentity
+- sts:TagSession
+- cloudwatch:GetMetricData
+- logs:GetLogEvents
+- logs:FilterLogEvents
+- logs:DescribeLogStreams
+??? Worker
+- logs:CreateLogGroup
+- logs:PutRetentionPolicy
+- cloudwatch:PutMetricData
+## Custom setup
+Depending on your enterprise needs or existing infrastructure, you may not require certain
+components (e.g. VPC, subnet) of the default setup of Polars Cloud. Or you have additional security
+requirements in place. Together with our team of engineers we can integrate Polars Cloud with your
+existing infrastructure. Please contact us directly.
+---
+polars/docs/source/polars-cloud/providers/aws/permissions.md
+---
+# Permissions
+The workspace is an isolation for all resources living within your cloud environment. Every
+workspace has a single instance profile which defines the permissions for the compute. This profile
+is attached to the compute within your environment. By default, the profile can read and write from
+S3, but you can easily adjust depending on your own infrastructure stack.
+## Adding or removing permissions
+If you want Polars Cloud to be able to read from other data sources than `S3` within your cloud
+environment you must provide the access control from directly within AWS. To do this go to `IAM`
+within the aws console and locate the role called `polars--IAMWorkerRole-`.
+Here you can adjust the permissions of the workspace for instance:
+- [Narrow down the S3 access to certain buckets](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_deny-except-bucket.html)
+- [Provide IAM access to rds database](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.IAMPolicy.html)
+---
+polars/docs/source/polars-cloud/run/compute-context.md
+---
+# Setting up a Compute context
+The compute context is the abstraction of the hardware to execute the query on. This can be either a
+single node, or in case of distributed execution, on multiple nodes . In this section we will cover
+how to setup your compute context.
+{{code_block('polars-cloud/compute-context','compute',['ComputeContext'])}}
+## Setting the context
+There are three ways to define the compute context:
+1. Use your workspace default
+2. Define CPUs and RAM
+3. Set instance type
+### Workspace default
+In the Polars Cloud dashboard you can set a default requirements from your cloud service provider to
+be used for all queries. Next to that you can also manually define storage and the default cluster
+size to run your queries on.
+Polars Cloud will use these defaults if no other parameters are passed to the `ComputeContext`.
+{{code_block('polars-cloud/compute-context','default-compute',['ComputeContext'])}}
+Find out more about how to [set workspace defaults](../workspace/settings.md) in the workspace
+settings section.
+### Define CPU and RAM
+You can directly specify the `cpus` and `memory` in your ComputeContext. When set, Polars Cloud will
+match your requirements and pick the most suitable and efficient `instance_type` from your cloud
+service provider. The requirements are lower bounds, meaning the machine will have at least that
+number of CPUs and memory.
+{{code_block('polars-cloud/compute-context','defined-compute',['ComputeContext'])}}
+### Set instance type
+Another option is to define the specific instance type for Polars to use. This could be helpful if
+you want to use a specific instance type in your production environment.
+{{code_block('polars-cloud/compute-context','set-compute',['ComputeContext'])}}
+## Setting the Compute Context
+Once the compute context is defined, you'll need to provide it to the query. This can be done in two
+ways:
+1. `remote(ctx)`: By directly passing the context to the remote query.
+2. `pc.set_compute_context(ctx)`: By globally setting the compute context. This way you set it once
+and don't need to provide it to every `remote` call.
+---
+polars/docs/source/polars-cloud/run/distributed-engine.md
+---
+# Distributed query execution
+With the introduction of Polars Cloud, we also introduced the distributed engine. This engine
+enables users to horizontally scale workloads across multiple machines.
+Polars has always been optimized for fast and efficient performance on a single machine. However,
+when querying large datasets from cloud storage, performance is often constrained by the I/O
+limitations of a single node. By scaling horizontally, these download limitations can be
+significantly reduced, allowing users to process at scale.
+!!! info "Distributed engine is in early stage"
+The distributed engine is in its very early development. It currently runs all [PDS-H benchmarks](https://github.com/pola-rs/polars-benchmark). Many operations are either unsupported or not yet optimized. Major performance improvements will be introduced in the near future. When a operation is not available in a distributed manner, Polars Cloud will run that operation on single node.
+## Using distributed engine
+To execute queries using the distributed engine, you can call `distributed()`.
+```python
+lf: LazyFrame
+result = (
+lf.remote()
+.distributed()
+.collect()
+)
+```
+### Example
+```python
+import polars as pl
+import polars_cloud as pc
+from datetime import date
+query = (
+pl.scan_parquet("s3://dataset/")
+.filter(pl.col("l_shipdate") <= date(1998, 9, 2))
+.group_by("l_returnflag", "l_linestatus")
+.agg(
+avg_price=pl.mean("l_extendedprice"),
+avg_disc=pl.mean("l_discount"),
+count_order=pl.len(),
+)
+)
+result = (
+query.remote(pc.ComputeContext(cpus=16, memory=64, cluster_size=32))
+.distributed()
+.sink_parquet("s3://output/result.parquet")
+)
+```
+---
+polars/docs/source/polars-cloud/run/interactive-batch.md
+---
+# Interactive or batch mode
+In Polars Cloud, a user can define two types of compute modes: batch & interactive. Batch mode is
+designed for batch job style queries. These kinds of queries are typically scheduled and run once in
+a certain period. Interactive mode allows for exploratory workflows where a user interacts with the
+dataset and requires more compute resources than are locally available.
+The rest of this page will give examples on how to set up one or the other. More information on the
+architectural differences and implications can be found on
+[the infrastructure page](../providers/aws/infra.md).
+Below we create a simple dataframe to use as an example to demonstrate the difference between both
+modes.
+{{code_block('polars-cloud/interactive-batch','example',[])}}
+## Batch
+Batch workflows are systematic data processing pipelines, written for scheduled execution. They
+typically process large volumes of data in scheduled intervals (e.g. hourly, daily, etc.). A key
+characteristic is that the executed job has a defined lifetime. A predefined compute instance should
+spin up at a certain time and shut down when the job is executed.
+Polars Cloud makes it easy to run your query at scale whenever your use case requires it. You can
+develop your query on your local machine and define a compute context and destination to execute it
+in your cloud environment.
+{{code_block('polars-cloud/interactive-batch','batch',['ComputeContext'])}}
+The query you execute in batch mode runs in your cloud environment. The data and results of the
+query are not sent to Polars Cloud, ensuring that your data and output remain secure.
+```python
+lf.remote(ctx).sink_parquet("s3://bucket/output.parquet")
+```
+## Interactive
+Polars Cloud also supports interactive workflows. Different from batch mode, results are being
+interactively updated. Polars Cloud will not automatically close the cluster when a result has been
+produced, but the cluster stays active and intermediate state can still be accessed. In interactive
+mode you directly communicate with the compute nodes.
+Because this mode is used for exploratory use cases and short feedback cycles, the queries are not
+logged to Polars Cloud and will not be available for later inspection.
+{{code_block('polars-cloud/interactive-batch','interactive',['ComputeContext'])}}
+The initial query remains the same. In the compute context the parameter `interactive` should be set
+to `True`.
+When calling `.collect()` on your remote query execution, the output is written to a temporary
+location. These intermediate result files are automatically deleted after several hours. You can see
+the location of this folder when printing the query results.
+Users can call `.lazy()` on the result and continue working with the previous result.
+```python
+print(res1)
+```
+```text
+total_stages: 1
+finished_stages: 1
+total_rows: 4
+location: ['s3://polars-cloud-/query_outputs//.parquet']
+head:
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ name â”† birth_year â”† bmi â”‚
+â”‚ --- â”† --- â”† --- â”‚
+â”‚ str â”† i32 â”† f64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ Chloe Cooper â”† 1983 â”† 19.687787 â”‚
+â”‚ Ben Brown â”† 1985 â”† 23.141498 â”‚
+â”‚ Alice Archer â”† 1997 â”† 23.791913 â”‚
+â”‚ Daniel Donovan â”† 1981 â”† 27.134694 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+To continue your query we can read the result to a new LazyFrame and continue your exploration.
+{{code_block('polars-cloud/interactive-batch','interactive-next',[])}}
+```python
+print(res2)
+```
+```text
+total_stages: 1
+finished_stages: 1
+total_rows: 2
+location: ['s3://polars-cloud-/query_outputs//.parquet']
+head:
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ name â”† birth_year â”† bmi â”‚
+â”‚ --- â”† --- â”† --- â”‚
+â”‚ str â”† i32 â”† f64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ Chloe Cooper â”† 1983 â”† 19.687787 â”‚
+â”‚ Ben Brown â”† 1985 â”† 23.141498 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+---
+polars/docs/source/polars-cloud/run/service-accounts.md
+---
+# Using service accounts
+Service accounts function as programmatic identities that enable secure machine-to-machine
+communication for remote data processing workflows. These accounts facilitate automated processes
+(typically in production environments) without requiring interactive login sessions.
+## Create a service account
+In the workspace settings page, navigate to the Service Accounts section. Here, you can create and
+manage service accounts associated with your workspace.
+To create a new Service Account:
+1. Click the Create New Service Account button
+2. Provide a name and description for the account
+3. Copy and securely store the Client ID and Client Secret
+!!! info "Client ID and Secret visible once"
+If you lose the Client ID or Client Secret, you will need to generate a new service account.
+## Set up your environment to use a Service Account
+To authenticate using a Service Account, you must set environment variables. The following variables
+should be defined using the credentials provided when the service account was created:
+```bash
+export POLARS_CLOUD_CLIENT_ID ="CLIENT_ID_HERE"
+export POLARS_CLOUD_CLIENT_SECRET="CLIENT_SECRET_HERE"
+```
+## Execute query with Service Account
+Once the environment variables are set, you do not need to log in to Polars Cloud manually. Your
+process will automatically connect to the workspace.
+## Revoking access or deleting a Service Account
+When a service account is no longer needed, it is recommended to revoke its access. Keep in mind
+that deleting a service account is irreversible, and any processes or applications relying on this
+account will lose access immediately.
+1. Navigate to the Workspace Settings page.
+2. Go to the Service Accounts section.
+3. Locate the service account to delete.
+4. Click the three-dot menu next to the service account and select Delete.
+5. Confirm the deletion of the Service Account.
+---
+polars/docs/source/polars-cloud/run/workflow.md
+---
+# From local to cloud query execution
+Data processing and analytics often begins small but can quickly grow beyond the capabilities of
+your local machine. A typical workflow starts with exploring a sample dataset locally, developing
+the analytical approach, and then scaling up to process the full dataset in the cloud.
+This pattern allows you to iterate quickly during development while still handling larger datasets
+in production. With Polars Cloud, you can maintain this natural workflow without rewriting your code
+when moving from local to cloud execution, without requiring any migrations between local and
+production tooling.
+## Local exploration
+For this workflow, we define the following simple mocked dataset that will act as a sample to
+demonstrate the workflow. Here we will create the LazyFrame ourselves, but it could also be read as
+(remote) file.
+```python
+import polars as pl
+lf = pl.DataFrame(
+{
+"region": [
+"Australia",
+"California",
+"Benelux",
+"Siberia",
+"Mediterranean",
+"Congo",
+"Borneo",
+],
+"temperature": [32.1, 28.5, 30.2, 22.7, 29.3, 31.8, 33.2],
+"humidity": [40, 35, 75, 30, 45, 80, 70],
+"burn_area": [120, 85, 30, 65, 95, 25, 40],
+"vegetation_density": [0.6, 0.7, 0.9, 0.4, 0.5, 0.9, 0.8],
+}
+)
+```
+A simple transformation will done to create a new column.
+```python
+(
+lf.with_columns(
+(
+(pl.col("temperature") / 10)
+* (1 - pl.col("humidity") / 100)
+* pl.col("vegetation_density")
+).alias("fire_risk"),
+).filter(pl.col("humidity") < 70)
+.sort(by="fire_risk", descending=True)
+.collect()
+)
+```
+```text
+shape: (4, 6)
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ region â”† temperature â”† humidity â”† burn_area â”† vegetation_density â”† fire_risk â”‚
+â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
+â”‚ str â”† f64 â”† i64 â”† i64 â”† f64 â”† f64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ California â”† 28.5 â”† 35 â”† 85 â”† 0.7 â”† 1.29675 â”‚
+â”‚ Australia â”† 32.1 â”† 40 â”† 120 â”† 0.6 â”† 1.1556 â”‚
+â”‚ Mediterranean â”† 29.3 â”† 45 â”† 95 â”† 0.5 â”† 0.80575 â”‚
+â”‚ Siberia â”† 22.7 â”† 30 â”† 65 â”† 0.4 â”† 0.6356 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+## Run at scale in the cloud
+Imagine that there is a larger dataset stored in a cloud providerâ€™s storage solution. The dataset is
+so large that it doesnâ€™t fit on our local machine. However, through local analysis, we have verified
+that the defined query correctly calculates the column we are looking for.
+With Polars Cloud, we can easily run the same query at scale. First, we make small changes to our
+query to point to our resources in the cloud.
+```python
+lf = pl.scan_parquet("s3://climate-data/global/*.parquet")
+query = (
+lf.with_columns(
+[
+(
+(pl.col("temperature") / 10)
+* (1 - pl.col("humidity") / 100)
+* pl.col("vegetation_density")
+).alias("fire_risk"),
+]
+)
+.filter(pl.col("humidity") < 70)
+.sort(by="fire_risk", descending=True)
+)
+```
+Next, we set our compute context and call `.remote(ctx)` on our query.
+```python
+import polars_cloud as pc
+ctx = pc.ComputeContext(
+workspace="environmental-analysis",
+memory=32,
+cpus=8,
+cluster_size=4
+)
+query.remote(ctx).sink_parquet("s3://bucket/result.parquet")
+```
+### Continue analysis in interactive mode
+Running `.sink_parquet()` will write the results to the defined bucket on S3. Alternatively, we can
+take a more interactive approach by adding the parameter `interactive=True` to our compute context.
+```python
+ctx = pc.ComputeContext(
+workspace="environmental-analysis",
+memory=32,
+cpus=8,
+cluster_size=4,
+interactive=True, # set interactive to True
+)
+result = query.remote(ctx).collect().await_result()
+print(result)
+```
+```text
+total_stages: 1
+finished_stages: 1
+total_rows: 4
+location: ['s3://polars-cloud-xxx-xxx-xxx-xxx-eddc267994b8/query_outputs/22079a94-6424-4dc1-b1d7-3ea0dc4cafcc/7e966528-4238-4b34-aa52-6242be285723.parquet']
+head:
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ region â”† temperature â”† humidity â”† burn_area â”† vegetation_density â”† fire_risk â”‚
+â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
+â”‚ str â”† f64 â”† i64 â”† i64 â”† f64 â”† f64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ California â”† 28.5 â”† 35 â”† 85 â”† 0.7 â”† 1.29675 â”‚
+â”‚ Australia â”† 32.1 â”† 40 â”† 120 â”† 0.6 â”† 1.1556 â”‚
+â”‚ Mediterranean â”† 29.3 â”† 45 â”† 95 â”† 0.5 â”† 0.80575 â”‚
+â”‚ Siberia â”† 22.7 â”† 30 â”† 65 â”† 0.4 â”† 0.6356 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+We can call `.collect()` instead of `.sink_parquet()`. This will store your results to a temporary
+location which can be used to further iterate upon. To continue on the result from `collect` simply
+call `lazy` and you can get back a `LazyFrame` for further analysis.
+```python
+res2 = (
+result.lazy()
+.filter(pl.col("fire_risk") > 1)
+.sink_parquet("s3://bucket/output-interactive.parquet")
+)
+```
+Finally, the results of your interactive workflow can be written to S3.
+---
+polars/docs/source/polars-cloud/integrations/airflow.md
+---
 ---
