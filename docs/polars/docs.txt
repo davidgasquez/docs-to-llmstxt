@@ -2009,8 +2009,9 @@ Keep in mind that your work does not have to be perfect right away! If you are s
 your solution, feel free to open a draft pull request and ask for help.
 ## Contributing to documentation
 The most important components of Polars documentation are the
-[user guide](https://docs.pola.rs/user-guide/), the [API references](https://docs.pola.rs/api/), and
-the database of questions on [StackOverflow](https://stackoverflow.com/).
+[user guide](https://docs.pola.rs/user-guide/), the
+[API references](https://docs.pola.rs/api/python/stable/reference/index.html), and the database of
+questions on [StackOverflow](https://stackoverflow.com/).
 ### User guide
 The user guide is maintained in the `docs/source/user-guide` folder. Before creating a PR first
 raise an issue to discuss what you feel is missing or could be improved.
@@ -7873,7 +7874,7 @@ To run your query in the cloud, simply write Polars queries like you are used to
 Polars Cloud is still in an early development stage and available at no additional cost. You only
 pay for the resources you use in your own cloud environment.
 ## Cloud availability
-Currently, Polars CLoud is available on AWS. Other cloud providers and on-premise solution is on the
+Currently, Polars Cloud is available on AWS. Other cloud providers and on-premise solution is on the
 roadmap and will become available in the upcoming months.
 ![AWS logo](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-logo.svg)
 ---
@@ -8139,7 +8140,7 @@ when querying large datasets from cloud storage, performance is often constraine
 limitations of a single node. By scaling horizontally, these download limitations can be
 significantly reduced, allowing users to process at scale.
 !!! info "Distributed engine is in early stage"
-The distributed engine is in its very early development. It currently runs all [PDS-H benchmarks](https://github.com/pola-rs/polars-benchmark). Many operations are either unsupported or not yet optimized. Major performance improvements will be introduced in the near future. When a operation is not available in a distributed manner, Polars Cloud will run that operation on single node.
+The distributed engine is in its very early development. It currently runs all [PDS-H benchmarks](https://github.com/pola-rs/polars-benchmark). Major performance improvements will be introduced in the near future. When a operation is not available in a distributed manner, Polars Cloud will run that operation on single node.
 ## Using distributed engine
 To execute queries using the distributed engine, you can call `distributed()`.
 ```python
