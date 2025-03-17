@@ -4510,10 +4510,9 @@ all the data has to fit into your available memory at the point of peak memory u
 Remember that `LazyFrame`s are query plans i.e. a promise on computation and is not guaranteed to cache common subplans. This means that every time you reuse it in separate downstream queries after it is defined, it is computed all over again. If you define an operation on a `LazyFrame` that doesn't maintain row order (such as a `group_by`), then the order will also change every time it is run. To avoid this, use `maintain_order=True` arguments for such operations.
 ### Execution on larger-than-memory data
 If your data requires more memory than you have available Polars may be able to process the data in
-batches using _streaming_ mode. To use streaming mode you simply pass the `streaming=True` argument
-to `collect`
+batches using _streaming_ mode. To use streaming mode you simply pass the `engine="streaming"`
+argument to `collect`
 {{code_block('user-guide/lazy/execution','stream',['scan_csv','collect'])}}
-We look at [streaming in more detail here](streaming.md).
 ### Execution on a partial dataset
 While you're writing, optimizing or checking your query on a large dataset, querying all available
 data may lead to a slow development process.
@@ -4530,6 +4529,16 @@ shape: (1, 6)
 â•žâ•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
 â”‚ 6 â”† TAOJIANLONG_JASONBROKEN â”† 1397113510 â”† 1536527864 â”† 4 â”† 0 â”‚
 â””â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+## Diverging queries
+It is very common that a query diverges at one point. In these cases it is recommended to use
+`collect_all` as they will ensure that diverging queries execute only once.
+```python
+# Some expensive LazyFrame
+lf: LazyFrame
+lf_1 = LazyFrame.select(pl.all().sum())
+lf_2 = lf.some_other_computation()
+pl.collect_all([lf_1, lf_2]) # this will execute lf only once!
 ```
 ---
 polars/docs/source/user-guide/lazy/gpu.md
@@ -4564,7 +4573,7 @@ insight in the streaming capabilities.
 - [Schemas](schemas.md)
 - [Query plan](query-plan.md)
 - [Execution](execution.md)
-- [Streaming](streaming.md)
+- [Sources & Sinks](sources_sinks.md)
 - [GPU Support](gpu.md)
 ---
 polars/docs/source/user-guide/lazy/optimizations.md
@@ -4711,10 +4720,48 @@ We show how to deal with a non-lazy operation in this example where we:
 --8<-- "python/user-guide/lazy/schema.py:lazyeager"
 ```
 ---
-polars/docs/source/user-guide/lazy/streaming.md
+polars/docs/source/user-guide/lazy/sources_sinks.md
 ---
-# Streaming
---8<-- "docs/source/_build/snippets/under_construction.md"
+# Sources and sinks
+## Scan
+When using the `LazyFrame` API, it is important to favor `scan_*` (`scan_parquet`, `scan_csv`, etc.)
+over `read_*`. A Polars `scan` is lazy and will delay execution until the query is collected. The
+benefit of this, is that the Polars optimizer can push optimization into the readers. They can skip
+reading columns and rows that aren't required. Another benefit is that, during streaming execution,
+the engine already can process batches before the file is completely read.
+## Sink
+Sinks can execute a query and stream the results to storage (being disk or cloud). The benefit of
+sinking data to storage is that you don't necessarily have to store all data in RAM, but can process
+data in batches.
+If we would want to convert many csv files to parquet, whilst dropping the missing data, we could do
+something like the query below. We use a partitioning strategy that defines how many rows may be in
+a single parquet file, before we generate a new file
+```python
+lf = scan_csv("my_dataset/*.csv").filter(pl.all().is_not_null())
+lf.sink_parquet(
+pl.PartitionMaxSize(
+"my_table_{part}.parquet"
+max_size=512_000
+)
+)
+```
+This will create the following files on disk:
+```text
+my_table_0.parquet
+my_table_1.parquet
+...
+my_table_n.parquet
+```
+## Multiplexing sinks
+Sinks can also multiplex. Meaning that we write to different sinks in a single query. In the code
+snippet below, we take a `LazyFrame` and sink it into 2 sinks at the same time.
+```python
+# Some expensive computation
+lf: LazyFrame
+q1 = lf.sink_parquet(.., lazy=True)
+q2 = lf.sink_ipc(.., lazy=True)
+lf.collect_all([q1, q2])
+```
 ---
 polars/docs/source/user-guide/lazy/using.md
 ---
@@ -6257,8 +6304,8 @@ polars/docs/source/user-guide/concepts/_streaming.md
 One additional benefit of the lazy API is that it allows queries to be executed in a streaming
 manner. Instead of processing all the data at once, Polars can execute the query in batches allowing
 you to process datasets that do not fit in memory.
-To tell Polars we want to execute a query in streaming mode we pass the `streaming=True` argument to
-`collect`
+To tell Polars we want to execute a query in streaming mode we pass the `engine="streaming"`
+argument to `collect`
 {{code_block('user-guide/concepts/streaming','streaming',['collect'])}}
 ## When is streaming available?
 Streaming is still in development. We can ask Polars to execute any lazy query in streaming mode.
