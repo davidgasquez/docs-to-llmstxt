@@ -8064,6 +8064,9 @@ processes within your workspace.
 or Instance based default.
 - With Resource based custom amount of vCPUs, RAM, Storage and cluster size can be defined.
 - Instance based allows to select a default instance type from the cloud service provider.
+Setting default compute configurations eliminates the need to explicitly define a compute context.
+More information on configuration can be found in the section on
+[setting up compute context](../run/compute-context.md).
 ## Query and compute labels
 Labels help organize and categorize queries and compute within your workspace. The labels can only
 be set from the dashboard.
@@ -8183,40 +8186,50 @@ Here you can adjust the permissions of the workspace for instance:
 ---
 polars/docs/source/polars-cloud/run/compute-context.md
 ---
-# Setting up a Compute context
-The compute context is the abstraction of the hardware to execute the query on. This can be either a
-single node, or in case of distributed execution, on multiple nodes . In this section we will cover
-how to setup your compute context.
+# Defining a compute context
+The compute context defines the hardware configuration used to execute your queries. This can be
+either a single node or, for distributed execution, multiple nodes. This section explains how to set
+up and manage your compute context.
 {{code_block('polars-cloud/compute-context','compute',['ComputeContext'])}}
 ## Setting the context
-There are three ways to define the compute context:
+You can define your compute context in three ways:
 1. Use your workspace default
-2. Define CPUs and RAM
-3. Set instance type
+2. Specify CPUs and RAM requirements
+3. Select a specific instance type
 ### Workspace default
-In the Polars Cloud dashboard you can set a default requirements from your cloud service provider to
-be used for all queries. Next to that you can also manually define storage and the default cluster
-size to run your queries on.
+In the Polars Cloud dashboard, you can set default requirements from your cloud service provider to
+be used for all queries. You can also manually define storage and the default cluster size.
 Polars Cloud will use these defaults if no other parameters are passed to the `ComputeContext`.
 {{code_block('polars-cloud/compute-context','default-compute',['ComputeContext'])}}
 Find out more about how to [set workspace defaults](../workspace/settings.md) in the workspace
 settings section.
-### Define CPU and RAM
-You can directly specify the `cpus` and `memory` in your ComputeContext. When set, Polars Cloud will
-match your requirements and pick the most suitable and efficient `instance_type` from your cloud
-service provider. The requirements are lower bounds, meaning the machine will have at least that
+### Define hardware specifications
+You can directly specify the `cpus` and `memory` requirements in your `ComputeContext`. When set,
+Polars Cloud will select the most suitable instance type from your cloud service provider that meets
+the specifications. The requirements are lower bounds, meaning the machine will have at least that
 number of CPUs and memory.
 {{code_block('polars-cloud/compute-context','defined-compute',['ComputeContext'])}}
 ### Set instance type
-Another option is to define the specific instance type for Polars to use. This could be helpful if
-you want to use a specific instance type in your production environment.
+For more control, you can specify the exact instance type for Polars to use. This is useful when you
+have specific hardware requirements in a production environment.
 {{code_block('polars-cloud/compute-context','set-compute',['ComputeContext'])}}
-## Setting the Compute Context
-Once the compute context is defined, you'll need to provide it to the query. This can be done in two
-ways:
-1. `remote(ctx)`: By directly passing the context to the remote query.
-2. `pc.set_compute_context(ctx)`: By globally setting the compute context. This way you set it once
-and don't need to provide it to every `remote` call.
+## Applying the compute context
+Once defined, you can apply your compute context to queries in three ways:
+1. By directly passing the context to the remote query:
+```python
+query.remote(context=ctx).sink_parquet(...)
+```
+2. By globally setting the compute context. This way you set it once and don't need to provide it to
+every `remote` call:
+```python
+pc.set_compute_context(ctx)
+query.remote().sink_parquet(...)
+```
+3. When a default compute context is set via the Polars Cloud dashboard. It is no longer required to
+define a compoute context.
+```python
+query.remote().sink_parquet(...)
+```
 ---
 polars/docs/source/polars-cloud/run/distributed-engine.md
 ---
@@ -8286,7 +8299,7 @@ in your cloud environment.
 The query you execute in batch mode runs in your cloud environment. The data and results of the
 query are not sent to Polars Cloud, ensuring that your data and output remain secure.
 ```python
-lf.remote(ctx).sink_parquet("s3://bucket/output.parquet")
+lf.remote(context=ctx).sink_parquet("s3://bucket/output.parquet")
 ```
 ## Interactive
 Polars Cloud also supports interactive workflows. Different from batch mode, results are being
@@ -8458,7 +8471,7 @@ lf.with_columns(
 .sort(by="fire_risk", descending=True)
 )
 ```
-Next, we set our compute context and call `.remote(ctx)` on our query.
+Next, we set our compute context and call `.remote(context=ctx)` on our query.
 ```python
 import polars_cloud as pc
 ctx = pc.ComputeContext(
@@ -8466,7 +8479,7 @@ workspace="environmental-analysis",
 memory=32,
 cpus=8
 )
-query.remote(ctx).sink_parquet("s3://bucket/result.parquet")
+query.remote(context=ctx).sink_parquet("s3://bucket/result.parquet")
 ```
 ### Continue analysis in interactive mode
 Running `.sink_parquet()` will write the results to the defined bucket on S3. Alternatively, we can
@@ -8478,7 +8491,7 @@ memory=32,
 cpus=8,
 interactive=True, # set interactive to True
 )
-result = query.remote(ctx).collect()
+result = query.remote(context=ctx).collect()
 print(result.collect())
 ```
 ```text
