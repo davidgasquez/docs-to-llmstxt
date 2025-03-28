@@ -6961,7 +6961,7 @@ Based on the example, you may think, why is `fork` available in Python to start 
 First, probably because of historical reasons: `spawn` was added to Python in version 3.4, whilst
 `fork` has been part of Python from the 2.x series.
 Second, there are several limitations for `spawn` and `forkserver` that do not apply to `fork`, in
-particular all arguments should be pickable. See the
+particular all arguments should be pickleable. See the
 [Python multiprocessing docs](https://docs.python.org/3/library/multiprocessing.html#the-spawn-and-forkserver-start-methods)
 for more information.
 Third, because it is faster to create new processes compared to `spawn`, as `spawn` is effectively
