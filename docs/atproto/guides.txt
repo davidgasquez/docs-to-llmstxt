@@ -866,7 +866,7 @@ A “commit” to a data repository is simply a keypair signature over a Root no
 Multiple types of identifiers are used within a Personal Data Repository.
 
 <DescriptionList>
-  <Description title="DIDs"><a href="https://w3c.github.io/did-core/">Decentralized IDs (DIDs)</a> identify data repositories. They are broadly used as user IDs, but since every user has one data repository then a DID can be considered a reference to a data repository. The format of a DID varies by the “DID method” used but all DIDs ultimately resolve to a keypair and a list of service providers. This keypair can sign commits to the data repository.</Description>
+  <Description title="DIDs"><a href="https://w3c.github.io/did/">Decentralized IDs (DIDs)</a> identify data repositories. They are broadly used as user IDs, but since every user has one data repository then a DID can be considered a reference to a data repository. The format of a DID varies by the “DID method” used but all DIDs ultimately resolve to a keypair and a list of service providers. This keypair can sign commits to the data repository.</Description>
   <Description title="CIDs"><a href="https://github.com/multiformats/cid">Content IDs (CIDs)</a> identify content using a fingerprint hash. They are used throughout the repository to reference the objects (nodes) within it. When a node in the repository changes, its CID also changes. Parents which reference the node must then update their reference, which in turn changes the parent’s CID as well. This chains all the way to the Commit node, which is then signed.</Description>
   <Description title="NSIDs"><a href="/specs/nsid">Namespaced Identifiers (NSIDs)</a> identify the Lexicon type for groups of records within a repository.</Description>
   <Description title="rkey"><a href="/specs/record-key">Record Keys</a> ("rkeys") identify individual records within a collection in a given repository. The format is specified by the collection Lexicon, with some collections having only a single record with a key like "self", and other collections having many records, with keys using a base32-encoded timestamp called a Timestamp Identifier (TID).</Description>
@@ -958,7 +958,7 @@ The name is also a play on the "@" symbol, aka the "at" symbol, since atproto is
 
 ## PDS (Personal Data Server)
 
-A PDS, or Personal Data Server, is a server that hosts a user. A PDS will always store the user's [data repo](#data-repo) and signing keys. It may also assign the user a [handle](#handle) and a [DID](#did). Many PDSes will host multiple users.
+A PDS, or Personal Data Server, is a server that hosts a user. A PDS will always store the user's [data repo](#data-repo) and signing keys. It may also assign the user a [handle](#handle) and a [DID](#did-decentralized-id). Many PDSes will host multiple users.
 
 A PDS communicates with [AppViews](#appview) to run applications. A PDS doesn't typically run any applications itself, though it will have general account management interfaces such as the OAuth login screen. PDSes actively sync their [data repos](#data-repo) with [Relays](#relay).
 
@@ -985,9 +985,9 @@ Lexicon's sole purpose is to help developers build compatible software.
 
 ## Data Repo
 
-The "data repository" or "repo" is the public dataset which represents a user. It is comprised of [collections](#collection) of JSON [records](#record) and unstructured [blobs](#blob). Every repo is assigned a single permanent [DID](#did) which identifies it. Repos may also have any number of [domain handles](#handle) which act as human-readable names.
+The "data repository" or "repo" is the public dataset which represents a user. It is comprised of [collections](#collection) of JSON [records](#record) and unstructured [blobs](#blob). Every repo is assigned a single permanent [DID](#did-decentralized-id) which identifies it. Repos may also have any number of [domain handles](#handle) which act as human-readable names.
 
-Data repositories are signed merkle trees. Their signatures can be verified against the key material published under the repo's [did](#did). 
+Data repositories are signed merkle trees. Their signatures can be verified against the key material published under the repo's [did](#did-decentralized-id).
 
 - [An introduction to data repos](/guides/data-repos)
 - [Repository spec](/specs/repository)
@@ -1653,8 +1653,9 @@ sudo bash installer.sh
 
 ## Verifying that your PDS is online and accessible
 
-> [!TIP]
-> The most common problems with getting PDS content consumed in the live network are when folks substitute the provided Caddy configuration for nginx, apache, or similar reverse proxies. Getting TLS certificates, WebSockets, and virtual server names all correct can be tricky. We are not currently providing tech support for other configurations.
+<Note>
+The most common problems with getting PDS content consumed in the live network are when folks substitute the provided Caddy configuration for nginx, apache, or similar reverse proxies. Getting TLS certificates, WebSockets, and virtual server names all correct can be tricky. We are not currently providing tech support for other configurations.
+</Note>
 
 You can check if your server is online and healthy by requesting the healthcheck endpoint.
 
