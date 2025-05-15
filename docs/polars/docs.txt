@@ -58,40 +58,22 @@ Polars cloud comes with a command line interface (CLI) out of the box. This allo
 with polars cloud resources from the terminal.
 ```bash
 pc --help
-```
-```
-usage: pc [-h] [-v] [-V] {login,workspace,compute} ...
+usage: pc [-h] [-v] [-V] {authenticate,setup,login,organization,workspace,compute} ...
 positional arguments:
-{login,workspace,compute}
-login Authenticate with Polars Cloud by logging in through the browser
+{authenticate,setup,login,organization,workspace,compute}
+authenticate Authenticate with Polars Cloud by loading stored credentials or otherwise logging in through the browser.
+setup Set up an organization and workspace to quickly run queries. Ideal to get started with Polars Cloud.
+login Authenticate with Polars Cloud by logging in through the browser.
+organization Manage Polars Cloud organizations.
 workspace Manage Polars Cloud workspaces.
 compute Manage Polars Cloud compute clusters.
-options:
--h, --help show this help message and exit
+optional arguments:
+-h, --help show this help message and exit.
 -v, --verbose Output debug logging messages.
 -V, --version Display the version of the Polars Cloud client.
 ```
-### Authentication
-You can authenticate with Polars Cloud from the CLI using
-```bash
-pc login
-```
-This refreshes your access token and saves it to disk.
-### Workspaces
-Create and setup a new workspace
-```bash
-pc workspace setup
-```
-List all workspaces
-```bash
-pc workspace list
-```
-```
-NAME ID STATUS
-test-workspace 0194ac0e-5122-7a90-af5e-b1f60b1989f4 Active
-polars-ci-2025â€¦ 0194287a-e0a5-7642-8058-0f79a39f5b98 Uninitialized
-```
-### Compute
+If you're just starting out with Polars Cloud then `pc setup` will guide you through setting up your
+environment to be able to quickly run queries.
 ---
 polars/docs/source/polars-cloud/connect-cloud.md
 ---
@@ -218,6 +200,35 @@ Currently, Polars Cloud is available on AWS. Other cloud providers and on-premis
 the roadmap and will become available in the upcoming months.
 ![AWS logo](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-logo.svg)
 ---
+polars/docs/source/polars-cloud/organizations.md
+---
+# Organizations
+Organizations in Polars Cloud are the top-level entity and typically represent a company. They can
+have members, contain multiple workspaces and are what you couple your billing to after the current
+free testing phase ends.
+To set up an organization you can either use [the dashboard](https://cloud.pola.rs/portal/) or the
+following CLI commands:
+- If you're just starting with Polars Cloud then you need to set up both an organization and
+workspace:
+```bash
+pc setup
+```
+- Or if you only want to set up an organization:
+```bash
+pc organization setup
+```
+For other subcommands you can execute the help command:
+```bash
+pc organization --help
+usage: pc organization [-h] [-v] [-t TOKEN] [-p TOKEN_PATH] {list,setup,delete,details} ...
+positional arguments:
+{list,setup,delete,details}
+list List all active organizations
+setup Set up a workspace in AWS
+delete Delete an organization
+details Print the details of an organization
+```
+---
 polars/docs/source/polars-cloud/quickstart.md
 ---
 # Getting started
@@ -231,44 +242,21 @@ $ pip install polars polars-cloud
 ```
 Create an account and login by running the command below.
 ```bash
-$ pc login
+$ pc authenticate
 ```
 ## Connect your cloud
 Polars Cloud currently exclusively supports AWS as a cloud provider.
 Polars Cloud needs permission to manage hardware in your environment. This is done by deploying our
 cloudformation template. See our [infrastructure](providers/aws/infra.md) section for more details.
-To connect your cloud run:
-```bash
-$ pc setup workspace -n 
-```
-This redirects you to the browser where you can connect Polars Cloud to your AWS environment.
-Alternatively, you can follow the steps in the browser and create the workspace there.
+To set up your Polars Cloud environment and connect your cloud run you can either
+- Run `pc setup` to guide you through creation and connecting via CLI.
+- Or create an organization and workspace
+[via the browser](https://cloud.pola.rs/portal/5f9c09/dbe6d9/dashboard).
 ## Run your queries
-Now that we are done with the setup, we can start running queries. The general principle here is
-writing Polars like you're always used to and calling `.remote()` on your `LazyFrame`. The following
-example shows how to create a compute cluster and run a simple Polars query.
+Now that we are done with the setup, we can start running queries. You can write Polars like you're
+used and to only need to call `.remote()` on your `LazyFrame`. In the following example we create a
+compute cluster and run a simple Polars query.
 {{code_block('polars-cloud/quickstart','general',['ComputeContext','LazyFrameExt'])}}
-Let us go through the code line by line. First we need to define the hardware the cluster will run
-on. This can be provided in terms of cpu & memory or by specifying the the exact instance type in
-AWS.
-```python
-ctx = pc.ComputeContext(memory=8, cpus=2 , cluster_size=1)
-```
-Then we write a regular lazy Polars query. In this simple example we compute the maximum of column
-`a` over column `b`.
-```python
-df = pl.LazyFrame({
-"a": [1, 2, 3],
-"b": [4, 4, 5]
-})
-lf = df.with_columns(
-c = pl.col("a").max().over("b")
-)
-```
-Finally we are going to run our query on the compute cluster. We use `.remote()` to signify that we
-want to run the query remotely. This gives back a special version of the `LazyFrame` with extension
-methods. Up until this point nothing has executed yet, calling `.write_parquet()` sends the query to
-g
 ---
 polars/docs/source/polars-cloud/release-notes.md
 ---
@@ -367,7 +355,7 @@ pc.set_compute_context(ctx)
 query.remote().sink_parquet(...)
 ```
 3. When a default compute context is set via the Polars Cloud dashboard. It is no longer required to
-define a compoute context.
+define a compute context.
 ```python
 query.remote().sink_parquet(...)
 ```
@@ -499,44 +487,9 @@ shape: (2, 3)
 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 ---
-polars/docs/source/polars-cloud/run/service-accounts.md
----
-# Using service accounts
-Service accounts function as programmatic identities that enable secure machine-to-machine
-communication for remote data processing workflows. These accounts facilitate automated processes
-(typically in production environments) without requiring interactive login sessions.
-## Create a service account
-In the workspace settings page, navigate to the Service Accounts section. Here, you can create and
-manage service accounts associated with your workspace.
-To create a new Service Account:
-1. Click the Create New Service Account button
-2. Provide a name and description for the account
-3. Copy and securely store the Client ID and Client Secret
-!!! info "Client ID and Secret visible once"
-If you lose the Client ID or Client Secret, you will need to generate a new service account.
-## Set up your environment to use a Service Account
-To authenticate using a Service Account, you must set environment variables. The following variables
-should be defined using the credentials provided when the service account was created:
-```bash
-export POLARS_CLOUD_CLIENT_ID="CLIENT_ID_HERE"
-export POLARS_CLOUD_CLIENT_SECRET="CLIENT_SECRET_HERE"
-```
-## Execute query with Service Account
-Once the environment variables are set, you do not need to log in to Polars Cloud manually. Your
-process will automatically connect to the workspace.
-## Revoking access or deleting a Service Account
-When a service account is no longer needed, it is recommended to revoke its access. Keep in mind
-that deleting a service account is irreversible, and any processes or applications relying on this
-account will lose access immediately.
-1. Navigate to the Workspace Settings page.
-2. Go to the Service Accounts section.
-3. Locate the service account to delete.
-4. Click the three-dot menu next to the service account and select Delete.
-5. Confirm the deletion of the Service Account.
----
 polars/docs/source/polars-cloud/run/workflow.md
 ---
-# From local to cloud query execution
+# Workflow tips
 Data processing and analytics often begins small but can quickly grow beyond the capabilities of
 your local machine. A typical workflow starts with exploring a sample dataset locally, developing
 the analytical approach, and then scaling up to process the full dataset in the cloud.
@@ -809,30 +762,74 @@ polars/docs/source/polars-cloud/integrations/airflow.md
 polars/docs/source/polars-cloud/explain/authentication.md
 ---
 # Logging in
-Polars cloud allows authentication through short-lived authentication tokens. There are two ways you
-can obtain an access token:
-- command line interface
-- python client
-After a successful `login` Polars Cloud stores the token in `{$HOME}/.polars`. You can alter this
-path by setting the environment variable `POLARS_CLOUD_ACCESS_TOKEN_PATH`.
-### Command Line Interface (CLI)
-Authenticate with CLI using the following command
+Polars cloud allows authentication through short-lived authentication tokens. There are two main
+ways to authenticate:
+1. `authenticate` Loads cached tokens, otherwise opens the browser to log in and caches them
+2. `login` Opens the browser to log in, caches tokens but does not reuse them
+Generally you would use `authenticate` unless you want to switch between accounts.
+Both methods will attempt to authenticate with the following priority:
+1. `POLARS_CLOUD_ACCESS_TOKEN` environment variable
+2. `POLARS_CLOUD_CLIENT_ID` / `POLARS_CLOUD_CLIENT_SECRET` service account environment variables
+3. Any cached access or refresh tokens
+If all methods fail, the user will be redirected to the browser to log in and get a new access
+token. If you are in a non-interactive workflow and want to fail if there is no valid token you can
+run `pc.authenticate(interactive=False)` instead.
+After successful authentication, Polars Cloud stores the token in your OS config directory:
+| OS | Value | Example |
+| ------- | -------------------------------------- | ---------------------------------------- |
+| Linux | `$XDG_CONFIG_HOME` or `$HOME/.config/` | home/alice/.config |
+| macOS | `$HOME/Library/Application Support` | /Users/Alice/Library/Application Support |
+| Windows | `{FOLDERID_RoamingAppData}` | C:\Users\Alice\AppData\Roaming |
+You can override this path by setting the environment variable `POLARS_CLOUD_ACCESS_TOKEN_PATH`.
+### Commands
+You can authenticate from the terminal:
 ```bash
+pc authenticate
 pc login
 ```
-### Python client
-Authenticate with the Polars Cloud using
+Or in Python:
 {{code_block('polars-cloud/authentication','login',['login'])}}
-Both methods redirect you to the browser where you can provide your login credentials and continue
-the sign in process.
 ## Service accounts
 Both flows described above are for interactive logins where a person is present in the process. For
 non-interactive workflows such as orchestration tools there are service accounts. These allow you to
-login programmatically.
-To create a service account go to the Polars Cloud dashboard under Settings and service accounts.
-Here you can create a new service account for your workspace. To authenticate set the
-`POLARS_CLOUD_CLIENT_ID` and `POLARS_CLOUD_CLIENT_SECRET` environment variables. Polars Cloud will
-automatically pick these up if there are no access tokens present in the path.
+login programmatically. See the
+[Using service accounts](https://docs.pola.rs/polars-cloud/explain/authentication/) page for more
+information.
+---
+polars/docs/source/polars-cloud/explain/service-accounts.md
+---
+# Using service accounts
+Service accounts function as programmatic identities that enable secure machine-to-machine
+communication for remote data processing workflows. These accounts facilitate automated processes
+(typically in production environments) without requiring interactive login sessions.
+## Create a service account
+In the workspace settings page, navigate to the Service Accounts section. Here, you can create and
+manage service accounts associated with your workspace.
+To create a new Service Account:
+1. Click the Create New Service Account button
+2. Provide a name and description for the account
+3. Copy and securely store the Client ID and Client Secret
+!!! info "Client ID and Secret visible once"
+If you lose the Client ID or Client Secret, you will need to generate a new service account.
+## Set up your environment to use a Service Account
+To authenticate using a Service Account, you must set environment variables. The following variables
+should be defined using the credentials provided when the service account was created:
+```bash
+export POLARS_CLOUD_CLIENT_ID="CLIENT_ID_HERE"
+export POLARS_CLOUD_CLIENT_SECRET="CLIENT_SECRET_HERE"
+```
+## Execute query with Service Account
+Once the environment variables are set, you do not need to log in to Polars Cloud manually. Your
+process will automatically connect to the workspace.
+## Revoking access or deleting a Service Account
+When a service account is no longer needed, it is recommended to revoke its access. Keep in mind
+that deleting a service account is irreversible, and any processes or applications relying on this
+account will lose access immediately.
+1. Navigate to the Workspace Settings page.
+2. Go to the Service Accounts section.
+3. Locate the service account to delete.
+4. Click the three-dot menu next to the service account and select Delete.
+5. Confirm the deletion of the Service Account.
 ---
 polars/docs/source/development/versioning.md
 ---
