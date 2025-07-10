@@ -8038,35 +8038,6 @@ Currently, Polars Cloud is available on AWS. Other cloud providers and on-premis
 the roadmap and will become available in the upcoming months.
 ![AWS logo](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-logo.svg)
 ---
-polars/docs/source/polars-cloud/organizations.md
----
-# Organizations
-Organizations in Polars Cloud are the top-level entity and typically represent a company. They can
-have members, contain multiple workspaces and are what you couple your billing to after the current
-free testing phase ends.
-To set up an organization you can either use [the dashboard](https://cloud.pola.rs/portal/) or the
-following CLI commands:
-- If you're just starting with Polars Cloud then you need to set up both an organization and
-workspace:
-```bash
-pc setup
-```
-- Or if you only want to set up an organization:
-```bash
-pc organization setup
-```
-For other subcommands you can execute the help command:
-```bash
-pc organization --help
-usage: pc organization [-h] [-v] [-t TOKEN] [-p TOKEN_PATH] {list,setup,delete,details} ...
-positional arguments:
-{list,setup,delete,details}
-list List all active organizations
-setup Set up a workspace in AWS
-delete Delete an organization
-details Print the details of an organization
-```
----
 polars/docs/source/polars-cloud/quickstart.md
 ---
 # Getting started
@@ -8154,6 +8125,35 @@ selected workspace.
 polars/docs/source/polars-cloud/integrations/airflow.md
 ---
 ---
+polars/docs/source/polars-cloud/organization/organizations.md
+---
+# Set up organization
+Organizations in Polars Cloud are the top-level entity and typically represent a company. They can
+have members, contain multiple workspaces and are what you couple your billing to after the current
+free testing phase ends.
+To set up an organization you can either use [the dashboard](https://cloud.pola.rs/portal/) or the
+following CLI commands:
+- If you're just starting with Polars Cloud then you need to set up both an organization and
+workspace:
+```bash
+pc setup
+```
+- Or if you only want to set up an organization:
+```bash
+pc organization setup
+```
+For other subcommands you can execute the help command:
+```bash
+pc organization --help
+usage: pc organization [-h] [-v] [-t TOKEN] [-p TOKEN_PATH] {list,setup,delete,details} ...
+positional arguments:
+{list,setup,delete,details}
+list List all active organizations
+setup Set up a workspace in AWS
+delete Delete an organization
+details Print the details of an organization
+```
+---
 polars/docs/source/polars-cloud/explain/authentication.md
 ---
 # Logging in
@@ -8227,7 +8227,7 @@ account will lose access immediately.
 ---
 polars/docs/source/polars-cloud/run/compute-context.md
 ---
-# Defining a compute context
+# Define compute context
 The compute context defines the hardware configuration used to execute your queries. This can be
 either a single node or, for distributed execution, multiple nodes. This section explains how to set
 up and manage your compute context.
@@ -8274,7 +8274,7 @@ query.remote().sink_parquet(...)
 ---
 polars/docs/source/polars-cloud/run/distributed-engine.md
 ---
-# Distributed query execution
+# Execute distributed query
 With the introduction of Polars Cloud, we also introduced the distributed engine. This engine
 enables users to horizontally scale workloads across multiple machines.
 Polars has always been optimized for fast and efficient performance on a single machine. However,
@@ -8320,88 +8320,9 @@ The distributed engine can only read sources partitioned with direct scan_ metho
 `scan_parquet` and `scan_csv`. Open table formats like `scan_iceberg` are not yet supported in a
 distributed fashion and will run on a single node when utilized.
 ---
-polars/docs/source/polars-cloud/run/interactive-batch.md
+polars/docs/source/polars-cloud/run/example-workflow.md
 ---
-# Interactive or batch mode
-In Polars Cloud, a user can define two types of compute modes: batch & interactive. Batch mode is
-designed for batch job style queries. These kinds of queries are typically scheduled and run once in
-a certain period. Interactive mode allows for exploratory workflows where a user interacts with the
-dataset and requires more compute resources than are locally available.
-The rest of this page will give examples on how to set up one or the other. More information on the
-architectural differences and implications can be found on
-[the infrastructure page](../providers/aws/infra.md).
-Below we create a simple dataframe to use as an example to demonstrate the difference between both
-modes.
-{{code_block('polars-cloud/interactive-batch','example',[])}}
-## Batch
-Batch workflows are systematic data processing pipelines, written for scheduled execution. They
-typically process large volumes of data in scheduled intervals (e.g. hourly, daily, etc.). A key
-characteristic is that the executed job has a defined lifetime. A predefined compute instance should
-spin up at a certain time and shut down when the job is executed.
-Polars Cloud makes it easy to run your query at scale whenever your use case requires it. You can
-develop your query on your local machine and define a compute context and destination to execute it
-in your cloud environment.
-{{code_block('polars-cloud/interactive-batch','batch',['ComputeContext'])}}
-The query you execute in batch mode runs in your cloud environment. The data and results of the
-query are not sent to Polars Cloud, ensuring that your data and output remain secure.
-```python
-lf.remote(context=ctx).sink_parquet("s3://bucket/output.parquet")
-```
-## Interactive
-Polars Cloud also supports interactive workflows. Different from batch mode, results are being
-interactively updated. Polars Cloud will not automatically close the cluster when a result has been
-produced, but the cluster stays active and intermediate state can still be accessed. In interactive
-mode you directly communicate with the compute nodes.
-Because this mode is used for exploratory use cases and short feedback cycles, the queries are not
-logged to Polars Cloud and will not be available for later inspection.
-{{code_block('polars-cloud/interactive-batch','interactive',['ComputeContext'])}}
-The initial query remains the same. In the compute context the parameter `interactive` should be set
-to `True`.
-When calling `.collect()` on your remote query execution, the output is written to a temporary
-location. These intermediate result files are automatically deleted after several hours. The output
-of the remote query is a LazyFrame.
-```python
-print(type(res1))
-```
-```
-```
-If you want to inspect the results you can call collect again.
-```python
-print(res1.collect())
-```
-```text
-shape: (4, 3)
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ name â”† birth_year â”† bmi â”‚
-â”‚ --- â”† --- â”† --- â”‚
-â”‚ str â”† i32 â”† f64 â”‚
-â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
-â”‚ Chloe Cooper â”† 1983 â”† 19.687787 â”‚
-â”‚ Ben Brown â”† 1985 â”† 23.141498 â”‚
-â”‚ Alice Archer â”† 1997 â”† 23.791913 â”‚
-â”‚ Daniel Donovan â”† 1981 â”† 27.134694 â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
-To continue your exploration you can use the returned LazyFrame to build another query.
-{{code_block('polars-cloud/interactive-batch','interactive-next',[])}}
-```python
-print(res2.collect())
-```
-```text
-shape: (2, 3)
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ name â”† birth_year â”† bmi â”‚
-â”‚ --- â”† --- â”† --- â”‚
-â”‚ str â”† i32 â”† f64 â”‚
-â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
-â”‚ Chloe Cooper â”† 1983 â”† 19.687787 â”‚
-â”‚ Ben Brown â”† 1985 â”† 23.141498 â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
----
-polars/docs/source/polars-cloud/run/workflow.md
----
-# Workflow tips
+# Example workflow
 Data processing and analytics often begins small but can quickly grow beyond the capabilities of
 your local machine. A typical workflow starts with exploring a sample dataset locally, developing
 the analytical approach, and then scaling up to process the full dataset in the cloud.
@@ -8530,6 +8451,85 @@ result
 ```
 The result of your interactive workflow can be written to S3.
 ---
+polars/docs/source/polars-cloud/run/interactive-batch.md
+---
+# Interactive or batch mode
+In Polars Cloud, a user can define two types of compute modes: batch & interactive. Batch mode is
+designed for batch job style queries. These kinds of queries are typically scheduled and run once in
+a certain period. Interactive mode allows for exploratory workflows where a user interacts with the
+dataset and requires more compute resources than are locally available.
+The rest of this page will give examples on how to set up one or the other. More information on the
+architectural differences and implications can be found on
+[the infrastructure page](../providers/aws/infra.md).
+Below we create a simple dataframe to use as an example to demonstrate the difference between both
+modes.
+{{code_block('polars-cloud/interactive-batch','example',[])}}
+## Batch
+Batch workflows are systematic data processing pipelines, written for scheduled execution. They
+typically process large volumes of data in scheduled intervals (e.g. hourly, daily, etc.). A key
+characteristic is that the executed job has a defined lifetime. A predefined compute instance should
+spin up at a certain time and shut down when the job is executed.
+Polars Cloud makes it easy to run your query at scale whenever your use case requires it. You can
+develop your query on your local machine and define a compute context and destination to execute it
+in your cloud environment.
+{{code_block('polars-cloud/interactive-batch','batch',['ComputeContext'])}}
+The query you execute in batch mode runs in your cloud environment. The data and results of the
+query are not sent to Polars Cloud, ensuring that your data and output remain secure.
+```python
+lf.remote(context=ctx).sink_parquet("s3://bucket/output.parquet")
+```
+## Interactive
+Polars Cloud also supports interactive workflows. Different from batch mode, results are being
+interactively updated. Polars Cloud will not automatically close the cluster when a result has been
+produced, but the cluster stays active and intermediate state can still be accessed. In interactive
+mode you directly communicate with the compute nodes.
+Because this mode is used for exploratory use cases and short feedback cycles, the queries are not
+logged to Polars Cloud and will not be available for later inspection.
+{{code_block('polars-cloud/interactive-batch','interactive',['ComputeContext'])}}
+The initial query remains the same. In the compute context the parameter `interactive` should be set
+to `True`.
+When calling `.collect()` on your remote query execution, the output is written to a temporary
+location. These intermediate result files are automatically deleted after several hours. The output
+of the remote query is a LazyFrame.
+```python
+print(type(res1))
+```
+```
+```
+If you want to inspect the results you can call collect again.
+```python
+print(res1.collect())
+```
+```text
+shape: (4, 3)
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ name â”† birth_year â”† bmi â”‚
+â”‚ --- â”† --- â”† --- â”‚
+â”‚ str â”† i32 â”† f64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ Chloe Cooper â”† 1983 â”† 19.687787 â”‚
+â”‚ Ben Brown â”† 1985 â”† 23.141498 â”‚
+â”‚ Alice Archer â”† 1997 â”† 23.791913 â”‚
+â”‚ Daniel Donovan â”† 1981 â”† 27.134694 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+To continue your exploration you can use the returned LazyFrame to build another query.
+{{code_block('polars-cloud/interactive-batch','interactive-next',[])}}
+```python
+print(res2.collect())
+```
+```text
+shape: (2, 3)
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ name â”† birth_year â”† bmi â”‚
+â”‚ --- â”† --- â”† --- â”‚
+â”‚ str â”† i32 â”† f64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ Chloe Cooper â”† 1983 â”† 19.687787 â”‚
+â”‚ Ben Brown â”† 1985 â”† 23.141498 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+---
 polars/docs/source/polars-cloud/providers/aws/infra.md
 ---
 # Infrastructure
@@ -8604,7 +8604,7 @@ Here you can adjust the permissions of the workspace for instance:
 ---
 polars/docs/source/polars-cloud/workspace/settings.md
 ---
-# Configuring workspace settings
+# Configure settings
 The Workspace Settings page provides a centralized interface for managing your workspace
 configuration.
 ## General
@@ -8650,7 +8650,7 @@ the workspace.
 ---
 polars/docs/source/polars-cloud/workspace/team.md
 ---
-# Manage workspace members
+# Manage members
 The Team page serves as a central hub for managing who has access to the workspace. Administrators
 are able to invite collaborators, monitor membership status, and manage user permissions.
 ## Adding your team to the workspace
