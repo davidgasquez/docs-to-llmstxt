@@ -5957,6 +5957,48 @@ The invitee can use this link to join the workspace without requiring an email i
 !!! info "Inviting existing users"
 Users that are already part of another workspace will get a prompt to join the workspace they are invited for.
 ---
+polars/docs/source/polars-cloud/organization/billing.md
+---
+# Payment and billing via AWS Marketplace
+All payments and billing for Polars Cloud are handled via the AWS Marketplace. This integration
+provides a secure, streamlined way to manage your subscription, payments, and billing using AWS's
+trusted marketplace infrastructure.
+## Subscribe to Polars Cloud
+### Prerequisites
+Before subscribing to Polars Cloud through AWS Marketplace, ensure you have:
+- An active AWS account with billing permissions
+### Steps to Sign Up
+1. Access the Marketplace: If you already have a Polars Cloud account, select the link to AWS
+Marketplace on the `Billing` page of your organization. Alternatively, go directly to AWS
+Marketplace and search for `Polars Cloud`.
+2. Review the Listing: Select the Polars Cloud listing and then select `View purchase options`.
+3. Review Terms: Carefully review the pricing, offer details, and terms and conditions.
+4. Subscribe: Select `Subscribe` at the end of the page to complete your subscription.
+5. Connect Your Account: Finalize the connection by selecting `Set up your account` in the
+Marketplace portal.
+### Verify Your Organization Connection
+After subscribing via Marketplace, you'll be redirected to the Polars Cloud organization dashboard.
+Under `Billing`, the status will update to show your organization is connected to AWS Marketplace.
+If the status doesn't update within one hour, contact our support team at support@polars.tech.
+### Request and Accept Private Offers
+Customers with large analytics workloads or enterprise customers requiring custom pricing, annual
+commitments, or specific terms can contact our team for a private offer. Reach out to the team at
+support@polars.tech.
+### Cost and Usage Monitoring
+All up to date data about Polars Cloud usage and costs can be found in the
+[AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/). You can find
+more information about usage per workspace in the Polars Cloud dashboard.
+## Manage your subscription
+### Cancelling your subscription
+You can unsubscribe via the AWS Marketplace at any time. You can find the option in your Marketplace
+account under `Manage subscriptions`.
+**Important**: Unsubscribing will instantly stop all running queries in your organization. Ensure no
+critical workflows are running before cancelling.
+### Reactivate subscription
+After cancelling your subscription, you can still access Polars Cloud but no workflows can be
+started. You can easily reactivate the subscription following the steps on the `Billing` page in
+Polars Cloud or via the AWS Marketplace.
+---
 polars/docs/source/polars-cloud/organization/organizations.md
 ---
 # Set up organization
@@ -5992,11 +6034,11 @@ polars/docs/source/polars-cloud/providers/aws/infra.md
 Polars Cloud manages the hardware for you by spinning up and down raw EC2 instances. In order to do
 this it needs permissions in your own cloud environment. None of the resources below have costs
 associated with them. While no compute clusters are running Polars Cloud will not create any AWS
-costs. The recommended way of doing this is running `pc workspace setup`.
+costs. The recommended way of doing this is running `pc setup`.
 ## Recommended setup
 When you deploy Polars Cloud the following infrastructure is setup.
-![AWS infrastructure](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-infra.png)
-1. A `VPC` and `subnet` in which Polars EC2 workers can run.
+![AWS infrastructure](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-architecture.png)
+1. A `VPC` and two `subnets` in which Polars EC2 workers can run.
 1. Two `security groups`. One for batch mode, which does not have any public ports, and one for
 interactive mode, which allows direct communication between your local environment and the
 cluster.
@@ -6029,15 +6071,22 @@ The list below show an overview of the required permissions for each of the role
 - ec2:DeleteFleets
 - sts:GetCallerIdentity
 - sts:TagSession
-- cloudwatch:GetMetricData
-- logs:GetLogEvents
-- logs:FilterLogEvents
-- logs:DescribeLogStreams
 ??? Worker
-- logs:CreateLogGroup
-- logs:PutRetentionPolicy
-- cloudwatch:PutMetricData
-## Custom setup
+- s3:PutObject
+- s3:GetObject
+- s3:ListBucket
+The permissions of the worker role and S3 access can be scoped to certain buckets, by adjusting the
+role within AWS.
+## Bring your own network
+![AWS Bring your own Network](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/connect-cloud/workspace-bring-your-own-network.png)
+By default, Polars Cloud is deployed within its own dedicated network (including VPC, subnets, and
+related resources). However, you can choose to use your own network configuration by selecting the
+"Deploy with custom template" option. This allows you to deploy into an existing VPC and subnets of
+your choice.
+You can configure these subnets to align with your business requirements. For batch mode, outbound
+traffic must be allowed. For interactive mode, the Python client accessing Polars Cloud must have
+access, so the subnet must be public, but allows for access controls such as IP-whitelisting.
+## Custom requirements
 Depending on your enterprise needs or existing infrastructure, you may not require certain
 components (e.g. VPC, subnet) of the default setup of Polars Cloud. Or you have additional security
 requirements in place. Together with our team of engineers we can integrate Polars Cloud with your
@@ -6287,10 +6336,10 @@ The result of your interactive workflow can be written to S3.
 polars/docs/source/polars-cloud/run/interactive-batch.md
 ---
 # Interactive or batch mode
-In Polars Cloud, a user can define two types of compute modes: batch & interactive. Batch mode is
-designed for batch job style queries. These kinds of queries are typically scheduled and run once in
-a certain period. Interactive mode allows for exploratory workflows where a user interacts with the
-dataset and requires more compute resources than are locally available.
+In Polars Cloud, a user can define two types of compute modes: **batch** or **interactive**. Batch
+mode is designed for batch job style queries. These kinds of queries are typically scheduled and run
+once in a certain period. Interactive mode allows for exploratory workflows where a user interacts
+with the dataset and requires more compute resources than are locally available.
 The rest of this page will give examples on how to set up one or the other. More information on the
 architectural differences and implications can be found on
 [the infrastructure page](../providers/aws/infra.md).
@@ -6346,7 +6395,7 @@ shape: (4, 3)
 â”‚ Daniel Donovan â”† 1981 â”† 27.134694 â”‚
 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
-To continue your exploration you can use the returned LazyFrame to build another query.
+To continue your exploration you can use the returned `LazyFrame` to build another query.
 {{code_block('polars-cloud/interactive-batch','interactive-next',[])}}
 ```python
 print(res2.collect())
