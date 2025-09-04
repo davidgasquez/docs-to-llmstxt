@@ -8046,11 +8046,14 @@ system interruptions
 - Comprehensive monitoring and analytics tools providing detailed insights into query performance
 and resource utilization.
 ## What are the main use cases for Polars Cloud?
-Polars Cloud offers a way to run Polars queries at scale without infrastructure management. By
-default, Polars Cloud connects directly to a cluster allowing any user to run data processing
-workloads that require more compute than their local environment can offer. Job mode can be used for
-ETL workloads, analytics jobs or workloads that execute in cloud environments that requirement an
-additional security layer.
+Polars Cloud enables data teams to scale their existing Polars queries beyond local machine
+limitations. Teams should use it when datasets exceed local memory, when computationally intensive
+operations require more processing power, or when data resides in cloud storage and shouldn't or
+can't be downloaded locally.
+The platform allows the same query to run on appropriately sized compute instances while being
+executable from any environment (e.g. notebooks, serverless functions, or orchestration platforms).
+This eliminates the need for teams to refactor their code into different tools or coordinate
+handovers between analytics and infrastructure teams when moving from development to production.
 ## How can Polars Cloud integrate with my workflow?
 One of our key priorities is ensuring that running remote queries feels as native and seamless as
 running them locally. Every user should be able to scale their queries effortlessly.
@@ -8485,6 +8488,62 @@ shape: (4, 1)
 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 ---
+polars/docs/source/polars-cloud/context/proxy-mode.md
+---
+# Proxy mode
+Proxy mode routes queries through the Polars Cloud control plane rather than direct cluster
+connections. This approach provides enhanced security by eliminating the need to expose network
+ports on your compute cluster.
+![Architectural overview of proxy mode](https://github.com/pola-rs/polars-static/blob/master/polars_cloud/proxy-mode.png?raw=true)
+In proxy mode the control plane polls the compute plane to retrieve the latest information about
+running compute and queries.
+## Reconnect to active clusters
+Clusters that are started in `proxy` mode allow you and your team to reconnect to the instance while
+it is active. There is more information available on the page about
+[reconnecting to clusters](../context/reconnect.md).
+---
+polars/docs/source/polars-cloud/context/reconnect.md
+---
+# Reconnect to compute cluster
+Polars Cloud allows you to reconnect to active compute clusters. This lets you reconnect to run
+multiple queries in a short time span, without having to wait for machines to spin up. You can also
+connect to clusters of team members, if these were started in `proxy` mode.
+## Set up a cluster
+We will start a simple cluster to show how you can reconnect. We will save the cluster ID so we can
+connect directly to the cluster in the following examples:
+{{code_block('polars-cloud/reconnect','setup',['ComputeContext'])}}
+You can easily find the ID of your cluster by printing the ComputeContext to your console:
+{{code_block('polars-cloud/reconnect','print',[])}}
+```text
+ComputeContext(id=0198e107-xxxx-xxxx-xxxx-xxxxxxxxxxxx, cpus=4, memory=16, instance_type=None, storage=16, ...)
+```
+## Reconnect to an existing cluster
+If you lose connection or want to connect to a running cluster in your workspace, use `.connect` on
+`pc.ComputeContext`. This connects directly using the `compute_id` of the running cluster:
+!!! note "Connection permissions and proxy mode requirement"
+You can only reconnect to clusters that you started yourself or clusters that were started in `proxy` mode. You cannot reconnect to a cluster in `direct` mode that was started by another user in your workspace.
+{{code_block('polars-cloud/reconnect','connect_id',[])}}
+If you don't know your `compute_id`, use `.select()` to access an interactive interface where you
+can browse available clusters:
+{{code_block('polars-cloud/reconnect','select',[])}}
+```text
+Found 1 available clusters:
+-----------------------------------------------------------------------------------------------------------------------------
+# Workspace Type vCPUs Memory Storage Size Runtime ID
+-----------------------------------------------------------------------------------------------------------------------------
+1 your-workspace Unknown 4 16 GiB 16 GiB 1 14m 0198e107-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+## Find clusters by workspace
+You can find your `compute_id` by listing workspaces and then finding your cluster within a specific
+workspace. First, get your workspace ID using `pc.Workspace.list()`, then list all ComputeContexts
+for that workspace:
+{{code_block('polars-cloud/reconnect','via_workspace',[])}}
+```text
+[(ComputeContext(id=0198e107-xxxx-xxxx-xxxx-xxxxxxxxxxxx, cpus=4, memory=16, instance_type=None, storage=16, ...),]
+```
+With the cluster `id` from the output above, you can then establish a connection using the same
+`.connect()` method shown in the previous section.
+---
 polars/docs/source/polars-cloud/workspace/settings.md
 ---
 # Workspace configuration
@@ -8512,7 +8571,7 @@ Labels help organize and categorize queries and compute within your workspace. L
 managed through the dashboard interface.
 ```python
 ctx= plc.ComputeContext(
-workspace="PolarsUserGuide",
+workspace="your-workspace",
 labels=["docs", "user-guide"],
 )
 ```
@@ -8532,7 +8591,7 @@ polars/docs/source/polars-cloud/workspace/team.md
 ---
 # Manage team
 The Team page allows you to manage who has access to the workspace. You can invite already existing
-organization members to join your workspace or invite by email/url where they will both join the
+organization members to join your workspace or invite by email address where they will both join the
 organization and workspace once they've accepted.
 ## Roles
 There are two types of roles:
@@ -8560,7 +8619,7 @@ When you deploy Polars Cloud the following infrastructure is setup.
 ![AWS infrastructure](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-architecture.png)
 1. A `VPC` and two `subnets` in which Polars EC2 workers can run.
 2. Two `security groups`. One for the default mode that allows direct communication between your
-local environment and the cluster, and one for job mode, which does not have any public ports.
+local environment and the cluster, and one for proxy mode, which does not have any public ports.
 3. `PolarsWorker` IAM role. Polars EC2 workers run under this IAM role.
 4. `UserInitiated` & `Unattended` IAM role. The `UserInitiated` role has the permissions to start
 Polars EC2 workers in your environment. The `Unattended` role can terminate unused compute
@@ -8604,7 +8663,7 @@ related resources). However, you can choose to use your own network configuratio
 your choice.
 You can configure these subnets to align with your business requirements. By default, the Python
 client accessing Polars Cloud must have access, so the subnet must be public, but allows for access
-controls such as IP-whitelisting. For job mode, outbound traffic must be allowed.
+controls such as IP-whitelisting. For proxy mode, outbound traffic must be allowed.
 ## Custom requirements
 Depending on your enterprise needs or existing infrastructure, you may not require certain
 components (e.g. VPC, subnet) of the default setup of Polars Cloud. Or you have additional security
@@ -8635,6 +8694,8 @@ Polars has always been optimized for fast and efficient performance on a single 
 when querying large datasets from cloud storage, performance is often constrained by the I/O
 limitations of a single node. By scaling horizontally, these download limitations can be
 significantly reduced, allowing users to process data at scale.
+!!! info "Distributed engine is in open beta"
+The distributed engine currently supports most of Polars API and datatypes. Follow [the tracking issue](https://github.com/pola-rs/polars/issues/21487) to stay up to date.
 ## Using distributed engine
 To execute queries using the distributed engine, you can call the `distributed()` method.
 ```python
@@ -8648,128 +8709,88 @@ lf.remote()
 ### Example
 {{code_block('polars-cloud/distributed','example',[])}}
 ---
-polars/docs/source/polars-cloud/run/example-workflow.md
+polars/docs/source/polars-cloud/run/remote-query.md
 ---
-# Remote execution of query
-Data processing and analytics often begins small but can quickly grow beyond the capabilities of
-your local machine. A typical workflow starts with exploring a sample dataset locally, developing
-the analytical approach, and then scaling up to process the full dataset in the cloud.
-For this workflow, we define the following simple mocked dataset that will act as a sample to
-demonstrate the workflow. Here we will create the LazyFrame ourselves, but it could also be read as
-(remote) file.
-{{code_block('polars-cloud/workflow','lazyframe',[])}}
-We can use the Polars API to do a simple transformation and create a fire risk column:
-{{code_block('polars-cloud/workflow','transformation',[])}}
-```text
-shape: (2, 6)
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ region â”† temperature â”† humidity â”† burn_area â”† vegetation_density â”† fire_risk â”‚
-â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
-â”‚ str â”† f64 â”† i64 â”† i64 â”† f64 â”† f64 â”‚
-â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
-â”‚ California â”† 28.5 â”† 35 â”† 85 â”† 0.7 â”† 1.29675 â”‚
-â”‚ Australia â”† 32.1 â”† 40 â”† 120 â”† 0.6 â”† 1.1556 â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
-### Run at scale in the cloud
-Once we've verified our analytical approach locally, we can scale it up to handle much larger
-datasets using Polars Cloud. Imagine we have a massive dataset stored in cloud storage that doesn't
-fit on our local machine.
-First, we modify our query to point to our fictive dataset in our S3 bucket:
-{{code_block('polars-cloud/workflow','remote-query',[])}}
-Next, we set our compute context and call `.remote(context=ctx)` on our query.
-{{code_block('polars-cloud/workflow','set-compute',[])}}
-For more details on configuring ComputeContext parameters, see the
-[compute context documentation](../context/compute-context.md).
-### Explore query results
-Calling `.collect()` on your remote query stores results in a temporary location and returns a
-LazyFrame that you can continue working with:
-{{code_block('polars-cloud/workflow','remote-collect',[])}}
-```text
-shape: (2, 6)
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ region â”† temperature â”† humidity â”† burn_area â”† vegetation_density â”† fire_risk â”‚
-â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
-â”‚ str â”† f64 â”† i64 â”† i64 â”† f64 â”† f64 â”‚
-â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
-â”‚ California â”† 28.5 â”† 35 â”† 85 â”† 0.7 â”† 1.29675 â”‚
-â”‚ Australia â”† 32.1 â”† 40 â”† 120 â”† 0.6 â”† 1.1556 â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
-{{code_block('polars-cloud/workflow','remote-filter',[])}}
-```text
-shape: (1, 6)
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ region â”† temperature â”† humidity â”† burn_area â”† vegetation_density â”† fire_risk â”‚
-â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
-â”‚ str â”† f64 â”† i64 â”† i64 â”† f64 â”† f64 â”‚
-â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
-â”‚ Australia â”† 32.1 â”† 40 â”† 120 â”† 0.6 â”† 1.1556 â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
-### Store intermediate and final results
-You can store intermediate or final results on S3 by using `sink_parquet`:
-```python
-result.remote(context=ctx).sink_parquet("s3://climate-data/results/")
-```
----
-polars/docs/source/polars-cloud/run/first-query.md
----
-# Run your first query
-Polars Cloud makes it simple to run your query at scale. You can take any existing Polars query and
-run it on powerful cloud infrastructure with just a few additional lines of code. This allows you to
-process datasets that are too large for your local machine or leverage more compute power when you
-need it.
+# Execute remote query
+Polars Cloud enables you to execute existing Polars queries on cloud infrastructure with minimal
+code changes. This approach allows you to process datasets that exceed local resources or use
+additional compute resources for faster execution.
 !!! note "Polars Cloud is set up and connected"
-This page assumes that you have created an organization and connected a workspace to your cloud environment. If you haven't yet, find more information on [Connect cloud environment](../connect-cloud.md) page.
+This page assumes that you have created an organization and connected a workspace to your cloud environment. If you haven't yet, follow the steps on the [Connect cloud environment](../connect-cloud.md) page.
 ## Define your query locally
-If you're already familiar with Polars, you will immediately be productive with Polars Cloud. The
-same lazy evaluation and API you know works exactly the same way, with the addition of defining a
-ComputeContext and calling `.remote(context=ctx)` to execute your query in your cloud environment,
-instead of locally.
-Below we define a query that you would typically write on your local machine.
-{{code_block('polars-cloud/first-query','local',[])}}
+The following example uses a query from the PDS-H benchmark suite, a derived version of the popular
+TPC-H benchmark. Data generation tools and additional queries are available in the
+[Polars benchmark repository](https://github.com/pola-rs/polars-benchmark).
+{{code_block('polars-cloud/remote-query','local',[])}}
 ## Scale to the cloud
-To execute your query in the cloud, we must define a compute context. The compute context defines
-the hardware to use when executing the query in the cloud. It allows to define the workspace to
-execute your query, set compute resources and define if you want to execute in job mode. More
-elaborate options can be found on the
-[Compute context introduction page](../context/compute-context.md)
-{{code_block('polars-cloud/first-query','context',[])}}
-### Job mode
-Job mode is used for systematic data processing pipelines, written for scheduled execution. They
-typically process large volumes of data in scheduled intervals (e.g. hourly, daily, etc.). A key
-characteristic the jobs typically runs without a human in the loop.
-Read more about the differences on the [compute context page](../context/compute-context.md)
-### Distributed execution
-To run your queries over multiple nodes, you must define your `cluster_size` in the `ComputeContext`
-and call the `.distributed()` method.
-{{code_block('polars-cloud/first-query','distributed',[])}}
-This distributes your query execution across 10 machines in this example, providing a total of 100
-cores and 100GB of RAM for processing. Find more information about executing your queries on
-multiple nodes on the [distributed queries](distributed-engine.md) page.
+To execute your query in the cloud, you need to define a compute context. The compute context
+specifies the hardware to use when executing the query in the cloud. It allows you to set the
+workspace to execute your query and set compute resources. More elaborate options can be found on
+the [Compute context introduction page](../context/compute-context.md).
+{{code_block('polars-cloud/remote-query','context',['ComputeContext'])}}
+!!! info "Run the examples yourself"
+All examples on this page can be executed using the sample datasets hosted on our S3 bucket. By including the `storage_option` parameter in your queries, you'll only incur S3 data transfer costs. No additional storage fees apply
+!!! note "S3 bucket region"
+The example datasets are hosted in the `US-East-2 S3 region`. Query performance may be affected if you're running operations from a distant geographic location due to network latency.
 ## Working with remote query results
 Once you've called `.remote(context=ctx)` on your query, you have several options for how to handle
 the results, each suited to different use cases and workflows.
-### Direct or intermediate storage of results
+### Write to storage
 The most straightforward approach for batch processing is to write results directly to cloud storage
 using `.sink_parquet()`. This method is ideal when you want to store processed data for later use or
 as part of a data pipeline:
-{{code_block('polars-cloud/first-query','distributed',[])}}
+{{code_block('polars-cloud/remote-query','sink_parquet',[])}}
 Running `.sink_parquet()` will write the results to the defined bucket on S3. The query you execute
-in job mode runs in your cloud environment, and the data and results remain secure in your own
+runs in your cloud environment, and both the data and results remain secure in your own
 infrastructure. This approach is perfect for ETL workflows, scheduled jobs, or any time you need to
 persist large datasets without transferring them to your local machine.
-### Inspect results in your local environment
-For exploratory analysis and interactive workflows, use `.collect()` or `.show()` to return query
-results:
-{{code_block('polars-cloud/first-query','interactive',[])}}
-The `.show()` method is perfect for data exploration where you want to understand the structure and
-content of your results without the overhead of transferring large datasets. It displays a sample of
-rows in your console or notebook.
-When calling `.collect()` on your remote query execution, the intermediate results are written to a
-temporary location on S3. These intermediate result files are automatically deleted after several
-hours. The output of the remote query is a LazyFrame, which means you can continue chaining
-operations on the returned results for further analysis. Find a more elaborate example on the
-[Example workflow page](example-workflow.md)
+### Inspect results
+Using `.show()` will display the first 10 rows of the result so you can inspect the structure
+without having to transfer the whole dataset. This method displays the first 10 rows in your console
+or notebook.
+{{code_block('polars-cloud/remote-query','show',[])}}
+```text
+shape: (10, 4)
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ l_orderkey â”† revenue â”† o_orderdate â”† o_shippriority â”‚
+â”‚ --- â”† --- â”† --- â”† --- â”‚
+â”‚ i64 â”† f64 â”† date â”† i64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ 4791171 â”† 440715.2185 â”† 1995-02-23 â”† 0 â”‚
+â”‚ 46678469 â”† 439855.325 â”† 1995-01-27 â”† 0 â”‚
+â”‚ 23906758 â”† 432728.5737 â”† 1995-03-14 â”† 0 â”‚
+â”‚ 23861382 â”† 428739.1368 â”† 1995-03-09 â”† 0 â”‚
+â”‚ 59393639 â”† 426036.0662 â”† 1995-02-12 â”† 0 â”‚
+â”‚ 3355202 â”† 425100.6657 â”† 1995-03-04 â”† 0 â”‚
+â”‚ 9806272 â”† 425088.0568 â”† 1995-03-13 â”† 0 â”‚
+â”‚ 22810436 â”† 423231.969 â”† 1995-01-02 â”† 0 â”‚
+â”‚ 16384100 â”† 421478.7294 â”† 1995-03-02 â”† 0 â”‚
+â”‚ 52974151 â”† 415367.1195 â”† 1995-02-05 â”† 0 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+The `.await_and_scan()` method returns a LazyFrame pointing to intermediate results stored
+temporarily in your S3 environment. These intermediate result files are automatically deleted after
+several hours. For persistent storage use `sink_parquet`. The output is a LazyFrame, allowing
+continued query chaining for further analysis.
+{{code_block('polars-cloud/remote-query','await_scan',[])}}
+```text
+shape: (114_003, 4)
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ l_orderkey â”† revenue â”† o_orderdate â”† o_shippriority â”‚
+â”‚ --- â”† --- â”† --- â”† --- â”‚
+â”‚ i64 â”† f64 â”† date â”† i64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ 4791171 â”† 440715.2185 â”† 1995-02-23 â”† 0 â”‚
+â”‚ 46678469 â”† 439855.325 â”† 1995-01-27 â”† 0 â”‚
+â”‚ 23906758 â”† 432728.5737 â”† 1995-03-14 â”† 0 â”‚
+â”‚ 23861382 â”† 428739.1368 â”† 1995-03-09 â”† 0 â”‚
+â”‚ 59393639 â”† 426036.0662 â”† 1995-02-12 â”† 0 â”‚
+â”‚ â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”‚
+â”‚ 44149381 â”† 904.3968 â”† 1995-01-16 â”† 0 â”‚
+â”‚ 34297697 â”† 897.8464 â”† 1995-03-06 â”† 0 â”‚
+â”‚ 25478115 â”† 887.2318 â”† 1994-11-28 â”† 0 â”‚
+â”‚ 52204674 â”† 860.25 â”† 1994-12-18 â”† 0 â”‚
+â”‚ 47255457 â”† 838.9381 â”† 1994-11-18 â”† 0 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
 ---
