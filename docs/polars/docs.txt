@@ -7972,7 +7972,7 @@ environment to be able to quickly run queries.
 ---
 polars/docs/source/polars-cloud/connect-cloud.md
 ---
-# Connect to your cloud environment
+# Connect to your cloud
 Polars Cloud requires connection to your AWS environment to execute queries. After account
 registration, you'll set up an [organization](organization/organizations.md) that manages connected
 workspaces and team access.
@@ -8111,6 +8111,80 @@ Polars Cloud is available to try with a 30 day free trial. You can sign up on
 ![AWS logo](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-logo.svg)
 Polars Cloud is available on AWS. Other cloud providers and on-premise solutions are on the roadmap
 and will become available in the upcoming months.
+---
+polars/docs/source/polars-cloud/public-datasets.md
+---
+# Public datasets
+# Public datasets
+Start experimenting with Polars Cloud immediately using our curated public datasets. These datasets
+span different scale factors, letting you test performance across various data sizesâ€”from small
+exploratory queries to large-scale processing workloads.
+## Available datasets
+**PDSH** - derived from TPC-H benchmark Standard analytical queries for testing joins, aggregations,
+and filtering operations. Queries available in the
+[Polars benchmark repository](https://github.com/pola-rs/polars-benchmark/tree/main/queries/polars).
+**PDSDS** - derived from TPC-DS benchmark Decision support dataset designed for complex analytical
+workloads.
+**NYC Taxi** - [source: NYC.gov](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
+Real-world transportation data with temporal patterns and geospatial dimensions.
+## Usage
+Access any dataset directly from your Polars code and execute in Polars Cloud:
+```python
+data = pl.scan_parquet(
+"s3://polars-cloud-samples-us-east-2-prd/{dataset}/{scale_factor/year}/",
+storage_options={"request_payer": "true"}
+)
+query = data.select().remote(ctx).execute()
+```
+**Note:** These buckets use
+[AWS Requester Pays](https://docs.aws.amazon.com/AmazonS3/latest/userguide/RequesterPaysBuckets.html),
+meaning you pay only for pays the cost of the request and the data download from the bucket. The
+storage costs are covered.
+## Dataset URLs
+All datasets are hosted in AWS region `us-east-2` and use Requester Pays buckets.
+### PDSH (TPC-H derived)
+| Scale Factor | Size | URL Pattern | Format |
+| ------------ | ------ | ----------------------------------------------------------------------- | ------------ |
+| SF10 | ~10GB | `s3://polars-cloud-samples-us-east-2-prd/pdsh/sf10/{filename}.parquet` | Single files |
+| SF100 | ~100GB | `s3://polars-cloud-samples-us-east-2-prd/pdsh/sf100/{table}/_.parquet` | Partitioned |
+| SF1000 | ~1TB | `s3://polars-cloud-samples-us-east-2-prd/pdsh/sf1000/{table}/_.parquet` | Partitioned |
+#### Example
+```python
+data = pl.scan_parquet(
+"s3://polars-cloud-samples-us-east-2-prd/pdsh/sf10/lineitem.parquet",
+storage_options={"request_payer": "true"}
+)
+partitioned_data = pl.scan_parquet(
+"s3://polars-cloud-samples-us-east-2-prd/pdsh/sf100/lineitem/*.parquet",
+storage_options={"request_payer": "true"}
+)
+```
+### PDSDS (TPC-DS derived)
+| Scale Factor | Size | URL Pattern |
+| ------------ | ------ | ------------------------------------------------------------------------ |
+| SF1 | ~1GB | `s3://polars-cloud-samples-us-east-2-prd/pdsds/sf1/{filename}.parquet` |
+| SF10 | ~10GB | `s3://polars-cloud-samples-us-east-2-prd/pdsds/sf10/{filename}.parquet` |
+| SF100 | ~100GB | `s3://polars-cloud-samples-us-east-2-prd/pdsds/sf100/{filename}.parquet` |
+| SF300 | ~300GB | `s3://polars-cloud-samples-us-east-2-prd/pdsds/sf300/{filename}.parquet` |
+#### Example
+```python
+data = pl.scan_parquet(
+"s3://polars-cloud-samples-us-east-2-prd/pdsh/sf10/store_sales.parquet",
+storage_options={"request_payer": "true"}
+)
+```
+### NYC Taxi
+| Year | URL Pattern |
+| ---- | ---------------------------------------------------------------------- |
+| 2023 | `s3://polars-cloud-samples-us-east-2-prd/taxi/2023/{filename}.parquet` |
+| 2024 | `s3://polars-cloud-samples-us-east-2-prd/taxi/2024/{filename}.parquet` |
+#### Example
+```python
+data = pl.scan_parquet(
+"s3://polars-cloud-samples-us-east-2-prd/taxi/2024/yellow_tripdata_2024-01.parquet",
+storage_options={"request_payer": "true"}
+)
+```
 ---
 polars/docs/source/polars-cloud/quickstart.md
 ---
@@ -8494,7 +8568,7 @@ polars/docs/source/polars-cloud/context/proxy-mode.md
 Proxy mode routes queries through the Polars Cloud control plane rather than direct cluster
 connections. This approach provides enhanced security by eliminating the need to expose network
 ports on your compute cluster.
-![Architectural overview of proxy mode](https://github.com/pola-rs/polars-static/blob/master/polars_cloud/proxy-mode.png?raw=true)
+![Architectural overview of proxy mode](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/proxy-mode.png)
 In proxy mode the control plane polls the compute plane to retrieve the latest information about
 running compute and queries.
 ## Reconnect to active clusters
@@ -8728,7 +8802,136 @@ lf.remote()
 )
 ```
 ### Example
-{{code_block('polars-cloud/distributed','example',[])}}
+This example demonstrates running query 3 of the PDS-H benchmarkon scale factor 100 (approx. 100GB
+of data) using Polars Cloud distributed engine.
+!!! note "Run the example yourself"
+Copy and paste the code to you environment and run it. The data is hosted in S3 buckets that use [AWS Requester Pays](https://docs.aws.amazon.com/AmazonS3/latest/userguide/RequesterPaysBuckets.html), meaning you pay only for pays the cost of the request and the data download from the bucket. The storage costs are covered.
+First import the required packages and point to the S3 bucket. In this example, we take one of the
+PDS-H benchmarks queries for demonstration purposes.
+{{code_block('polars-cloud/distributed','setup',[])}}
+After that we define the query. Note that this query will also run on your local machine if you have
+the data available. You can generate the data with the
+[Polars Benchmark repository](https://www.github.com/pola-rs/polars-benchmark).
+{{code_block('polars-cloud/distributed','query',[])}}
+The final step is to set the compute context and run the query. Here we're using 5 nodes with 10
+CPUs and 10GB memory each. `Show()` will return the first 10 rows back to your environment. The
+query takes around xx seconds to execute.
+{{code_block('polars-cloud/distributed','context-run',[])}}
+!!! tip "Try on SF1000 (approx. 1TB of data)"
+You can also run this example on a higher scale factor. The data is available on the same bucket. You can change the URL from `sf100` to `sf1000`.
+---
+polars/docs/source/polars-cloud/run/query-progress.md
+---
+# Query progress monitoring
+Monitor query execution across workers to identify bottlenecks, understand data flow, and optimize
+performance. You can see which stages are running, how data moves between workers, and where time is
+spent during execution.
+This visibility helps you optimize complex queries and better understand the distributed execution
+of queries.
+ Example query and dataset
+You can copy and paste the example below to explore the feature yourself. Don't forget to change the
+workspace name to one of your own workspaces.
+```python
+import polars as pl
+import polars_cloud as pc
+pc.authenticate()
+ctx = pc.ComputeContext(workspace="your-workspace", cpus=12, memory=12, cluster_size=4)
+def pdsh_q3(customer, lineitem, orders):
+return (
+customer.filter(pl.col("c_mktsegment") == "BUILDING")
+.join(orders, left_on="c_custkey", right_on="o_custkey")
+.join(lineitem, left_on="o_orderkey", right_on="l_orderkey")
+.filter(pl.col("o_orderdate") < pl.date(1995, 3, 15))
+.filter(pl.col("l_shipdate") > pl.date(1995, 3, 15))
+.with_columns(
+(pl.col("l_extendedprice") * (1 - pl.col("l_discount"))).alias("revenue")
+)
+.group_by("o_orderkey", "o_orderdate", "o_shippriority")
+.agg(pl.sum("revenue"))
+.select(
+pl.col("o_orderkey").alias("l_orderkey"),
+"revenue",
+"o_orderdate",
+"o_shippriority",
+)
+.sort(by=["revenue", "o_orderdate"], descending=[True, False])
+)
+lineitem = pl.scan_parquet(
+"s3://polars-cloud-samples-us-east-2-prd/pdsh/sf100/lineitem/*.parquet",
+storage_options={"request_payer": "true"},
+)
+customer = pl.scan_parquet(
+"s3://polars-cloud-samples-us-east-2-prd/pdsh/sf100/customer/*.parquet",
+storage_options={"request_payer": "true"},
+)
+orders = pl.scan_parquet(
+"s3://polars-cloud-samples-us-east-2-prd/pdsh/sf100/orders/*.parquet",
+storage_options={"request_payer": "true"},
+)
+```
+{{code_block('polars-cloud/query-progress','execute',[])}}
+The `await_progress` method can be used to monitor an in-progress query. It returns a QueryProgress
+object containing a DataFrame with information about which stages are being processed across
+workers, which can be analyzed in the same way as any Polars query.
+{{code_block('polars-cloud/query-progress','await_progress',[])}}
+Each row represents one worker processing a span. A span represents a chunk of work done by a
+worker, for example generating the query plan, reading data from another worker, or executing the
+query on that data. Some spans may output data, which is recorded in the output_rows column.
+```text
+shape: (53, 6)
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ stage_number â”† span_name â”† worker_id â”† start_time â”† end_time â”† output_rows â”‚
+â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
+â”‚ u32 â”† str â”† str â”† datetime[ns] â”† datetime[ns] â”† u64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ 6 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 282794 â”‚
+â”‚ â”† â”† â”† 08:08:52.820228585 â”† 08:08:52.878229914 â”† â”‚
+â”‚ 3 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 3643370 â”‚
+â”‚ â”† â”† â”† 08:08:45.421053731 â”† 08:08:45.600081475 â”† â”‚
+â”‚ 5 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 282044 â”‚
+â”‚ â”† â”† â”† 08:08:52.667547917 â”† 08:08:52.718114297 â”† â”‚
+â”‚ 5 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”‚
+â”‚ â”† â”† â”† 08:08:52.694917167 â”† 08:08:52.720657155 â”† â”‚
+â”‚ 7 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 145179 â”‚
+â”‚ â”† â”† â”† 08:08:53.039771274 â”† 08:08:53.166535930 â”† â”‚
+â”‚ â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”‚
+â”‚ 5 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”‚
+â”‚ â”† â”† â”† 08:08:52.649434841 â”† 08:08:52.667065947 â”† â”‚
+â”‚ 6 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 283218 â”‚
+â”‚ â”† â”† â”† 08:08:52.818787714 â”† 08:08:52.880324797 â”† â”‚
+â”‚ 4 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”‚
+â”‚ â”† â”† â”† 08:08:46.188322234 â”† 08:08:50.871792346 â”† â”‚
+â”‚ 1 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 15546044 â”‚
+â”‚ â”† â”† â”† 08:08:40.325404872 â”† 08:08:44.030028095 â”† â”‚
+â”‚ 7 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”‚
+â”‚ â”† â”† â”† 08:08:52.925442390 â”† 08:08:52.962600065 â”† â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+As each worker starts and completes each stage of the query, it notifies the lead worker. The
+`await_progress` method will poll the lead worker until there is an update from any worker, and then
+return the full progress data of the query.
+The QueryProgress object also has a summary property to return an aggregated view of each stage.
+{{code_block('polars-cloud/query-progress','await_summary',[])}}
+```text
+shape: (13, 6)
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ stage_number â”† span_name â”† completed â”† worker_ids â”† duration â”† output_rows â”‚
+â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
+â”‚ u32 â”† str â”† bool â”† str â”† duration[Î¼s] â”† u64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ 6 â”† Shuffle read â”† true â”† i-xxx â”† 1228Âµs â”† 0 â”‚
+â”‚ 5 â”† Shuffle read â”† true â”† i-xxx â”† 140759Âµs â”† 0 â”‚
+â”‚ 4 â”† Execute IR â”† true â”† i-xxx â”† 1s 73534Âµs â”† 1131041 â”‚
+â”‚ 2 â”† Execute IR â”† true â”† i-xxx â”† 6s 944740Âµs â”† 3000188 â”‚
+â”‚ 5 â”† Execute IR â”† true â”† i-xxx â”† 167483Âµs â”† 1131041 â”‚
+â”‚ â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”‚
+â”‚ 4 â”† Shuffle read â”† true â”† i-xxx â”† 4s 952005Âµs â”† 0 â”‚
+â”‚ 1 â”† Execute IR â”† true â”† i-xxx â”† 7s 738907Âµs â”† 72874383 â”‚
+â”‚ 3 â”† Shuffle read â”† true â”† i-xxx â”† 812807Âµs â”† 0 â”‚
+â”‚ 0 â”† Execute IR â”† true â”† i-xxx â”† 15s 2883Âµs â”† 323494519 â”‚
+â”‚ 7 â”† Execute IR â”† true â”† i-xxx â”† 356662Âµs â”† 1131041 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
 ---
 polars/docs/source/polars-cloud/run/remote-query.md
 ---
@@ -8752,7 +8955,7 @@ the [Compute context introduction page](../context/compute-context.md).
 !!! info "Run the examples yourself"
 All examples on this page can be executed using the sample datasets hosted on our S3 bucket. By including the `storage_option` parameter in your queries, you'll only incur S3 data transfer costs. No additional storage fees apply
 !!! note "S3 bucket region"
-The example datasets are hosted in the `US-East-2 S3 region`. Query performance may be affected if you're running operations from a distant geographic location due to network latency.
+The example datasets are hosted in the `us-east-2 S3 region`. Query performance may be affected if you're running operations from a distant geographic location due to network latency.
 ## Working with remote query results
 Once you've called `.remote(context=ctx)` on your query, you have several options for how to handle
 the results, each suited to different use cases and workflows.
@@ -8813,5 +9016,300 @@ shape: (114_003, 4)
 â”‚ 52204674 â”† 860.25 â”† 1994-12-18 â”† 0 â”‚
 â”‚ 47255457 â”† 838.9381 â”† 1994-11-18 â”† 0 â”‚
 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```
+---
+polars/docs/source/polars-cloud/integrations/airflow.md
+---
+# Airflow
+Execute Polars Cloud queries remotely using Airflow workflows through secure credential management.
+This section explains how to configure Airflow to submit and monitor Polars Cloud workloads using
+Airflow's built-in security mechanisms, keeping service account credentials isolated from DAG code
+while maintaining full workflow control.
+1. **Secret manager**
+([docs](https://airflow.apache.org/docs/apache-airflow/stable/security/secrets/secrets-backend/index.html)):
+is the  Airflow-recommended way to handle secrets. It involves setting up a
+`Secret Backend` (many providers maintained by the community) in the `airflow.cfg` and let
+Airflow workers pull the given secrets via the `airflow.models.Variable` API as
+`Variable.get("")`. Note Airflow will pull the secret in its own metastore; if this
+situation is not desirable, interacting with the cloud provider's Secret Manager (or any other
+vault accessible via API) can simply be performed as a task of your DAG; see relevant official
+docs (here is
+[AWS](https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets-python.html)'
+as an example).
+2. **Environment variables**
+([docs](https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables)):
+load your environment variables into your containers after prefixing them by `AIRFLOW_VAR_`, for
+instance `AIRFLOW_VAR_POLARS_CLOUD_CLIENT_ID` and `AIRFLOW_VAR_POLARS_CLOUD_CLIENT_SECRET`. They
+should then be available through the `airflow.models.Variable` API as
+`Variable.get("POLARS_CLOUD_CLIENT_ID")`.
+3. **Airflow `Variables`**
+([docs](https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#managing-variables)):
+in the Airflow UI > Admin > Variables tab one can add/edit key: value pairs provided to Airflow,
+which will make them accessible through the `airflow.models.Variable` API. Note these objects can
+also be defined using the Airflow CLI (if accessible):
+`airflow variables set POLARS_CLOUD_CLIENT_ID ""`.
+Some code snippets for solutions **#1** and **#2** described above:
+```python
+# pull secrets from the aws secret manager
+@resource
+def service_account_from_aws(_):
+client = boto3.client("secretsmanager")
+Variable.set(
+"client_id",
+client.get_secret_value(SecretId="").get("SecretString"),
+)
+Variable.set(
+"client_secret",
+client.get_secret_value(SecretId="").get("SecretString"),
+)
+```
+```python
+# fetch [securely injected!] secrets from environment
+@resource
+def service_account_from_env(_):
+Variable.set("client_id", os.getenv("POLARS_CLOUD_CLIENT_ID"))
+Variable.set("client_secret", os.getenv("POLARS_CLOUD_CLIENT_SECRET"))
+```
+Below a few lines of _pseudo-code_ using Airflow' `TaskFlow` API:
+```python
+import polars as pl
+from airflow.models import Variable
+from airflow.sdk import dag, task
+from polars_cloud import ComputeContext, authenticate, set_compute_context
+# define two compute contexts (two instance sizes)
+vm_small = ComputeContext(cpus=2, memory=4)
+vm_large = ComputeContext(cpus=4, memory=16)
+# queries will execute on the small vm by default
+set_compute_context(vm_small)
+@dag(...)
+def taskflow():
+@task()
+def prepare_dataset_1():
+pl.scan_csv(...).remote().sink_parquet(...)
+@task()
+def prepare_dataset_2():
+pl.scan_ndjson(...).remote().sink_parquet(...)
+# use a bigger machine for this operation
+@task()
+@set_compute_context(vm_large)
+def join_datasets():
+pl.scan_parquet(...).remote().sink_parquet(...)
+# authenticate to polars cloud with the secrets created above
+authenticate(
+client_id=Variable.get("secret_id"),
+client_secret=Variable.get("secret_secret"),
+)
+prepare_dataset_1()
+prepare_dataset_2()
+join_datasets()
+taskflow()
+# stop the instances
+vm_small.stop()
+vm_large.stop()
+```
+---
+polars/docs/source/polars-cloud/integrations/dagster.md
+---
+# Dagster
+Configure Polars Cloud authentication securely within Dagster pipelines using resource based secret
+management. This section details how to integrate Polars Cloud service account credentials with
+Dagster's resource pattern.
+Dagster implements secret management through
+[Resources](https://docs.dagster.io/getting-started/concepts#resource)), which provide dependency
+injection for external services. To configure Polars Cloud authentication, define credentials
+through one of these standard approaches:
+1. **Secret manager** (recommended): pull the secret from a metastore (see official docs
+of your secret manager; here is
+[AWS](https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets-python.html)'
+as an example).
+2. **Environment variables**: define the values as environment variables in your Dagster environment
+(containers or else), and pick them up from your code or Dagster configuration (via the
+`dagster.yaml` or `workspace.yaml`).
+Some code snippets for the solutions described above:
+```python
+# pull secrets from the aws secret manager
+@resource
+def service_account_from_aws(_):
+client = boto3.client("secretsmanager")
+return {
+"client_id": client.get_secret_value(SecretId="").get("SecretString"),
+"client_secret": client.get_secret_value(SecretId="").get("SecretString"),
+}
+```
+```python
+# fetch [securely injected!] secrets from environment
+@resource
+def service_account_from_env(_):
+return {
+"client_id": os.getenv("POLARS_CLOUD_CLIENT_ID"),
+"client_secret": os.getenv("POLARS_CLOUD_CLIENT_SECRET"),
+}
+```
+Below a few lines of _pseudo-code_ to define a Dagster flow:
+```python
+import os
+import polars as pl
+from dagster import job, op, resource
+from polars_cloud import ComputeContext, authenticate, set_compute_context
+# define two compute contexts (two instance sizes)
+vm_small = ComputeContext(cpus=2, memory=4)
+vm_large = ComputeContext(cpus=4, memory=16)
+# queries will execute on the small vm by default
+set_compute_context(vm_small)
+@op(required_resource_keys={"sa"})
+def prepare_dataset_1():
+pl.scan_csv(...).remote().sink_parquet(...)
+@op(required_resource_keys={"sa"})
+def prepare_dataset_2():
+pl.scan_ndjson(...).remote().sink_parquet(...)
+# use a bigger machine for this operation
+@op(required_resource_keys={"sa"})
+@set_compute_context(vm_large)
+def join_datasets():
+pl.scan_parquet(...).remote().sink_parquet(...)
+@job(resource_defs={"sa": service_account_from_aws})
+def report():
+# authenticate to polars cloud with the secrets created above
+authenticate(**sa)
+prepare_dataset_1()
+prepare_dataset_2()
+join_datasets()
+# stop the instances
+vm_small.stop()
+vm_large.stop()
+```
+---
+polars/docs/source/polars-cloud/integrations/index.md
+---
+# Orchestrate your queries
+Polars Cloud can be integrated and used in popular third-party orchestration tools. This approach
+lets you focus on data logic while Polars Cloud handles query execution, eliminating infrastructure
+management.
+Consider a typical workflow: generating a daily report by ingesting, transforming, and joining two
+datasets. We omit standard Polars code to focus on orchestration-specific steps: defining data flow
+and managing [service accounts](../explain/service-accounts.md) credentials for Polars Cloud
+authentication.
+The most commonly used data orchestrators are presented in alphabetical order:
+- [Airflow](airflow.md)
+- [Dagster](dagster.md)
+- [Prefect](prefect.md)
+In a similar manner, we suggest a way to orchestrate Polars Cloud queries using AWS-native
+infrastructure:
+- [AWS lambda](lambda.md)
+---
+polars/docs/source/polars-cloud/integrations/lambda.md
+---
+# AWS Lambda
+Orchestrate Polars Cloud queries using AWS-native serverless infrastructure through EventBridge and
+Lambda. This section details how to implement scheduled query execution without infrastructure
+management by submitting workloads to Polars Cloud via Lambda functions while leveraging AWS Secrets
+Manager for secure credential handling.
+!!! tip
+Submitting a query does not require for the process submitting it to remain alive if the Polars Cloud [compute context](/polars-cloud/context/compute-context) is **\*not\*** built as a regular `Python` context manager.
+## Lambda function
+The first hurdle is providing an environment including `Polars` dependencies to the Lambda function;
+this can be done in various ways, all documented by AWS
+[here](https://docs.aws.amazon.com/lambda/latest/dg/python-package.html). The most commonly used
+approach is via
+[creating a `zip` package including dependencies](https://docs.aws.amazon.com/lambda/latest/dg/python-package.html#python-package-create-dependencies).
+The code for the lambda function can be boiled down to the following (pseudo-code):
+```python
+import boto3
+import polars as pl
+import polars_cloud as pc
+client = boto3.client("secretsmanager")
+# authenticate to polars cloud with the secrets created above
+pc.authenticate(
+client_id=client.get_secret_value(SecretId="").get("SecretString"),
+client_secret=client.get_secret_value(SecretId="").get("SecretString"),
+)
+# define the compute context
+cc = pc.ComputeContext(cpus=2, memory=4)
+# submit the query
+pl.scan_csv(...).remote(cc).sink_parquet(...)
+```
+Once the query is submitted the Lambda will gracefully exit, leaving the rest of the handling to
+Polars Cloud.
+## Triggering rule
+Since we are here not using any dedicated orchestrator infrastructure (like [Airflow](airflow.md)
+for instance) we can instead generate triggering rules in AWS EventBridge. Rules can be defined via
+the AWS Console (point-and-click) or via the AWS CLI, as documented
+[here](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-run-lambda-schedule.html). A
+simple CRON rule should be enough to trigger your query to run at given interval.
+---
+polars/docs/source/polars-cloud/integrations/prefect.md
+---
+# Prefect
+Configure Polars Cloud authentication securely within Prefect workflows using native secret
+management patterns. This section details how to integrate Polars Cloud service account credentials
+with Prefect's configuration system.
+Prefect implements secure credential handling through three standard approaches:
+1. **Secret manager** (recommended): pull the secret secret manager of your choice and
+use it in your workflow (see official docs; here is
+[AWS](https://docs.aws.amazon.com/secretsmanager/latest/userguide/retrieving-secrets-python.html)'
+as an example). One can also use the AWS-specific `Secret` `Block` (see below;
+[docs](https://docs.prefect.io/v3/how-to-guides/configuration/store-secrets)) to interact with
+the AWS Secret Manager.
+2. **Environment variables**: load your environment variables into your running instance (container
+or else).
+3. **`Block` system** ([docs](https://docs.prefect.io/v3/concepts/blocks)): Prefect defined a
+`Block` framework that can be used via the CLI
+(`prefect block register -m prefect.blocks.system`) or directly in the code
+(`from prefect.blocks.system import Secret`). A secret can be created via CLI (for instance):
+`prefect block create secret polars-cloud-client-id` and retrieved from the code as
+`Secret.load("polars-cloud-client-id").get()`.
+Some code snippets for solutions **#1** and **#2** described above:
+```python
+# pull secrets from the aws secret manager
+def service_account_from_aws(_):
+client = boto3.client("secretsmanager")
+return {
+"client_id": client.get_secret_value(SecretId="").get("SecretString"),
+"client_secret": client.get_secret_value(SecretId="").get("SecretString"),
+}
+```
+```python
+# fetch [securely injected!] secrets from environment
+@resource
+def service_account_from_env(_):
+return {
+"client_id": os.getenv("POLARS_CLOUD_CLIENT_ID"),
+"client_secret": os.getenv("POLARS_CLOUD_CLIENT_SECRET"),
+}
+```
+Below a few lines of _pseudo-code_ to define a Prefect flow:
+```python
+import os
+import polars as pl
+from polars_cloud import ComputeContext, authenticate, set_compute_context
+from prefect import flow, task
+# define two compute contexts (two instance sizes)
+vm_small = ComputeContext(cpus=2, memory=4)
+vm_large = ComputeContext(cpus=4, memory=16)
+# queries will execute on the small vm by default
+set_compute_context(vm_small)
+@task
+def prepare_dataset_1():
+pl.scan_csv(...).remote().sink_parquet(...)
+@task
+def prepare_dataset_2():
+pl.scan_ndjson(...).remote().sink_parquet(...)
+# use a bigger machine for this operation
+@task
+@set_compute_context(vm_large)
+def join_datasets():
+pl.scan_parquet(...).remote().sink_parquet(...)
+@flow(name="Daily report")
+def report():
+# authenticate to polars cloud with the secrets created above
+authenticate(**service_account_from_env())
+prepare_dataset_1()
+prepare_dataset_2()
+join_datasets()
+# run the flow
+report()
+# stop the instances
+vm_small.stop()
+vm_large.stop()
 ```
 ---
