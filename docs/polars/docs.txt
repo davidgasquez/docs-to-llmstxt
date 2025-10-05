@@ -4034,7 +4034,7 @@ corresponding programming language.
 ``` bash
 pip install polars
 # Or for legacy CPUs without AVX2 support
-pip install polars-lts-cpu
+pip install polars[rtcompat]
 ```
 === ":fontawesome-brands-rust: Rust"
 ``` shell
@@ -4048,7 +4048,7 @@ By default, Polars dataframes are limited to $2^{32}$ rows (~4.3 billion). Incre
 $2^{64}$ (~18 quintillion) by enabling the big index extension:
 === ":fontawesome-brands-python: Python"
 ``` bash
-pip install polars-u64-idx
+pip install polars[rt64]
 ```
 === ":fontawesome-brands-rust: Rust"
 ``` shell
@@ -4062,7 +4062,7 @@ To install Polars for Python on an old CPU without
 [AVX](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) support, run:
 === ":fontawesome-brands-python: Python"
 ``` bash
-pip install polars-lts-cpu
+pip install polars[rtcompat]
 ```
 ## Importing
 To use the library, simply import it into your project:
