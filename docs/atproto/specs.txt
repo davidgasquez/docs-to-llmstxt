@@ -282,7 +282,7 @@ The specific lifetime of sessions, access tokens, and refresh tokens is up to th
 Some guidelines and requirements:
 
 - access token lifetimes should be less than 30 minutes in all situations. If the server cannot revoke individual access tokens then the maximum is 15 minutes, and 5 minutes is recommended.
-- for "untrusted" public clients, overall session lifetime should be limited to 7 days, and the lifetime of individual refresh tokens should be limited to 24 hours
+- for "untrusted" public clients, overall session lifetime and the lifetime of individual refresh tokens should both be limited to 2 weeks.
 - for confidential clients, the overall session lifetime may be unlimited. Individual refresh tokens should have a lifetime limited to 180 days
 - confidential clients must use the same client authentication key and assertion method for refresh token requests that they did for the initial authentication request
 
@@ -857,9 +857,7 @@ A reference regex for NSID is:
 
 ### NSID Syntax Variations
 
-A **fragment** may be appended to an NSID in some contexts to refer to a specific sub-field within the schema. The fragment is separated from the NSID by an ASCII hash character (`#`). The fragment identifier string (after the `#`) has the same syntax restrictions as the final segment of an NSID: ASCII alphabetic, one or more characters, length restricted, etc.
-
-When referring to a group or pattern of NSIDs, a trailing ASCII star character (`*`) can be used as a "glob" character. For example, `com.atproto.*` would refer to any NSIDs under the `atproto.com` domain authority, including nested sub-domains (sub-authorities). A free-standing `*` would match all NSIDs from all authorities. Currently, there may be only a single start character; it must be the last character; and it must be at a segment boundary (no partial matching of segment names). This means the start character must be proceeded by a period, or be a bare star matching all NSIDs.
+When referring to a group or pattern of NSIDs, a trailing ASCII star character (`*`) can be used as a "glob" character. For example, `com.atproto.*` would refer to any NSIDs under the `atproto.com` domain authority, including nested sub-domains (sub-authorities). A free-standing `*` would match all NSIDs from all authorities. Currently, there may be only a single star character; it must be the last character; and it must be at a segment boundary (no partial matching of segment names). This means the start character must be proceeded by a period, or be a bare star matching all NSIDs.
 
 
 ### Examples
@@ -894,14 +892,13 @@ It is common to use "subdomains" as part of the "domain authority" to organize r
 
 Lexicon language documentation will provide style guidelines on choosing and organizing NSIDs for both record types and XRPC methods. In short, records are usually single nouns, not pluralized. XRPC methods are usually in "verbNoun" form.
 
+Interop test vectors are available from the [atproto-interop-tests](https://github.com/bluesky-social/atproto-interop-tests) repository.
 
 ### Possible Future Changes
 
 It is conceivable that NSID syntax would be relaxed to allow Unicode characters in the final segment.
 
 The "glob" syntax variation may be modified to extended to make the distinction between single-level and nested matching more explicit.
-
-The "fragment" syntax variation may be relaxed in the future to allow nested references.
 
 No automated mechanism for verifying control of a "domain authority" currently exists. Also, not automated mechanism exists for fetching a lexicon schema for a given NSID, or for enumerating all NSIDs for a base domain.
 
@@ -2162,6 +2159,8 @@ While longer DIDs are supported in the protocol, a good best practice is to use 
 
 DIDs are case-sensitive. While the currently-supported methods are *not* case sensitive, and could be safely lowercased, protocol implementations should reject DIDs with invalid casing. It is permissible to attempt case normalization when receiving user-controlled input, such as when parsing public URL path components, or text input fields.
 
+Interop test vectors are available from the [atproto-interop-tests](https://github.com/bluesky-social/atproto-interop-tests) repository.
+
 ## Possible Future Changes
 
 The hard maximum DID length limit may be reduced, at the protocol syntax level. We are not aware of any DID methods that we would consider supporting which have identifiers longer than, say, 256 characters.
@@ -3390,7 +3389,7 @@ Type-specific fields:
     - `description` (string, optional): short description
     - `encoding` (string, required): MIME type for body contents. Use `application/json` for JSON responses.
     - `schema` (object, optional): schema definition, either an `object`, a `ref`, or a `union` of refs. Used to describe JSON encoded responses, though schema is optional even for JSON responses.
-- `input` (object, optional, only for `procedure`): describes HTTP request body schema, with the same format as the `output` field
+- `input` (object, optional, exclusive to `procedure`): describes HTTP request body schema, with the same format as the `output` field
 - `errors` (array of objects, optional): set of string error codes which might be returned
     - `name` (string, required): short name for the error type, with no whitespace
     - `description` (string, optional): short description, one or two sentences
@@ -4913,7 +4912,7 @@ Handles should not be trusted or considered valid until the DID is also resolved
 
 ### DNS TXT Method
 
-For this resolution method, a DNS TXT record is registered for the `_atproto` sub-domain under the handle hostname. The record value should have the prefix `did=`, followed by the full domain. This method aligns with [RFC-1464](https://www.rfc-editor.org/rfc/rfc1464.html), "Using the Domain Name System To Store Arbitrary String Attributes".
+For this resolution method, a DNS TXT record is registered for the `_atproto` sub-domain under the handle hostname. The record value should have the prefix `did=`, followed by the full DID. This method aligns with [RFC-1464](https://www.rfc-editor.org/rfc/rfc1464.html), "Using the Domain Name System To Store Arbitrary String Attributes".
 
 For example, the handle `bsky.app` would have a TXT record on the name `_atproto.bsky.app`, and the value would look like `did=did:plc:z72i7hdynmk6r22z27h6tvur`.
 
@@ -4983,6 +4982,8 @@ From a practical standpoint, handles should be limited to at most 244 characters
 Handle hostnames are expected to be mainstream DNS domain names, registered through the mainstream DNS name system. Handles with non-standard TLDs, or using non-standard naming systems, will fail to interoperate with other network services and protocol implementations in the atproto ecosystem.
 
 PDS implementations hosting an account *may* prevent repo mutation if the account's handle can no longer be verified (aka, `handle.invalid` situation). Other network services should generally continue to display the content (to prevent breakage), possibly with a contextual note or warning indicator.
+
+Interop test vectors are available from the [atproto-interop-tests](https://github.com/bluesky-social/atproto-interop-tests) repository.
 
 ## Possible Future Changes
 
