@@ -82,6 +82,8 @@ Install Evidence with the [VSCode Extension](vscode:extension/Evidence.evidence-
 
 The new, faster way to build data products with SQL, markdown and AI.
 </Alert>
+
+
 ## How does Evidence work?
 
 <img src='/img/how-it-works.png' width="800px"/>
@@ -23538,6 +23540,8 @@ hide_table_of_contents: false
 description:  An index of the components available in the Evidence library.
 ---
 
+Evidence is a library for creating reports in markdown and SQL. It uses ECharts for charts, Leaflet for maps, and Shadcn for UI components.
+
 ## Data
 
 <Grid cols=2>
@@ -24184,6 +24188,7 @@ description:  An index of the components available in the Evidence library.
         @apply mt-2;
     }
 </style>
+
 
 ---
 evidence/sites/docs/pages/install-evidence/index.md
