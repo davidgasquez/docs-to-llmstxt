@@ -2207,18 +2207,18 @@ The color props accepted by many components (e.g. [`fillColor`](/components/char
 The [colors listed above](/core-concepts/themes#colors) are the bare minimum you should configure to theme your application. If you need more control, there are other colors you can customize.
 
 ```sql advanced_color_tokens
-    select '<span class="p-0.5 rounded-xs font-semibold bg-primary text-primary-content">primary-content</span>' as 'color', 'Text color used on top of a primary background' as 'where-its-used', 'A readable shade of primary' as default union all
-	select '<span class="p-0.5 rounded-xs font-semibold bg-accent text-accent-content">accent-content</span>', 'Text color used on top of an accent background', 'A readable shade of accent' union all
-	select '<span class="p-0.5 rounded-xs font-semibold bg-base-100">base-100</span>', 'Page background color', 'Alias of `base`' union all
-	select '<span class="p-0.5 rounded-xs font-semibold bg-base-200">base-200</span>', 'Secondary page background color', 'A shade of base-100' union all
-	select '<span class="p-0.5 rounded-xs font-semibold bg-base-300">base-300</span>', 'Tertiary page background color', 'A shade of base-100' union all
-	select '<span class="p-0.5 rounded-xs font-semibold text-base-content-muted">base-content-muted</span>', 'Muted text color', 'A shade of base-100' union all
-	select '<span class="p-0.5 rounded-xs font-semibold text-base-content">base-content</span>', 'Body text color', 'A shade of base-100' union all
-	select '<span class="p-0.5 rounded-xs font-semibold text-base-heading">base-heading</span>', 'Header text color', 'A shade of base-100' union all
-	select '<span class="p-0.5 rounded-xs font-semibold bg-info text-info-content">info-content</span>', 'Text color used on top of an info background', 'A readable shade of info' union all
-	select '<span class="p-0.5 rounded-xs font-semibold bg-positive text-positive-content">positive-content</span>', 'Text color used on top of a positive background', 'A readable shade of positive' union all
-	select '<span class="p-0.5 rounded-xs font-semibold bg-warning text-warning-content">warning-content</span>', 'Text color used on top of a warning background', 'A readable shade of warning' union all
-	select '<span class="p-0.5 rounded-xs font-semibold bg-negative text-negative-content">negative-content</span>', 'Text color used on top of a negative background', 'A readable shade of negative'
+    select '<span class="p-0.5 rounded-sm font-semibold bg-primary text-primary-content">primary-content</span>' as 'color', 'Text color used on top of a primary background' as 'where-its-used', 'A readable shade of primary' as default union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-accent text-accent-content">accent-content</span>', 'Text color used on top of an accent background', 'A readable shade of accent' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-base-100">base-100</span>', 'Page background color', 'Alias of `base`' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-base-200">base-200</span>', 'Secondary page background color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-base-300">base-300</span>', 'Tertiary page background color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold text-base-content-muted">base-content-muted</span>', 'Muted text color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold text-base-content">base-content</span>', 'Body text color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold text-base-heading">base-heading</span>', 'Header text color', 'A shade of base-100' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-info text-info-content">info-content</span>', 'Text color used on top of an info background', 'A readable shade of info' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-positive text-positive-content">positive-content</span>', 'Text color used on top of a positive background', 'A readable shade of positive' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-warning text-warning-content">warning-content</span>', 'Text color used on top of a warning background', 'A readable shade of warning' union all
+	select '<span class="p-0.5 rounded-sm font-semibold bg-negative text-negative-content">negative-content</span>', 'Text color used on top of a negative background', 'A readable shade of negative'
 ```
 
 <DataTable data={advanced_color_tokens} rows=12>
@@ -22776,6 +22776,30 @@ showMaxMin property can hide the Max and Min values with false, by default showM
 ````
 </DocTab>
 
+showInput property can show the input field with true, by default showInput is false
+
+<DocTab>
+ <div slot="preview">
+<Slider
+    title="Months" 
+    name=monthsWithInput
+    min=0
+    max=36
+    showInput=true
+/>
+ </div>
+
+````markdown
+<Slider
+    title="Months" 
+    name=monthsWithInput
+    min=0
+    max=36
+    showInput=true
+/>
+````
+</DocTab>
+
 The default size of the slider can be altered with the size property using; medium, large or full
 
 <DocTab>
@@ -22988,6 +23012,26 @@ Defines the incremental value of the slider
 Hides or shows min and max value markers on slider.  
 
 </PropListing>
+<PropListing 
+    name="showInput"
+    options="boolean"
+    defaultValue="false"
+>
+
+Hides or shows the input field on the slider.
+
+</PropListing>
+
+<PropListing
+    name="debounceDelay"
+    options=number
+    defaultValue=0
+>
+
+Delays updating the input value (in milliseconds) after the slider changes.
+
+</PropListing>
+
 <PropListing 
     name="size"
     options="{["small", "medium", "large", "full"]}"
@@ -24183,7 +24227,6 @@ Evidence is a library for creating reports in markdown and SQL. It uses ECharts 
 </Grid>
 
 <style>
-    @reference "@evidence-dev/evidence/theme.css";
     .markdown {
         @apply mt-2;
     }
@@ -24327,7 +24370,7 @@ Evidence can be started from VSCode, or from the Command Line. Both will work fo
 
       Click `Start Evidence` in the bottom status bar:
 
-      <img src="/img/getting-started/start_evidence.png" class="w-96 border border-gray-200 rounded-sm"/>
+      <img src="/img/getting-started/start_evidence.png" class="w-96 border border-gray-200 rounded"/>
    </Tab>
    <Tab label="Command Line">
 
@@ -24701,7 +24744,6 @@ If you need help, or have corrections and suggestions for this tutorial, please 
 
 
 <style>
-   @reference "@evidence-dev/evidence/theme.css";
    :root {
       --lightest-gray: #dee2e6;
    }
