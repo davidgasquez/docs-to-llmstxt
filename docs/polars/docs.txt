@@ -2016,6 +2016,13 @@ number of CPUs and memory.
 For more control, you can specify the exact instance type for Polars to use. This is useful when you
 have specific hardware requirements in a production environment.
 {{code_block('polars-cloud/compute-context','set-compute',['ComputeContext'])}}
+## Saving the compute context
+To simplify configuration and enable cluster sharing, you can save your settings under a unique
+identifier called a manifest in Polars Cloud. This eliminates the need to specify all settings in
+every script and makes it easy to reconnect to or collaborate on the same compute cluster. You can
+create a manifest either programmatically by calling `register` on a `ComputeContext` or through the
+cloud portal interface.
+{{code_block('polars-cloud/compute-context','manifest',['register', 'ComputeContext'])}}
 ## Applying the compute context
 Once defined, you can apply your compute context to queries in three ways:
 1. By directly passing the context to the remote query:
@@ -2115,9 +2122,17 @@ polars/docs/source/polars-cloud/context/reconnect.md
 ---
 # Reconnect to compute cluster
 Polars Cloud allows you to reconnect to active compute clusters. This lets you reconnect to run
-multiple queries in a short time span, without having to wait for machines to spin up. You can also
-connect to clusters of team members, if these were started in `proxy` mode.
-## Set up a cluster
+multiple queries in a short time span, without having to wait for machines to spin up.
+## Reconnect with a Manifest (Recommended)
+The preferred approach for creating a ComputeContext is through a manifest. A manifest defines all
+compute cluster properties and stores them under a unique name. This unique name lets you easily
+start or reconnect to a compute cluster. Each manifest can only have one active compute cluster at a
+time. Attempting to start an already active manifest will reconnect you to the existing cluster
+rather than spinning up a new one. Manifests can be created either through the cloud portal's
+Compute tab or by calling `.register(name="WorkspaceName")` on a `ComputeContext`.
+{{code_block('polars-cloud/reconnect','manifest',['ComputeContext'])}}
+### Manual
+#### Starting a cluster
 We will start a simple cluster to show how you can reconnect. We will save the cluster ID so we can
 connect directly to the cluster in the following examples:
 {{code_block('polars-cloud/reconnect','setup',['ComputeContext'])}}
@@ -2129,8 +2144,6 @@ ComputeContext(id=0198e107-xxxx-xxxx-xxxx-xxxxxxxxxxxx, cpus=4, memory=16, insta
 ## Reconnect to an existing cluster
 If you lose connection or want to connect to a running cluster in your workspace, use `.connect` on
 `pc.ComputeContext`. This connects directly using the `compute_id` of the running cluster:
-!!! note "Connection permissions and proxy mode requirement"
-You can only reconnect to clusters that you started yourself or clusters that were started in `proxy` mode. You cannot reconnect to a cluster in `direct` mode that was started by another user in your workspace.
 {{code_block('polars-cloud/reconnect','connect_id',[])}}
 If you don't know your `compute_id`, use `.select()` to access an interactive interface where you
 can browse available clusters:
@@ -2307,9 +2320,9 @@ query takes around xx seconds to execute.
 !!! tip "Try on SF1000 (approx. 1TB of data)"
 You can also run this example on a higher scale factor. The data is available on the same bucket. You can change the URL from `sf100` to `sf1000`.
 ---
-polars/docs/source/polars-cloud/run/query-progress.md
+polars/docs/source/polars-cloud/run/query-profile.md
 ---
-# Query progress monitoring
+# Query profiling
 Monitor query execution across workers to identify bottlenecks, understand data flow, and optimize
 performance. You can see which stages are running, how data moves between workers, and where time is
 spent during execution.
@@ -2356,68 +2369,68 @@ orders = pl.scan_parquet(
 storage_options={"request_payer": "true"},
 )
 ```
-{{code_block('polars-cloud/query-progress','execute',[])}}
-The `await_progress` method can be used to monitor an in-progress query. It returns a QueryProgress
+{{code_block('polars-cloud/query-profile','execute',[])}}
+The `await_profile` method can be used to monitor an in-progress query. It returns a QueryProfile
 object containing a DataFrame with information about which stages are being processed across
 workers, which can be analyzed in the same way as any Polars query.
-{{code_block('polars-cloud/query-progress','await_progress',[])}}
+{{code_block('polars-cloud/query-profile','await_profile',[])}}
 Each row represents one worker processing a span. A span represents a chunk of work done by a
 worker, for example generating the query plan, reading data from another worker, or executing the
 query on that data. Some spans may output data, which is recorded in the output_rows column.
 ```text
 shape: (53, 6)
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ stage_number â”† span_name â”† worker_id â”† start_time â”† end_time â”† output_rows â”‚
-â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
-â”‚ u32 â”† str â”† str â”† datetime[ns] â”† datetime[ns] â”† u64 â”‚
-â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
-â”‚ 6 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 282794 â”‚
-â”‚ â”† â”† â”† 08:08:52.820228585 â”† 08:08:52.878229914 â”† â”‚
-â”‚ 3 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 3643370 â”‚
-â”‚ â”† â”† â”† 08:08:45.421053731 â”† 08:08:45.600081475 â”† â”‚
-â”‚ 5 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 282044 â”‚
-â”‚ â”† â”† â”† 08:08:52.667547917 â”† 08:08:52.718114297 â”† â”‚
-â”‚ 5 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”‚
-â”‚ â”† â”† â”† 08:08:52.694917167 â”† 08:08:52.720657155 â”† â”‚
-â”‚ 7 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 145179 â”‚
-â”‚ â”† â”† â”† 08:08:53.039771274 â”† 08:08:53.166535930 â”† â”‚
-â”‚ â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”‚
-â”‚ 5 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”‚
-â”‚ â”† â”† â”† 08:08:52.649434841 â”† 08:08:52.667065947 â”† â”‚
-â”‚ 6 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 283218 â”‚
-â”‚ â”† â”† â”† 08:08:52.818787714 â”† 08:08:52.880324797 â”† â”‚
-â”‚ 4 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”‚
-â”‚ â”† â”† â”† 08:08:46.188322234 â”† 08:08:50.871792346 â”† â”‚
-â”‚ 1 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 15546044 â”‚
-â”‚ â”† â”† â”† 08:08:40.325404872 â”† 08:08:44.030028095 â”† â”‚
-â”‚ 7 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”‚
-â”‚ â”† â”† â”† 08:08:52.925442390 â”† 08:08:52.962600065 â”† â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ stage_number â”† span_name â”† worker_id â”† start_time â”† end_time â”† output_rows â”† shuffle_bytes_written â”† shuffle_bytes_read â”‚
+â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”† --- â”† â”‚
+â”‚ u32 â”† str â”† str â”† datetime[ns] â”† datetime[ns] â”† u64 â”† u64 â”† u64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ 6 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 282794 â”† 72395264 â”† null â”‚
+â”‚ â”† â”† â”† 08:08:52.820228585 â”† 08:08:52.878229914 â”† â”† â”† â”‚
+â”‚ 3 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 3643370 â”† 932702720 â”† null â”‚
+â”‚ â”† â”† â”† 08:08:45.421053731 â”† 08:08:45.600081475 â”† â”† â”† â”‚
+â”‚ 5 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 282044 â”† 723203264 â”† null â”‚
+â”‚ â”† â”† â”† 08:08:52.667547917 â”† 08:08:52.718114297 â”† â”† â”† â”‚
+â”‚ 5 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”† null â”† 932702720 â”‚
+â”‚ â”† â”† â”† 08:08:52.694917167 â”† 08:08:52.720657155 â”† â”† â”† â”‚
+â”‚ 7 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 145179 â”† 37165824 â”† null â”‚
+â”‚ â”† â”† â”† 08:08:53.039771274 â”† 08:08:53.166535930 â”† â”† â”† â”‚
+â”‚ â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”‚
+â”‚ 5 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”† null â”† 72503808 â”‚
+â”‚ â”† â”† â”† 08:08:52.649434841 â”† 08:08:52.667065947 â”† â”† â”† â”‚
+â”‚ 6 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 283218 â”† 72503808 â”† null â”‚
+â”‚ â”† â”† â”† 08:08:52.818787714 â”† 08:08:52.880324797 â”† â”† â”† â”‚
+â”‚ 4 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”† null â”† 3979787264 â”‚
+â”‚ â”† â”† â”† 08:08:46.188322234 â”† 08:08:50.871792346 â”† â”† â”† â”‚
+â”‚ 1 â”† Execute IR â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† 15546044 â”† 3979787264 â”† null â”‚
+â”‚ â”† â”† â”† 08:08:40.325404872 â”† 08:08:44.030028095 â”† â”† â”† â”‚
+â”‚ 7 â”† Shuffle read â”† i-xxx â”† 2025-xx-xx â”† 2025-xx-xx â”† null â”† null â”† 37165824 â”‚
+â”‚ â”† â”† â”† 08:08:52.925442390 â”† 08:08:52.962600065 â”† â”† â”† â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 As each worker starts and completes each stage of the query, it notifies the lead worker. The
-`await_progress` method will poll the lead worker until there is an update from any worker, and then
-return the full progress data of the query.
-The QueryProgress object also has a summary property to return an aggregated view of each stage.
-{{code_block('polars-cloud/query-progress','await_summary',[])}}
+`await_profile` method will poll the lead worker until there is an update from any worker, and then
+return the full profile data of the query.
+The QueryProfile object also has a summary property to return an aggregated view of each stage.
+{{code_block('polars-cloud/query-profile','await_summary',[])}}
 ```text
 shape: (13, 6)
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
-â”‚ stage_number â”† span_name â”† completed â”† worker_ids â”† duration â”† output_rows â”‚
-â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
-â”‚ u32 â”† str â”† bool â”† str â”† duration[Î¼s] â”† u64 â”‚
-â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
-â”‚ 6 â”† Shuffle read â”† true â”† i-xxx â”† 1228Âµs â”† 0 â”‚
-â”‚ 5 â”† Shuffle read â”† true â”† i-xxx â”† 140759Âµs â”† 0 â”‚
-â”‚ 4 â”† Execute IR â”† true â”† i-xxx â”† 1s 73534Âµs â”† 1131041 â”‚
-â”‚ 2 â”† Execute IR â”† true â”† i-xxx â”† 6s 944740Âµs â”† 3000188 â”‚
-â”‚ 5 â”† Execute IR â”† true â”† i-xxx â”† 167483Âµs â”† 1131041 â”‚
-â”‚ â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”‚
-â”‚ 4 â”† Shuffle read â”† true â”† i-xxx â”† 4s 952005Âµs â”† 0 â”‚
-â”‚ 1 â”† Execute IR â”† true â”† i-xxx â”† 7s 738907Âµs â”† 72874383 â”‚
-â”‚ 3 â”† Shuffle read â”† true â”† i-xxx â”† 812807Âµs â”† 0 â”‚
-â”‚ 0 â”† Execute IR â”† true â”† i-xxx â”† 15s 2883Âµs â”† 323494519 â”‚
-â”‚ 7 â”† Execute IR â”† true â”† i-xxx â”† 356662Âµs â”† 1131041 â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”�
+â”‚ stage_number â”† span_name â”† completed â”† worker_ids â”† duration â”† output_rows â”† shuffle_bytes_written â”† shuffle_bytes_read â”‚
+â”‚ --- â”† --- â”† --- â”† --- â”† --- â”† --- â”† --- â”† --- â”‚
+â”‚ u32 â”† str â”† bool â”† str â”† duration[Î¼s] â”† u64 â”† u64 â”† u64 â”‚
+â•žâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•ªâ•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•�â•¡
+â”‚ 6 â”† Shuffle read â”† true â”† i-xxx â”† 1228Âµs â”† 0 â”† 0 â”† 289546496 â”‚
+â”‚ 5 â”† Shuffle read â”† true â”† i-xxx â”† 140759Âµs â”† 0 â”† 0 â”† 289546496 â”‚
+â”‚ 4 â”† Execute IR â”† true â”† i-xxx â”† 1s 73534Âµs â”† 1131041 â”† 289546496 â”† 0 â”‚
+â”‚ 2 â”† Execute IR â”† true â”† i-xxx â”† 6s 944740Âµs â”† 3000188 â”† 768048128 â”† 0 â”‚
+â”‚ 5 â”† Execute IR â”† true â”† i-xxx â”† 167483Âµs â”† 1131041 â”† 289546496 â”† 0 â”‚
+â”‚ â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”† â€¦ â”‚
+â”‚ 4 â”† Shuffle read â”† true â”† i-xxx â”† 4s 952005Âµs â”† 0 â”† 0 â”† 255627121 â”‚
+â”‚ 1 â”† Execute IR â”† true â”† i-xxx â”† 7s 738907Âµs â”† 72874383 â”† 18655842048 â”† 0 â”‚
+â”‚ 3 â”† Shuffle read â”† true â”† i-xxx â”† 812807Âµs â”† 0 â”† 0 â”† 768048128 â”‚
+â”‚ 0 â”† Execute IR â”† true â”† i-xxx â”† 15s 2883Âµs â”† 323494519 â”† 82814596864 â”† 0 â”‚
+â”‚ 7 â”† Execute IR â”† true â”† i-xxx â”† 356662Âµs â”† 1131041 â”† 289546496 â”† 0 â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 ---
 polars/docs/source/polars-cloud/run/remote-query.md
@@ -3516,7 +3529,7 @@ create a new branch.
 subdirectories. You'll probably want to use some search/replace strategy, as there are quite a few
 crates that need to be updated.
 - _Python:_ Update the version number in
-[`py-polars/Cargo.toml`](https://github.com/pola-rs/polars/blob/main/py-polars/runtime/Cargo.toml#L3)
+[`py-polars/Cargo.toml`](https://github.com/pola-rs/polars/blob/main/py-polars/runtime/template/Cargo.toml#L4)
 to match the version of the draft release.
 4. From the `py-polars` directory, run `make build` to generate a new `Cargo.lock` file.
 5. Create a new commit with all files added. The name of the commit should follow the format
@@ -3710,8 +3723,8 @@ Tables with Polars.
 [LanceDB](https://lancedb.com/) is a developer-friendly, serverless vector database for AI
 applications. They have added a direct integration with Polars. LanceDB can ingest Polars
 dataframes, return results as polars dataframes, and export the entire table as a polars lazyframe.
-You can find a quick tutorial in their blog
-[LanceDB + Polars](https://lancedb.com/docs/integrations/platforms/polars_arrow/)
+See the [LanceDB documentation](https://lancedb.com/docs/integrations/platforms/polars_arrow/) for
+more details.
 #### Mage
 [Mage](https://www.mage.ai) is an open-source data pipeline tool for transforming and integrating
 data. Learn about integration between Polars and Mage at
@@ -5920,7 +5933,7 @@ If you want to know why this is desirable, you can read more about those Polars 
 When we scan a `Parquet` file stored in the cloud, we can also apply predicate and projection
 pushdowns. This can significantly reduce the amount of data that needs to be downloaded. For
 scanning a Parquet file in the cloud, see
-[Cloud storage](cloud-storage.md/#scanning-from-cloud-storage-with-query-optimisation).
+[Cloud storage](cloud-storage.md#scanning-from-cloud-storage-with-query-optimisation).
 ---
 polars/docs/source/user-guide/io/sheets_colab.md
 ---
