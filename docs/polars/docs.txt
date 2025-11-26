@@ -9316,6 +9316,22 @@ polars/docs/source/polars-on-premise/index.md
 # Introducing Polars on-premise
 Interested in running Polars on-premise?
 [Sign up here to apply](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv).
+After installing Polars on-premise either on bare-metal or on Kubernetes, you can connect to your
+cluster using the Polars Cloud Python client.
+```python
+import polars as pl
+import polars_cloud as pc
+# Connect to your Polars on-premise cluster
+ctx = pc.ClusterContext(compute_address="your-cluster-compute-address", insecure=True)
+query = (
+pl.LazyFrame()
+.with_columns(a=pl.arange(0, 100000000).sum())
+.remote(ctx)
+.distributed()
+.execute()
+)
+print(query.await_result())
+```
 ---
 polars/docs/source/polars-on-premise/kubernetes/getting-started.md
 ---
@@ -9419,8 +9435,6 @@ enabled = true
 anonymous_result_dst = "s3://my-bucket/path/to/dir"
 allow_shared_disk = false
 n_workers = 4
-[worker]
-enabled = false
 [observatory]
 enabled = true
 [static_leader]
@@ -9439,8 +9453,6 @@ cluster_id = "foobarbaz"
 cublet_id = "worker_0"
 license = "/etc/polars/license.json"
 memory_limit = 10737418240 # 10 GiB
-[scheduler]
-enabled = false
 [worker]
 enabled = true
 worker_ip = "192.168.1.2"
@@ -9467,18 +9479,16 @@ The minimal requirement for running `polars-on-premise` is the `polars` package.
 `polars-on-premise` is pinned to a single `polars` release, which can be found in the release
 announcement.
 ## System-wide installation
-Ensure that the `LD_LIBRARY_PATH` is correctly set after installing the dependencies.
 ```shell
-$ uv pip install --break-system-packages -r requirements.txt polars==PINNED_VERSION
-$ export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(uv run python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")"
+$ uv pip install --break-system-packages -r requirements.txt polars[cloudpickle]==PINNED_VERSION
 $ polars-on-premise service --config-path /etc/polars-cloud/config.toml
 ```
 ## Virtual Environment
 It's also possible to run `polars-on-premise` using a virtual environment.
 ```shell
 $ uv venv .venv
-$ uv pip install -r requirements.txt polars==PINNED_VERSION
-$ export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(uv run python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")"
+$ uv pip install -r requirements.txt polars[cloudpickle]==PINNED_VERSION
+$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(uv run python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
 $ polars-on-premise service --config-path /etc/polars-cloud/config.toml
 ```
 ---
