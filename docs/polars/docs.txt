@@ -1618,8 +1618,8 @@ All compute runs in your own cloud environment. The main reason is that this ens
 never leaves your environment and that the compute is always close to your data.
 You can learn more about how this setup in
 [the infrastructure section of the documentation](providers/aws/infra.md).
-## Can you run Polars Cloud on-premise?
-Currently, Polars Cloud is only available to organizations that are on AWS. Support for on-premise
+## Can you run Polars Cloud on-premises?
+Currently, Polars Cloud is only available to organizations that are on AWS. Support for on-premises
 infrastructure is on our roadmap and will become available soon.
 ## What does Polars Cloud offer me beyond Polars?
 Polars Cloud offers a managed service that enables scalable data processing with the flexibility and
@@ -1695,7 +1695,7 @@ Polars Cloud is available to try with a 30 day free trial. You can sign up on
 [cloud.pola.rs](https://cloud.pola.rs) to get started.
 ## Cloud availability
 ![AWS logo](https://raw.githubusercontent.com/pola-rs/polars-static/refs/heads/master/polars_cloud/aws-logo.svg)
-Polars Cloud is available on AWS. Other cloud providers and on-premise solutions are on the roadmap
+Polars Cloud is available on AWS. Other cloud providers and on-premises solutions are on the roadmap
 and will become available in the upcoming months.
 ---
 polars/docs/source/polars-cloud/public-datasets.md
@@ -9340,17 +9340,17 @@ F.mean("lagged_price").over(rolling_window),
 )
 ```
 ---
-polars/docs/source/polars-on-premise/index.md
+polars/docs/source/polars-on-premises/index.md
 ---
-# Introducing Polars on-premise
-Interested in running Polars on-premise?
+# Introducing Polars on-premises
+Interested in running Polars on-premises?
 [Sign up here to apply](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv).
-After installing Polars on-premise either on bare-metal or on Kubernetes, you can connect to your
+After installing Polars on-premises either on bare-metal or on Kubernetes, you can connect to your
 cluster using the Polars Cloud Python client.
 ```python
 import polars as pl
 import polars_cloud as pc
-# Connect to your Polars on-premise cluster
+# Connect to your Polars on-premises cluster
 ctx = pc.ClusterContext(compute_address="your-cluster-compute-address", insecure=True)
 query = (
 pl.LazyFrame()
@@ -9362,12 +9362,12 @@ pl.LazyFrame()
 print(query.await_result())
 ```
 ---
-polars/docs/source/polars-on-premise/kubernetes/getting-started.md
+polars/docs/source/polars-on-premises/kubernetes/getting-started.md
 ---
-First of all, make sure to obtain a license for Polars on-premise by
+First of all, make sure to obtain a license for Polars on-premises by
 [signing up here](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv). You will receive an access key for
 our private Docker registry as well as a license for running Polars Distributed on-premise.
-Polars-on-premise for Kubernetes is distributed through our Helm Chart, which can be found in our
+Polars-on-premises for Kubernetes is distributed through our Helm Chart, which can be found in our
 [helm-charts repository](https://github.com/polars-inc/helm-charts/).
 ## Usage
 [Helm](https://helm.sh) must be installed to use the charts. Please refer to Helm's
@@ -9380,10 +9380,10 @@ You can then run `helm search repo polars-inc` to see the charts.
 Further explanation on the different configuration can be found in the
 [Helm Chart's readme](https://github.com/polars-inc/helm-charts/blob/main/charts/polars/README.md).
 ---
-polars/docs/source/polars-on-premise/bare-metal/config-reference.md
+polars/docs/source/polars-on-premises/bare-metal/config-reference.md
 ---
 # Config file reference
-This page describes the different configuration options for polars-on-premise. The config file is a
+This page describes the different configuration options for polars-on-premises. The config file is a
 standard TOML file with different sections. Any of the configuration can be overridden using
 environment variables in the following format: `PC_CUBLET__section_name__key`.
 ### Top-level configuration
@@ -9391,7 +9391,7 @@ environment variables in the following format: `PC_CUBLET__section_name__key`.
 | -------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `cluster_id` | string | Logical ID for the cluster; workers and scheduler that share this ID will form a single cluster.e.g. `prod-eu-1`; must be unique among all clusters. |
 | `cublet_id` | string | Unique ID for this node ("cublet") within the cluster, used for addressing and leader selection.e.g. `scheduler`, `worker_0`; must be unique per cluster. |
-| `license` | path | Absolute path to the polars-on-premise license file required to start the process.e.g. `/etc/polars/license.json`. |
+| `license` | path | Absolute path to the polars-on-premises license file required to start the process.e.g. `/etc/polars/license.json`. |
 | `memory_limit` | integer (bytes) | Hard memory budget for all components in this cublet; enforced via cgroups when delegated.e.g. `1073741824` (1 GiB), `10737418240` (10 GiB). |
 ### `[scheduler]` section
 | Key | Type | Description |
@@ -9411,8 +9411,9 @@ environment variables in the following format: `PC_CUBLET__section_name__key`.
 | `shuffle_data_path` | path | Local path where shuffle / intermediate data is stored; fast local SSD is recommended.e.g. `/opt/shuffle-data-path` |
 ### `[observatory]` section
 | Key | Type | Description |
-| --------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `enabled` | bool | Enable sending/receiving profiling data so clients can call `result.await_profile()`. `true` on both scheduler and workers if you want profiles on queries; `false` to disable. |
+| `max_metrics_bytes_total` | int | How many bytes all the worker host metrics will consume in total. If a system-wide memory limit is specified then this is added to the share that the scheduler takes. Note that the worker host metrics is not yet available, so this configuration can be set to 0. |
 ### `[static_leader]` section
 | Key | Type | Description |
 | -------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------- |
@@ -9425,32 +9426,32 @@ environment variables in the following format: `PC_CUBLET__section_name__key`.
 | `auth` | string | Host/IP where the leaderâ€™s `[service]` is reachable from this node.e.g. `192.168.1.1` |
 | `connection` | string | Host/IP where the leaderâ€™s `[service]` is reachable from this node.e.g. `192.168.1.1` |
 ---
-polars/docs/source/polars-on-premise/bare-metal/environment-variables.md
+polars/docs/source/polars-on-premises/bare-metal/environment-variables.md
 ---
 These environment variables
 | Variable | Description |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `POLARS_TEMP_DIR` | Override the default temporary directory Polars uses for scratch files and some I/O operations. |
-| `PLC_LOG_LEVEL` | Controls logging verbosity for the polars-on-premise components (e.g. scheduler/worker).e.g. Info`,`Debug`,`Trace` |
-| `POLARS_SKIP_DSL_HASH_VERIFICATION` | Skips internal DSL schema/hash compatibility checks between polars cloud client and polars-on-premise binary.Set to `1` only in controlled environments when working around temporary DSL hash mismatches. |
+| `PLC_LOG_LEVEL` | Controls logging verbosity for the polars-on-premises components (e.g. scheduler/worker).e.g. Info`,`Debug`,`Trace` |
+| `POLARS_SKIP_DSL_HASH_VERIFICATION` | Skips internal DSL schema/hash compatibility checks between polars cloud client and polars-on-premises binary.Set to `1` only in controlled environments when working around temporary DSL hash mismatches. |
 | `POLARS_ALLOW_PQ_EMPTY_STRUCT` | Allows reading or writing Parquet files that contain empty struct fields that are otherwise rejected. |
 | `OTLP_ENDPOINT` | Target endpoint for sending OTLP traces/metrics/logs to your OpenTelemetry collector/observability stack.e.g. `http://otel-collector:4317` |
 | `OTEL_SERVICE_INSTANCE_ID` | OpenTelemetry `service.instance.id` that uniquely identifies this cublet instance in telemetry.Must match `cublet_id`. |
 You may also set any Polars OSS-recognized environment variables.
 ---
-polars/docs/source/polars-on-premise/bare-metal/getting-started.md
+polars/docs/source/polars-on-premises/bare-metal/getting-started.md
 ---
-First of all, make sure to obtain a license for Polars on-premise by
+First of all, make sure to obtain a license for Polars on-premises by
 [signing up here](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv). You will receive a link to download
-our binary named `polars-on-premise` as well as a license for running Polars on-premise.
+our binary named `polars-on-premises` as well as a license for running Polars on-premises.
 ## Running the binary
 The main entrypoint is as follows:
 ```shell
-$ polars-on-premise service --config-path /etc/polars-cloud/config.toml
+$ polars-on-premises service --config-path /etc/polars-cloud/config.toml
 ```
 However, the service requires quite some configuration to get started. Below you can find an example
 scheduler and worker config, and you can find the full configuration reference
-[here](/polars-on-premise/bare-metal/config-reference).
+[here](/polars-on-premises/bare-metal/config-reference).
 ## Example scheduler config
 Here is a cleaned-up example you can use after the reference tables. It keeps the scheduler
 single-purpose (no worker role) and turns on observability.
@@ -9466,6 +9467,7 @@ allow_shared_disk = false
 n_workers = 4
 [observatory]
 enabled = true
+max_metrics_bytes_total = 0
 [static_leader]
 leader_key = "scheduler"
 public_leader_addr = "192.168.1.1"
@@ -9491,33 +9493,34 @@ heartbeat_interval_secs = 5
 shuffle_data_path = "/opt/shuffle-data-path"
 [observatory]
 enabled = true
+max_metrics_bytes_total = 0
 [static_leader]
 leader_key = "scheduler"
 public_leader_addr = "192.168.1.1"
 ```
 The complete configuration reference can be found
-[here](/polars-on-premise/bare-metal/config-reference).
+[here](/polars-on-premises/bare-metal/config-reference).
 ---
-polars/docs/source/polars-on-premise/bare-metal/python-environment.md
+polars/docs/source/polars-on-premises/bare-metal/python-environment.md
 ---
-A major point of `polars-on-premise` is the system requirements regarding the Python version and
+A major point of `polars-on-premises` is the system requirements regarding the Python version and
 Python dependencies, which need to be identical on the client, the scheduler, and all workers. The
 easiest method to achieve this is having a system-wide Python environment and globally installed
 packages.
-The minimal requirement for running `polars-on-premise` is the `polars` package. Each release of
-`polars-on-premise` is pinned to a single `polars` release, which can be found in the release
+The minimal requirement for running `polars-on-premises` is the `polars` package. Each release of
+`polars-on-premises` is pinned to a single `polars` release, which can be found in the release
 announcement.
 ## System-wide installation
 ```shell
 $ uv pip install --break-system-packages -r requirements.txt polars[cloudpickle]==PINNED_VERSION
-$ polars-on-premise service --config-path /etc/polars-cloud/config.toml
+$ polars-on-premises service --config-path /etc/polars-cloud/config.toml
 ```
 ## Virtual Environment
-It's also possible to run `polars-on-premise` using a virtual environment.
+It's also possible to run `polars-on-premises` using a virtual environment.
 ```shell
 $ uv venv .venv
 $ uv pip install -r requirements.txt polars[cloudpickle]==PINNED_VERSION
 $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(uv run python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
-$ polars-on-premise service --config-path /etc/polars-cloud/config.toml
+$ polars-on-premises service --config-path /etc/polars-cloud/config.toml
 ```
 ---
