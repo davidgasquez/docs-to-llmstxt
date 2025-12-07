@@ -3370,7 +3370,7 @@ In current atproto Lexicon use, the **query** and **fragment** parts are not yet
 "at://" AUTHORITY [ "/" COLLECTION [ "/" RKEY ] ]
 ```
 
-The **authority** section is required, must be normalized, and if a DID must be one of the "blessed" DID methods. The optional **collection** part of the path must be a normalized [NSID](./nsid). The optional **rkey** part of the path must be a valid [Record Key](./record-key).
+The **authority** section is required, and should be normalized. Similar to the rules for DID syntax elsewhere in atproto, it is syntaxtually valid to have AT URIs with unsupported DID methods, though the URI will not resolve or function properly. The optional **collection** part of the path must be a normalized [NSID](./nsid). The optional **rkey** part of the path must be a valid [Record Key](./record-key).
 
 An AT URI pointing to a specific record in a repository is not a *strong* reference, in that it is not content-addressed. The record may change or be removed over time, or the DID itself may be deleted or unavailable. For `did:web`, control of the DID (and thus repository) may change over time. For AT URIs with a handle in the authority section, the handle-to-DID mapping can also change.
 
@@ -3998,7 +3998,7 @@ A string type which is either a DID (type: did) or a handle (handle). Mostly use
 
 Full-precision date and time, with timezone information.
 
-This format is intended for use with computer-generated timestamps in the modern computing era (eg, after the UNIX epoch). If you need to represent historical or ancient events, ambiguity, or far-future times, a different format is probably more appropriate. Datetimes before the Current Era (year zero) as specifically disallowed.
+This format is intended for use with computer-generated timestamps in the modern computing era (eg, after the UNIX epoch). If you need to represent historical or ancient events, ambiguity, or far-future times, a different format is probably more appropriate. Datetimes before year zero (in astonomical time) are specifically disallowed.
 
 Datetime format standards are notoriously flexible and overlapping. Datetime strings in atproto should meet the [intersecting](https://ijmacd.github.io/rfc3339-iso8601/) requirements of the [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339), [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601), and [WHATWG HTML](https://html.spec.whatwg.org/#dates-and-times) datetime standards.
 
@@ -4020,6 +4020,8 @@ Valid examples:
 1985-04-12T23:20:50.123456Z
 1985-04-12T23:20:50.120Z
 1985-04-12T23:20:50.120000Z
+0001-01-01T00:00:00.000Z
+0000-01-01T00:00:00.000Z
 
 # supported
 1985-04-12T23:20:50.12345678912345Z
@@ -4058,6 +4060,9 @@ Invalid examples:
 # syntax looks ok, but datetime is not valid
 1985-04-12T23:99:50.123Z
 1985-00-12T23:20:50.123Z
+
+# ISO-8601, but normalizes to a negative time
+0000-01-01T00:00:00+01:00
 ```
 
 ### `uri`
