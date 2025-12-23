@@ -25048,177 +25048,6 @@ sidebar_link: false
 ---
 
 ---
-evidence/sites/docs/pages/deployment/cloud/index.md
----
----
-title: Cloud
-sidebar_position: 2
-sidebar_link: false
----
-
-
-
-
----
-evidence/sites/docs/pages/deployment/cloud/evidence-cloud/index.md
----
----
-sidebar_position: 2
-hide_table_of_contents: false
-title: Evidence Cloud
-description: Evidence Cloud is the easiest way to deploy Evidence apps. It's maintained by the Evidence team, and allows you to securely host Evidence apps without having to worry about maintaining your own infrastructure.
-og:
-    image: /img/deployment/deploy-evidence-cloud.png
----
-
-Evidence Cloud is the easiest way to host Evidence apps. It's maintained by the Evidence team, and allows you to securely host Evidence apps without having to worry about maintaining your own infrastructure.
-
-- **Easy to set up:** Deploy in 5 minutes without configuring any infrastructure.
-- **Secure:** Manage access for users in your team.
-- **Organizational domain:** Host your app at `[organisation].evidence.app`.
-- **Scheduled refreshes:** Daily (or more frequent) data updates to your app.
-- **Re-build on push:** Merge to your target branch to rebuild your app.
-- **Custom domains:** Add a custom domain to your app.
-- **Cloud execution engine:** Offload heavy queries to our Cloud SQL engine for faster performance.
-
-## Prerequisites
-
-- A GitHub account
-- An Evidence project pushed to GitHub (optional)
-
-## Deploy Evidence to Evidence Cloud
-
-1. Go to <a href="https://evidence.app" target="_blank" class="markdown">Evidence Cloud</a> and login with GitHub
-1. Choose an option to get started:
-   1. **If you have an existing Evidence project:** click `Add Project`
-   1. **If you don't have a Evidence project yet:** select `Start from our templates`, and choose evidence-dev/template.
-1. Deploy your project
-   - Repository: Choose the GitHub repository containing your Evidence project
-   - Branch: Edit if required
-   - Domain: Choose the subdomain you want to deploy to
-   - (Optional) Root directory: Edit to point to your Evidence directory if you are using a monorepo
-   - Authentication: None, Email and Password (Paid plans only), or SSO (Paid plans only)
-1. Set your environment variables
-   - **If you are deploying an existing project**, click "Paste Environment Variables"
-        - Navigate to the <a href=http://localhost:3000/settings#deploy target="_blank" class="markdown">settings page</a> and use the **Copy All** button to copy them to your clipboard, then paste them into the Environment Variables section. Click **Save**.
-        - Alternatively, you can find credentials in `connection.options.yaml` files in your `/sources/your_source` directory, and enter them in KEY=VALUE format on separate lines.
-        - The key format used should be `EVIDENCE_SOURCE__[your_source]__[option_name]` (Note the casing matches your source names, and the double underscores). Note that the values are base64 encoded, and will need to be decoded.
-   - **If you are deploying from a template**, click "Use Template Environment Variables"
-1. Click `Deploy your project`
-
-Your app will be deployed to https://[your-subdomain].evidence.app
-
-## Domains, Authentication and Scheduling
-
-### Authentication
-
-Evidence Cloud Team and Enterprise plans support private apps with auth. If you need to configure an SSO provider, reach out to our team on [Slack](https://slack.evidence.dev).
-
-### Custom Domains
-
-Evidence Cloud Enterprise plans support custom domains. Reach out to our team on [Slack](https://slack.evidence.dev) to set your domain up.
-
-### Data Refresh
-
-To adjust your deployment schedule, select your app in [Evidence Cloud](https://evidence.app), click **Schedule**, and adjust the schedule.
-
-Community Plan sites can be refreshed daily. More frequent refreshes are available on the Team and Enterprise plans.
-
-## Frequently Asked Questions
-
-### Features
-
-
-<Details title="What causes my data to update?">
-
-- Pushes to your target branch.
-- Clicking the `Redeploy` button in the UI.
-- You can set up a regularly scheduled refresh on some of our plans.
-
-</Details>
-
-<Details title="How frequently does Evidence Cloud refresh my data?">
-You can set up data refreshes as regularly as you need on the Team and Enterprise plans.
-</Details>
-
-<Details title="How does authentication work for my private app?">
-
-    Each viewer account is provided with a unique login to access the app. You can manage viewers in the Evidence Cloud UI.
-</Details>
-
-<Details title="Can I create a public Evidence Cloud site?">
-
-    Yes! Our Free plan allows you to create public sites.
-</Details>
-
-<Details title="How do I set up development previews?">
-
-Alongside your `main` branch, set up a secondary app targeting a development branch (e.g. `dev`) whenever you merge changes into `dev`, you will get a preview. When you are ready to release changes, merge these into `main`.
-
-You can set up different database credentials for development deployments, which allows 
-you to use development data before it is in your production db.
-
-</Details>
-
-
-
-### Pricing
-
-<Details title="Is Evidence Cloud free?">
-
-Evidence Cloud's Free tier offers unlimited public apps. For authentication and scheduled updates, [paid plans](https://evidence.dev/cloud) are available.
-
-</Details>
-
-<Details title="How do I get onto a Team or Enterprise plan?">
-
-Email us: [archie@evidence.dev](mailto:archie@evidence.dev), or reach out on Evidence Cloud chat. 
-</Details>
-
-
-### Account Management
-
-<Details title="How do I add a new developer to my Evidence app?">
-
-Give them access to your [Github repository](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/managing-an-individuals-access-to-an-organization-repository). All Evidence Cloud plans come with unlimited developer accounts.
-
-</Details>
-
-<Details title="Which git providers can I use with Evidence Cloud?">
-
-We support GitHub by default. If your team needs another git provider, reach out on [Slack](https://slack.evidence.dev).
-
-</Details>
-
-### Troubleshooting
-
-<Details title="I've successfully deployed the template app. How do I edit it?">
-
-Clone the git repository to your local machine (the repo URL is shown in the cloud UI), make edits to the code and/or database settings, and merge the edits to your target branch.
-
-</Details>
-
-
-<Details title="How long do builds take?">
-
-Most builds will be completed in under 2 minutes, and you can track progress in the build logs. The initial deployment may take longer as we provision your account.
-
-</Details>
-
-
-<Details title="When can I expect build failures?">
-
-Evidence will not deploy sites with errors to prevent users from seeing broken reports. Usually, this is caused by an error with your code.  Enter `npm run build` in your editor to test if the build succeeds locally. If you are still having issues, reach out on [Slack](https://slack.evidence.dev).
-
-</Details>
-
-<Details title="How can I prevent queries or components with errors from making it to my site?">
-
-As a default, a failed chart or query will not throw an error. To prevent failed charts or queries from building successfully, edit the build command in `package.json` to `"build": "evidence build:strict"`.
-
-</Details>
-
----
 evidence/sites/docs/pages/deployment/self-host/index.md
 ---
 ---
@@ -25270,8 +25099,6 @@ Cloudflare is a popular CDN and DNS provider that also offers a static site host
 Your app will be deployed to a URL like `https://[repo-name].pages.dev`. It can take a few minutes for the site to be available after deployment.
 
 ## Domains, Authentication and Scheduling
-
-{@partial "evidence-cloud.md"}
 
 ### Authentication
 
@@ -25370,8 +25197,6 @@ Your app will be deployed to a URL like `https://[your-username]-[your-space-nam
 
 ## Domains, Authentication and Scheduling
 
-{@partial "evidence-cloud.md"}
-
 ### Authentication
 
 If you chose a private space, only members of your Hugging Face organization will be able to access the space.
@@ -25444,8 +25269,6 @@ og:
 Your app will be deployed to https://[branch-name]-[app-id].amplifyapp.com
 
 ## Domains, Authentication and Scheduling
-
-{@partial "evidence-cloud.md"}
 
 ### Authentication
 
@@ -25584,8 +25407,6 @@ Your app should be available at `https://[username].github.io/[your-app]`.
 
 ## Domains, Authentication and Scheduling
 
-{@partial "evidence-cloud.md"}
-
 ### Authentication
 
 You can set up a private GitHub Pages site by setting the visibility of the repo to **Private**. This requires a GitHub Enterprise account.
@@ -25673,8 +25494,6 @@ og:
 Your app will be available at `https://[random-word-12345].azurestaticapps.net`
 
 ## Domains, Authentication and Scheduling
-
-{@partial "evidence-cloud.md"}
 
 ### Authentication
 
@@ -25765,8 +25584,6 @@ Netlify lets you host a public version of your app for free, or you can create a
 Your app will be available at `https://[your-site-name].netlify.app`.
 
 ## Domains, Authentication and Scheduling
-
-{@partial "evidence-cloud.md"}
 
 ### Authentication
 
@@ -25868,8 +25685,6 @@ Vercel lets you host a public version of your app for free, or you can create an
 Your app will be deployed to https://[project-name].vercel.app
 
 ## Domains, Authentication and Scheduling
-
-{@partial "evidence-cloud.md"}
 
 ### Authentication
 
@@ -26015,8 +25830,6 @@ Your app will be available at `https://[your-repo]-[hexcode].gitlab.io/`. It wil
 
 ## Domains, Authentication and Scheduling
 
-{@partial "evidence-cloud.md"}
-
 ### Authentication
 
 GitLab pages are only accessible to your account by default. To make it public, you can change the visibility at:
@@ -26114,8 +25927,6 @@ og:
 Your app should now be live on Firebase Hosting at  `https://<project-id>.web.app`.
 
 ## Domains, Authentication and Scheduling
-
-{@partial "evidence-cloud.md"}
 
 ### Authentication
 
@@ -26223,7 +26034,7 @@ order by row_number
 You should generally only use the SPA rendering mode if one of the following is true:
 - **You have a large number of pages**, >1000+ is a good rule of thumb
 - **You want to update your data frequently**, so short build times are desirable
-- **Your data sources are large** (in which case you may want to combine this with Evidence's Cloud Execution Engine)
+- **Your data sources are large**
 
 ## Comparison
 
@@ -26234,10 +26045,6 @@ You should generally only use the SPA rendering mode if one of the following is 
 </DataTable>
 
 ## Enabling SPA Mode
-
-<Alert status=warning>
-    Note: To deploy an SPA mode app on Evidence Cloud, you currently need to deploy on a private site, using the Cloud Execution Engine.
-</Alert>
 
 SPA rendering mode is disabled by default.
 
@@ -26344,11 +26151,6 @@ For example:
 <a href={addBasePath(link)}>My Component</a>
 ```
 
-## Evidence Cloud
-
-Deploying apps with custom base paths is supported in Evidence Cloud's [Enterprise plan](https://evidence.dev/cloud).
-
-
 ---
 evidence/sites/docs/pages/deployment/overview/index.md
 ---
@@ -26357,24 +26159,20 @@ sidebar_position: 1
 hide_table_of_contents: false
 title: Overview
 hide_title: true
-description: Evidence is a static site generator, so can be deployed to any static site host. The easiest way to deploy Evidence is on Evidence Cloud.
+description: Evidence is a static site generator, so can be deployed to any static site host.
 ---
 
 # Deployment Overview
 
 In production, Evidence generates [static sites](https://www.netlify.com/blog/2020/04/14/what-is-a-static-site-generator-and-3-ways-to-find-the-best-one) by default. This means it doesn't run queries against your database when someone visits your site, but queries and pre-builds all pages as HTML beforehand.
 
-Static sites are very versatile, and so you can host your Evidence app using Evidence Cloud, cloud services like AWS, Azure, Netlify or Vercel, or your own infrastructure.
+Static sites are very versatile, and so you can host your Evidence app using cloud services like AWS, Azure, Netlify or Vercel, or your own infrastructure.
 
 You can also configure Evidence as a [Single Page App (SPA)](/deployment/configuration/rendering-modes). In SPA mode Evidence will not pre-build all the pages in your application. This can be preferrable if your app has many pages (>1,000) causing long build times.
 
-## Evidence Cloud
-
-The easiest way to deploy Evidence is on [Evidence Cloud](/deployment/cloud/evidence-cloud). Evidence Cloud is free for public apps, and has paid plans for private apps.
-
 ## Self-host
 
-You can also self-host Evidence anywhere suitable for hosting static sites. See guides for:
+You can self-host Evidence anywhere suitable for hosting static sites. See guides for:
 - [AWS Amplify](/deployment/self-host/aws-amplify)
 - [Azure Static Apps](/deployment/self-host/azure-static-apps)
 - [Cloudflare Pages](/deployment/self-host/cloudflare-pages)
