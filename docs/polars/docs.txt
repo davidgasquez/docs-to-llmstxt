@@ -5517,6 +5517,9 @@ passed to every I/O function call. This can be convenient in the case where ther
 I/O operations that use the same credential provider.
 {{code_block('user-guide/io/cloud-storage','credential_provider_class_global_default',['scan_parquet',
 'CredentialProviderAWS'])}}
+## Cloud retry configuration
+- Retry behavior such as maximum retries and backoff can be configured via `storage_options`:
+{{code_block('user-guide/io/cloud-storage','storage_options_retry_configuration',['scan_parquet'])}}
 ## Scanning with PyArrow
 We can also scan from cloud storage using PyArrow. This is particularly useful for partitioned
 datasets such as Hive partitioning.
@@ -5829,8 +5832,8 @@ Polars can read an NDJSON file into a `DataFrame` using the `read_ndjson` functi
 ## Write
 {{code_block('user-guide/io/json','write',['write_json','write_ndjson'])}}
 ## Scan
-Polars allows you to _scan_ a JSON input **only for newline delimited json**. Scanning delays the
-actual parsing of the file and instead returns a lazy computation holder called a `LazyFrame`.
+Polars allows you to _scan_ a NDJSON input. Scanning delays the actual parsing of the file and
+instead returns a lazy computation holder called a `LazyFrame`.
 {{code_block('user-guide/io/json','scan',['scan_ndjson'])}}
 ---
 polars/docs/source/user-guide/io/multiple.md
