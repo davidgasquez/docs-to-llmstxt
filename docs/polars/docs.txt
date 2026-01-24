@@ -6611,18 +6611,16 @@ These approaches have been developed by the Polars community through testing mod
 various inputs. If you find additional effective approaches for generating Polars code from LLMs,
 please raise a [pull request](https://github.com/pola-rs/polars/pulls).
 ## Polars MCP server
-The new remote Model Context Protocol (MCP) server for Polars provides access to the latest version
-of the official Polars and Polars Cloud documentation. The server enables LLMs to query the user
-guide and API references directly, making it easier to get more accurate answers about DataFrame
-operations, expressions, lazy evaluation, and cloud deployments. The MCP server delivers up-to-date
-documentation to help you rewrite existing queries from other libraries to Polars or work with
-Polars more efficiently.
+The new remote Model Context Protocol (MCP) server for Polars provides access to the official Polars
+and Polars Cloud documentation. The server enables LLMs to query the user guide and API references
+directly, making it easier to get more accurate answers about DataFrame operations, expressions,
+lazy evaluation, and cloud deployments.
 ```json
 {
 "mcpServers": {
 "ask_polars": {
 "command": "npx",
-"args": ["mcp-remote", "https://mcp.polars.workers.dev/sse"]
+"args": ["mcp-remote", "https://mcp.pola.rs/mcp"]
 }
 }
 }
@@ -9181,9 +9179,9 @@ lf.pipe(lambda lf: lf.with_columns(
 get_ham("col_a"),
 get_bar("col_b", lf.schema),
 get_foo("col_c", lf.schema),
-)
+))
 ```
-Another benefit of writing functions that return expressions, is that these functions are composable
+Another benefit of writing functions that return expressions is that these functions are composable,
 as expressions can be chained and partially applied, leading to much more flexibility in the design.
 ---
 polars/docs/source/user-guide/migration/spark.md
@@ -9485,6 +9483,8 @@ correspond to the
 | `shuffle_location` | object | Object used for shuffle data storage. |
 | `shuffle_location.local` | object | Object used for local disk-backed shuffle data storage. |
 | `shuffle_location.local.path` | path | Local path where shuffle/intermediate data is stored; fast local SSD is recommended.e.g. `/mnt/storage/polars/shuffle`. |
+| `shuffle_location.shared_filesystem` | object | Object used for shared filesystem-backed shuffle data storage. |
+| `shuffle_location.shared_filesystem.path` | path | Shared filesystem path where shuffle/intermediate data is stored. Must be accessible by all workers on the same path.e.g. `/mnt/storage/polars/shuffle`. |
 | `shuffle_location.s3` | object | Object used for S3-backed shuffle data storage. |
 | `shuffle_location.s3.url` | path | Destination for shuffle/intermediate data.e.g. `s3://bucket/path/to/key`. |
 | `shuffle_location.s3.aws_endpoint_url` | string | Storage option configuration, see [`scan_parquet()`](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html). |
@@ -9519,22 +9519,49 @@ task_service.public_addr.hostname = "my-host-2"
 shuffle_service.public_addr.hostname = "my-host-2"
 shuffle_location.local.path = "/mnt/storage/polars/shuffle"
 ```
+Example worker with shuffles over a shared filesystem:
+```
+[worker]
+enabled = true
+task_service.public_addr = "192.168.1.2"
+shuffle_service.public_addr = "192.168.1.2"
+shuffle_location.shared_filesystem.path = "/mnt/storage/polars/shuffle"
+```
+Example worker with shuffles over S3 compatible storage:
+```
+[worker]
+enabled = true
+task_service.public_addr = "192.168.1.2"
+shuffle_service.public_addr = "192.168.1.2"
+shuffle_location.s3.url = "s3://bucket/path/to/key"
+shuffle_location.s3.aws_secret_access_key = "YOURSECRETKEY"
+shuffle_location.s3.aws_access_key_id = "YOURACCESSKEY"
+```
 ### `[observatory]` section
 | Key | Type | Description |
-| ---------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `enabled` | boolean | Enable sending/receiving profiling data so clients can call `result.await_profile()`. `true` on both scheduler and workers if you want profiles on queries; `false` to disable. |
-| `max_metrics_bytes_total` | integer | How many bytes all the worker host metrics will consume in total. If a system-wide memory limit is specified then this is added to the share that the scheduler takes. Note that the worker host metrics is not yet available, so this configuration can be set to 0. |
-| `database_path` | string | Location to use for storing profiling data. An SQLite database file will be created here, or if a file already exists it will be opened. If left unspecified an in-memory database will be used. |
+| `max_metrics_bytes_total` | integer | How many bytes all the worker host metrics will consume in total. If a system-wide memory limit is specified then this is added to the share that the scheduler takes. For every worker, about 50 bytes of metrics are stored per second. |
+| `database_path` | string | Location to use for storing profiling data. An SQLite database file will be created here, or if a file already exists it will be opened. If this points to a directory, a file in that directory will be created. Polars on-premises will automatically add the `cluster_id` to this file name to ensure uniqueness within the directory. |
 | `service` | object | Object used for configuring the bind address of the observatory service. This is an internal service in the scheduler for receiving profiling data from all nodes. Defaults to `0.0.0.0:5049`. |
 | `service.bind_addr` | string | Bind address for the observatory service.e.g. `0.0.0.0:5049`. |
 | `service.bind_addr.ip` | string | IP address for the observatory service bind address.e.g. `192.168.1.1`. |
 | `service.bind_addr.port` | integer | Port for the observatory service bind address.e.g. `5049`. |
 | `service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+| `rest_api.enabled` | boolean | By default enabled for exposing the observatory REST API. This is a public service for accessing the profiling data and host metrics data through a web interface. |
+| `rest_api.service` | object | Object used for configuring the bind address of the observatory REST API service. Defaults to `0.0.0.0:3001`. |
+| `rest_api.service.bind_addr` | string | Bind address for the observatory REST API service.e.g. `0.0.0.0:3001`. |
+| `rest_api.service.bind_addr.ip` | string | IP address for the observatory REST API service bind address.e.g. `192.168.1.1`. |
+| `rest_api.service.bind_addr.port` | integer | Port for the observatory REST API service bind address.e.g. `3001`. |
+| `rest_api.service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
 Example:
 ```toml
+[scheduler]
+enabled = true
+n_workers = 32
 [observatory]
 enabled = true
-max_metrics_bytes_total = 0
+max_metrics_bytes_total = 5760000 # 50 bytes * 32 workers * 3600 seconds
 database_path = "/opt/db/observatory.db"
 ```
 ### `[monitoring]` section
@@ -9570,8 +9597,7 @@ polars/docs/source/polars-on-premises/bare-metal/environment-variables.md
 ---
 ## Polars
 | Variable | Description |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| `POLARS_ALLOW_PQ_EMPTY_STRUCT` | Allows reading or writing Parquet files that contain empty struct fields that are otherwise rejected. |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
 | `POLARS_TEMP_DIR` | Override the default temporary directory Polars uses for scratch files and some I/O operations. |
 You may also set any Polars OSS-recognized environment variables.
 ## Polars on-premises
@@ -9638,10 +9664,8 @@ memory_limit = 10737418240 # 10 GiB
 [worker]
 enabled = true
 shuffle_location.local.path = "/opt/shuffle-data-path"
-[observatory]
-enabled = true
-max_metrics_bytes_total = 0
-database_path = "/opt/db/observatory.db"
+task_service.public_addr = "192.168.1.2"
+shuffle_service.public_addr = "192.168.1.2"
 [monitoring]
 enabled = true
 [static_leader]
