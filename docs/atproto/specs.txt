@@ -9,10 +9,6 @@ export const metadata = {
 # OAuth
 
 <Note>
-The OAuth profile for atproto is new and may be revised based on feedback from the development community and ongoing standards work. Read more about the rollout in the [OAuth Roadmap](https://github.com/bluesky-social/atproto/discussions/2656).
-</Note>
-
-<Note>
 This specification is authoritative, but is not an implementation guide and does not provide much background or context around design decisions. The earlier [design proposal](https://github.com/bluesky-social/proposals/tree/main/0004-oauth) is not authoritative but provides more context and examples. SDK documentation and the [client implementation guide](https://docs.bsky.app/docs/advanced-guides/oauth-client) are more approachable for developers.
 </Note>
 
@@ -1030,7 +1026,7 @@ export const metadata = {
 
 # HTTP API (XRPC)
 
-HTTP APIs for client-server and server-server requests in atproto use a set of common conventions called XRPC. Endpoint path names include an NSID indicating the [Lexicon](/specs/lexicon) specifying the request and response schemas, usually with JSON content type. {{ className: 'lead' }}
+HTTP APIs for client-server and server-server requests in atproto use a set of common conventions called "Lexicon RPC", or XRPC for short. Endpoint path names include an NSID indicating the [Lexicon](/specs/lexicon) specifying the request and response schemas, usually with JSON content type. {{ className: 'lead' }}
 
 ## Lexicon HTTP Endpoints
 
@@ -2227,11 +2223,11 @@ The below is an example permission set Lexicon. The full syntax is described in 
     "main": {
       "type": "permission-set",
       "title": "Basic App Functionality",
-      "title:langs": {
+      "title:lang": {
         "ja": "基本的なアプリ機能"
       },
       "detail": "Creation of posts and interactions",
-      "detail:langs": {
+      "detail:lang": {
         "ja": "投稿と交流の作成"
       },
       "permissions": [
@@ -2563,11 +2559,11 @@ emoji:☺️
     "main": {
       "type": "permission-set",
       "title": "Basic App Functionality",
-      "title:langs": {
+      "title:lang": {
         "ja": "基本的なアプリ機能"
       },
       "detail": "Creation of posts and interactions",
-      "detail:langs": {
+      "detail:lang": {
         "ja": "投稿と交流の作成"
       },
       "permissions": [
@@ -4110,9 +4106,9 @@ Specifies a bundle of permissions for use as [OAuth](/specs/oauth) scopes. See [
 Type-specific fields:
 
 - `title` (string, optional): short name for the permission set, which will be displayed to users. Should be limited to a handful of words
-- `title:langs` (map of strings to strings, optional): internationalized/localized variations of `title` for display. The map key strings must be valid language codes; see the `language` lexicon string format
+- `title:lang` (map of strings to strings, optional): internationalized/localized variations of `title` for display. The map key strings must be valid language codes; see the `language` lexicon string format
 - `detail` (string, optional): human-meaningful description of the scope of this permission set, which will be displayed to users. Should be limited to a paragraph or so.
-- `detail:langs` (map of strings to strings, optional): same as `title:langs`, but for `detail`
+- `detail:lang` (map of strings to strings, optional): same as `title:lang`, but for `detail`
 - `permissions` (array of `permission` definitions, required): the permissions included in this set
 
 ## Field Type Definitions
