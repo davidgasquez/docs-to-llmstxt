@@ -9391,209 +9391,6 @@ You can then run `helm search repo polars-inc` to see the available charts.
 Further explanation on the different configuration can be found in the
 [chart `README.md`](https://github.com/polars-inc/helm-charts/blob/main/charts/polars/README.md).
 ---
-polars/docs/source/polars-on-premises/bare-metal/config-reference.md
----
-# Config file reference
-This page describes the different configuration options for Polars on-premises. The config file is a
-standard TOML file with different sections. Any of the configuration can be overridden using
-environment variables in the following format: `PC_CUBLET__section_name__key`.
-### Top-level configuration
-The `polars-on-premises` binary requires a license which path is provided as a configuration option,
-listed below. The license itself has the following shape:
-```json
-{ "params": { "expiry": "2026-01-31T23:59:59Z", "name": "Company" }, "signature": "..." }
-```
-| Key | Type | Description |
-| -------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cluster_id` | string | Logical ID for the cluster; workers and scheduler that share this ID will form a single cluster.e.g. `prod-eu-1`; must be unique among all clusters. |
-| `instance_id` | string | Unique ID for this node within the cluster, used for addressing and leader selection.e.g. `scheduler`, `worker_0`; must be unique per cluster. |
-| `license` | path | Absolute path to the Polars on-premises license file required to start the process.e.g. `/etc/polars/license.json`. |
-| `memory_limit` | integer | Hard memory budget for all components in this node; enforced via cgroups when delegated.e.g. `1073741824` (1 GiB), `10737418240` (10 GiB). |
-Example:
-```toml
-cluster_id = "polars-cluster-dev"
-instance_id = "scheduler"
-license = "/etc/polars/license.json"
-memory_limit = 1073741824 # 1 GiB
-```
-### `[scheduler]` section
-For remote Polars queries without a specific output sink, Polars on-premises can automatically add
-persistent sink. We call these sinks "anonymous results" sinks. Infrastructure-wise, these sinks are
-backed by S3-compatible storage accessible from all worker nodes and the Python client. The data
-written to this location is not automatically deleted, so you need to configure a retention policy
-for this data yourself.
-You may configure the credentials using the options listed below; the key names correspond to the
-[`storage_options` parameter from the `scan_parquet()` method](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html)
-(_e.g._ `aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`, `aws_region`). We
-currently only support the AWS keys of the `storage_options` dictionary, but note that you can use
-any other cloud provider that supports the S3 API, such as MinIO or DigitalOcean Spaces.
-| Key | Type | Description |
-| ---------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled` | boolean | Whether the scheduler component runs in this process. `true` for the leader node, `false` on pure workers. |
-| `allow_local_sinks` | boolean | Whether workers are allowed to write to a shared/local disk visible to the scheduler. `false` for fully remote/storage-only setups, `true` if you have a shared filesystem. |
-| `n_workers` | integer | Expected number of workers in this cluster; scheduler waits for the latter to be online before running queries.e.g. `4`. |
-| `anonymous_result_location` | object | Destination for results of queries that do not have an explicit sink. Currently supported local mounted (must be reachable on the exact same path and `allow_local_sinks` enabled) and S3-based. Both options must be network reachable by scheduler, workers, and client.e.g. `/mnt/storage/polars/results`.e.g. `s3://bucket/path/to/key` |
-| `anonymous_result_location.local` | object | Object used for local disk-backed anonymous results. |
-| `anonymous_result_location.local.path` | path | Local path where anonymous results are stored.e.g. `/mnt/storage/polars/results`. |
-| `anonymous_result_location.s3` | object | Object used for S3-backed anonymous results. |
-| `anonymous_result_location.s3.url` | string | S3 bucket url.e.g. `s3://bucket/path/to/key`. |
-| `anonymous_result_location.s3.aws_endpoint_url` | string | Storage option configuration, see [`scan_parquet()`](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html). |
-| `anonymous_result_location.s3.aws_region` | string | Storage option configuration.e.g. `eu-east-1` |
-| `anonymous_result_location.s3.aws_access_key_id` | string | Storage option configuration. |
-| `anonymous_result_location.s3.aws_secret_access_key` | string | Storage option configuration. |
-| `client_service` | object | Object used for configuring the bind address of the client service. This is the service used by the polars-cloud Python client. Defaults to `0.0.0.0:5051`. |
-| `client_service.bind_addr` | string | Bind address for the client service.e.g. `0.0.0.0:5051`. |
-| `client_service.bind_addr.ip` | string | IP address for the client service bind address.e.g. `192.168.1.1`. |
-| `client_service.bind_addr.port` | integer | Port for the client service bind address.e.g. `5051`. |
-| `client_service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-1`. |
-| `worker_service` | object | Object used for configuring the bind address of the worker service. This is an internal service used by the workers. Defaults to `0.0.0.0:5050`. |
-| `worker_service.bind_addr` | string | Bind address for the worker service.e.g. `0.0.0.0:5050`. |
-| `worker_service.bind_addr.ip` | string | IP address for the worker service bind address.e.g. `192.168.1.1`. |
-| `worker_service.bind_addr.port` | integer | Port for the worker service bind address.e.g. `5050`. |
-| `worker_service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-Example:
-```toml
-[scheduler]
-enabled = true
-allow_local_sinks = false
-n_workers = 4
-anonymous_result_location.s3.url = "s3://bucket/path/to/key"
-anonymous_result_location.s3.aws_secret_access_key = "YOURSECRETKEY"
-anonymous_result_location.s3.aws_access_key_id = "YOURACCESSKEY"
-client_service.bind_addr = "0.0.0.0:5051"
-worker_service.bind_addr.hostname = "my-host-2"
-```
-Example with mounted local disk as anonymous result destination:
-```toml
-[scheduler]
-enabled = true
-allow_local_sinks = true
-anonymous_result_location = "/mnt/storage/polars/results"
-```
-### `[worker]` section
-During distributed query execution, data may be shuffled between workers. A local path can be
-provided, but shuffles can also be configured to use S3-compatible storage (accessible from all
-worker nodes). You may configure the credentials using the options listed below; the key names
-correspond to the
-[`storage_options` parameter from the `scan_parquet()` method](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html)
-(_e.g._ `aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`, `aws_region`).
-| Key | Type | Description |
-| ------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled` | boolean | Whether the worker component runs in this process. `true` on worker nodes, `false` on the dedicated scheduler. |
-| `heartbeat_period` | string | Interval for worker heartbeats towards the scheduler, used for liveness and load reporting. Either an ISO 8601 duration format or a jiff friendly duration format (see https://docs.rs/jiff/0.2.18/jiff/fmt/friendly/)e.g. `5 secs`.e.g. `PT5S`. |
-| `shuffle_location` | object | Object used for shuffle data storage. |
-| `shuffle_location.local` | object | Object used for local disk-backed shuffle data storage. |
-| `shuffle_location.local.path` | path | Local path where shuffle/intermediate data is stored; fast local SSD is recommended.e.g. `/mnt/storage/polars/shuffle`. |
-| `shuffle_location.shared_filesystem` | object | Object used for shared filesystem-backed shuffle data storage. |
-| `shuffle_location.shared_filesystem.path` | path | Shared filesystem path where shuffle/intermediate data is stored. Must be accessible by all workers on the same path.e.g. `/mnt/storage/polars/shuffle`. |
-| `shuffle_location.s3` | object | Object used for S3-backed shuffle data storage. |
-| `shuffle_location.s3.url` | path | Destination for shuffle/intermediate data.e.g. `s3://bucket/path/to/key`. |
-| `shuffle_location.s3.aws_endpoint_url` | string | Storage option configuration, see [`scan_parquet()`](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html). |
-| `shuffle_location.s3.aws_region` | string | Storage option configuration.e.g. `eu-east-1` |
-| `shuffle_location.s3.aws_access_key_id` | string | Storage option configuration. |
-| `shuffle_location.s3.aws_secret_access_key` | string | Storage option configuration. |
-| `task_service` | object | Object used for configuring the bind address of the task service. This is an internal service in the worker for receiving tasks from the scheduler. Defaults to `0.0.0.0:5052`. |
-| `task_service.bind_addr` | string | Bind address for the task service.e.g. `0.0.0.0:5052`. |
-| `task_service.bind_addr.ip` | string | IP address for the task service bind address.e.g. `192.168.1.1`. |
-| `task_service.bind_addr.port` | integer | Port for the task service bind address.e.g. `5052`. |
-| `task_service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-| `task_service.public_addr` | string | Address at which this service is reachable by the scheduler. Defaults to the bind address if not set. This field is required when the bind address is `0.0.0.0`.e.g. `192.168.1.1`. |
-| `task_service.public_addr.ip` | string | IP address for the task service public address.e.g. `192.168.1.2`. |
-| `task_service.public_addr.port` | integer | Port for the task service public address.e.g. `5052`. |
-| `task_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-| `shuffle_service` | object | Object used for configuring the bind address of the task service. This is an internal service in the worker for receiving tasks from the scheduler. Defaults to `0.0.0.0:5052`. |
-| `shuffle_service.bind_addr` | string | Bind address for the task service.e.g. `0.0.0.0:5053`. |
-| `shuffle_service.bind_addr.ip` | string | IP address for the task service bind address.e.g. `192.168.1.1`. |
-| `shuffle_service.bind_addr.port` | integer | Port for the task service bind address.e.g. `5053`. |
-| `shuffle_service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-| `shuffle_service.public_addr` | string | Address at which this service is reachable by the scheduler. Defaults to the bind address if not set. This field is required when the bind address is `0.0.0.0`.e.g. `192.168.1.1`. |
-| `shuffle_service.public_addr.ip` | string | IP address for the task service public address.e.g. `192.168.1.2`. |
-| `shuffle_service.public_addr.port` | integer | Port for the task service public address.e.g. `5053`. |
-| `shuffle_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-Example:
-```toml
-[worker]
-enabled = true
-heartbeat_period = "5 secs"
-task_service.bind_addr = "0.0.0.0:1234"
-task_service.public_addr.hostname = "my-host-2"
-shuffle_service.public_addr.hostname = "my-host-2"
-shuffle_location.local.path = "/mnt/storage/polars/shuffle"
-```
-Example worker with shuffles over a shared filesystem:
-```
-[worker]
-enabled = true
-task_service.public_addr = "192.168.1.2"
-shuffle_service.public_addr = "192.168.1.2"
-shuffle_location.shared_filesystem.path = "/mnt/storage/polars/shuffle"
-```
-Example worker with shuffles over S3 compatible storage:
-```
-[worker]
-enabled = true
-task_service.public_addr = "192.168.1.2"
-shuffle_service.public_addr = "192.168.1.2"
-shuffle_location.s3.url = "s3://bucket/path/to/key"
-shuffle_location.s3.aws_secret_access_key = "YOURSECRETKEY"
-shuffle_location.s3.aws_access_key_id = "YOURACCESSKEY"
-```
-### `[observatory]` section
-| Key | Type | Description |
-| ------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled` | boolean | Enable sending/receiving profiling data so clients can call `result.await_profile()`. `true` on both scheduler and workers if you want profiles on queries; `false` to disable. |
-| `max_metrics_bytes_total` | integer | How many bytes all the worker host metrics will consume in total. If a system-wide memory limit is specified then this is added to the share that the scheduler takes. For every worker, about 50 bytes of metrics are stored per second. |
-| `database_path` | string | Location to use for storing profiling data. An SQLite database file will be created here, or if a file already exists it will be opened. If this points to a directory, a file in that directory will be created. Polars on-premises will automatically add the `cluster_id` to this file name to ensure uniqueness within the directory. |
-| `service` | object | Object used for configuring the bind address of the observatory service. This is an internal service in the scheduler for receiving profiling data from all nodes. Defaults to `0.0.0.0:5049`. |
-| `service.bind_addr` | string | Bind address for the observatory service.e.g. `0.0.0.0:5049`. |
-| `service.bind_addr.ip` | string | IP address for the observatory service bind address.e.g. `192.168.1.1`. |
-| `service.bind_addr.port` | integer | Port for the observatory service bind address.e.g. `5049`. |
-| `service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-| `rest_api.enabled` | boolean | By default enabled for exposing the observatory REST API. This is a public service for accessing the profiling data and host metrics data through a web interface. |
-| `rest_api.service` | object | Object used for configuring the bind address of the observatory REST API service. Defaults to `0.0.0.0:3001`. |
-| `rest_api.service.bind_addr` | string | Bind address for the observatory REST API service.e.g. `0.0.0.0:3001`. |
-| `rest_api.service.bind_addr.ip` | string | IP address for the observatory REST API service bind address.e.g. `192.168.1.1`. |
-| `rest_api.service.bind_addr.port` | integer | Port for the observatory REST API service bind address.e.g. `3001`. |
-| `rest_api.service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-Example:
-```toml
-[scheduler]
-enabled = true
-n_workers = 32
-[observatory]
-enabled = true
-max_metrics_bytes_total = 5760000 # 50 bytes * 32 workers * 3600 seconds
-database_path = "/opt/db/observatory.db"
-```
-### `[monitoring]` section
-| Key | Type | Description |
-| --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled` | boolean | Enable sending/receiving monitoring data to the observatory service. If enabled, it will use the address specified in `observatory_service.public_addr`. |
-Example:
-```toml
-[monitoring]
-enabled = true
-```
-### `[static_leader]` section
-| Key | Type | Description |
-| ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `leader_instance_id` | string | ID of the leader node; should match the schedulerâ€™s `instance_id`.Typically `scheduler` to match your scheduler node. |
-| `scheduler_service.public_addr` | string | Address at which the scheduler client service is reachable from this node.e.g. `192.168.1.1`. |
-| `scheduler_service.public_addr.ip` | string | IP address for the scheduler client service public address.e.g. `192.168.1.1`. |
-| `scheduler_service.public_addr.port` | integer | Port for the scheduler client service public address.e.g. `5051`. |
-| `scheduler_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-| `observatory_service.public_addr` | string | Address at which the observatory service is reachable from this node.e.g. `192.168.1.1`. |
-| `observatory_service.public_addr.ip` | string | IP address for the observatory service public address.e.g. `192.168.1.1`. |
-| `observatory_service.public_addr.port` | integer | Port for the observatory service public address.e.g. `5049`. |
-| `observatory_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
-Example:
-```toml
-[static_leader]
-leader_instance_id = "scheduler"
-observatory_service.public_addr = "127.0.0.1"
-scheduler_service.public_addr = "127.0.0.1"
-```
----
 polars/docs/source/polars-on-premises/bare-metal/environment-variables.md
 ---
 ## Polars
@@ -9627,53 +9424,43 @@ $ ./polars-on-premises service --config-path /etc/polars-cloud/config.toml
 However, the service requires quite some configuration to get started. Below you can find an example
 scheduler and worker config, and you can find the full configuration reference
 [here](/polars-on-premises/bare-metal/config-reference).
+## Quick start
+To get started fast, you can use the following configuration. It enables the scheduler, worker,
+observatory, and monitoring components. It writes query output data and shuffle data to a local
+directory.
+```toml
+cluster_id = "polars-cluster"
+instance_id = "node-0"
+license = "./license.json" # Path to your Polars on-premises license. This is a JSON file containing your company name, license expiry, and license signature.
+# Component that receives the Polars queries from the Python client.
+[scheduler]
+enabled = true
+allow_local_sinks = true
+anonymous_result_location.local.path = "./results-data"
+n_workers = 1
+# Component that receives and executes tasks from the scheduler.
+[worker]
+enabled = true
+shuffle_location.local.path = "./shuffle-data-path"
+task_service.public_addr = "127.0.0.1"
+shuffle_service.public_addr = "127.0.0.1"
+# Component that receives query profiling and host metrics.
+[observatory]
+enabled = true
+max_metrics_bytes_total = 30000
+database_path = "./observatory/"
+# Enables exporting query profiles and host metrics to the observatory service.
+[monitoring]
+enabled = true
+# Explicitly define that node-0 is the leader node. The leader node should run the observatory and monitoring components.
+[static_leader]
+leader_instance_id = "node-0"
+observatory_service.public_addr = "127.0.0.1"
+scheduler_service.public_addr = "127.0.0.1"
+```
 ## Configuration
 The complete configuration reference can be found
 [here](/polars-on-premises/bare-metal/config-reference).
-### Example scheduler config
-Here is a cleaned-up example you can use after the reference tables. It keeps the scheduler
-single-purpose (no worker role) and turns on observability.
-```toml
-cluster_id = "polars-cluster"
-instance_id = "scheduler"
-license = "/etc/polars/license.json"
-memory_limit = 1073741824 # 1 GiB
-[scheduler]
-enabled = true
-allow_local_sinks = false
-anonymous_result_location.s3.url = "s3://bucket/path/to/key"
-n_workers = 4
-[observatory]
-enabled = true
-max_metrics_bytes_total = 0
-database_path = "/opt/db/observatory.db"
-[monitoring]
-enabled = true
-[static_leader]
-leader_instance_id = "scheduler"
-observatory_service.public_addr = "192.168.1.1"
-scheduler_service.public_addr = "192.168.1.1"
-```
-### Example worker config
-And the matching worker config. This example gives the worker a local shuffle path and enables
-observability.
-```toml
-cluster_id = "polars-cluster"
-instance_id = "worker_0"
-license = "/etc/polars/license.json"
-memory_limit = 10737418240 # 10 GiB
-[worker]
-enabled = true
-shuffle_location.local.path = "/opt/shuffle-data-path"
-task_service.public_addr = "192.168.1.2"
-shuffle_service.public_addr = "192.168.1.2"
-[monitoring]
-enabled = true
-[static_leader]
-leader_instance_id = "scheduler"
-observatory_service.public_addr = "192.168.1.1"
-scheduler_service.public_addr = "192.168.1.1"
-```
 ---
 polars/docs/source/polars-on-premises/bare-metal/python-environment.md
 ---
@@ -9699,4 +9486,535 @@ $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(uv run python -c "import sysconfig; 
 $ uv pip install -r requirements.txt polars[cloudpickle]==$PINNED_VERSION
 $ ./polars-on-premises service --config-path /etc/polars-cloud/config.toml
 ```
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/anonymous-results.md
+---
+# Anonymous results
+For remote Polars queries without a specific output sink, Polars on-premises can automatically add
+an output sink. We call this sink an anonymous results sink. Infrastructure-wise, these sinks can be
+backed by S3-compatible storage or another shared filesystem accessible from all worker nodes and
+the Python client. The data written to this location is not automatically deleted, so you need to
+configure a retention policy for this data yourself.
+## Shared filesystem
+If your infrastructure has some shared storage file system, such as NFS (or CephFs, etc.), you can
+use that here. An example configuration is shown below:
+```toml
+[scheduler]
+enabled = true
+allow_local_sinks = true # required for local anonymous results
+anonymous_results.local.path = "/mnt/storage/polars/anonymous-results"
+```
+Note that you must enable `allow_local_sinks` to allow query results to be written to a local path.
+Make sure that this exact path is reachable from all worker nodes and the Python client. If the
+Python client does not have access to this path, it won't be able to download the anonymous results,
+but it will still be able to receive query status updates.
+## S3 compatible storage
+To store anonymous results in S3 compatible storage, you can configure it as shown below. The
+credentials specified are automatically used in the worker. Once the anonymous results are written,
+the scheduler also creates a presigned URL for the Python client to download the result from the S3
+location.
+```toml
+[scheduler]
+enabled = true
+anonymous_results.s3.url = "s3://bucket/path/to/key"
+anonymous_results.s3.aws_secret_access_key = "YOURSECRETKEY"
+anonymous_results.s3.aws_access_key_id = "YOURACCESSKEY"
+```
+If you self-host an S3 compatible storage solution, you can override the `aws_endpoint_url`
+configuration option.
+```toml
+[scheduler]
+anonymous_results.s3.url = "s3://bucket/path/to/key"
+anonymous_results.s3.aws_endpoint_url = "http://your-s3-compatible-storage-host:8080"
+```
+Make sure that this endpoint is reachable from all worker nodes and the Python client. If the Python
+client does not have access to this endpoint, it won't be able to download the anonymous results,
+but it will still be able to receive query status updates.
+The allowed keys under `anonymous_results.s3` are the same as in
+[`scan_parquet()`](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html)(_e.g._
+`aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`, `aws_region`). We currently only
+support the AWS keys of the `storage_options` dictionary, but note that you can use any other cloud
+provider that supports the S3 API, such as MinIO or DigitalOcean Spaces.
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/example-configurations.md
+---
+# Example configurations
+### Ports updates
+Cluster with all ports updated (single node)
+```toml
+cluster_id = "cluster-1"
+instance_id = "node-1"
+license = "/etc/polars/license.json"
+[scheduler]
+enabled = true
+n_workers = 1
+client_service.bind_addr.port = 4001
+worker_service.bind_addr.port = 4002
+[worker]
+enabled = true
+task_service.bind_addr.port = 4005
+task_service.public_addr = "127.0.0.1:4005"
+shuffle_service.bind_addr.port = 4006
+shuffle_service.public_addr = "127.0.0.1:4006"
+[observatory]
+enabled = true
+max_metrics_bytes_total = 180000
+database_path = "/opt/db/observatory.db"
+service.bind_addr.port = 4003
+[observatory.rest_api]
+enabled = true
+service.bind_addr.port = 4004
+[monitoring]
+enabled = true
+[static_leader]
+leader_instance_id = "node-1"
+observatory_service.public_addr = "127.0.0.1:4003"
+scheduler_service.public_addr = "127.0.0.1:4002"
+```
+Cluster with all ports updated (multi node)
+Scheduler
+```toml
+cluster_id = "cluster-1"
+instance_id = "node-1"
+[scheduler]
+enabled = true
+n_workers = 1
+client_service.bind_addr.port = 4001
+worker_service.bind_addr.port = 4002
+[observatory]
+enabled = true
+max_metrics_bytes_total = 180000
+database_path = "/opt/db/observatory.db"
+service.bind_addr.port = 4003
+[observatory.rest_api]
+enabled = true
+service.bind_addr.port = 4004
+[monitoring]
+enabled = true
+[static_leader]
+leader_instance_id = "node-1"
+observatory_service.public_addr = "127.0.0.1:4003"
+scheduler_service.public_addr = "127.0.0.1:4002"
+```
+Worker
+```toml
+cluster_id = "cluster-1"
+instance_id = "node-2"
+[worker]
+enabled = true
+task_service.bind_addr.port = 4005
+task_service.public_addr = "127.0.0.1:4005"
+shuffle_service.bind_addr.port = 4006
+shuffle_service.public_addr = "127.0.0.1:4006"
+[monitoring]
+enabled = true
+[static_leader]
+leader_instance_id = "node-1"
+observatory_service.public_addr = "127.0.0.1:4003"
+scheduler_service.public_addr = "127.0.0.1:4002"
+```
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/license.md
+---
+# License
+Polars on-premises requires a license key to run. If you haven't contacted Polars yet,
+[sign up here to apply](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv). A license key looks like
+this:
+```json
+{ "params": { "expiry": "2026-01-31T23:59:59Z", "name": "Company" }, "signature": "..." }
+```
+At the top level of the configuration file, you need to specify the path to the license file using
+the `license` key. For example:
+```toml
+cluster_id = "polars-cluster-dev"
+instance_id = "scheduler"
+license = "/etc/polars/license.json"
+# ...
+```
+The cluster verifies the license key periodically, and will shutdown once the license expires.
+## EULA license
+Polars on-premises is licensed under the End User License Agreement (EULA) which can be found in the
+Polars on-premises binary. The EULA must be accepted by setting the `POLARS_EULA_ACCEPTED`
+environment variable to `1`. If the environment variable is not set, the executable will print the
+EULA and exit. You can also manually print the EULA using the following command:
+```bash
+polars-on-premises --print-eula
+```
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/monitoring.md
+---
+# Profiling and host metrics
+The profiling and host metrics system consists of a sender and receiving side. The observatory
+component's main task is to receive telemetry data from the cluster's nodes. The observatory
+component can currently only be enabled on nodes with the scheduler component enabled. The
+monitoring component is used to send telemetry data to the observatory. An example configuration is
+shown below.
+```toml
+# ... global configuration
+[scheduler]
+enabled = true
+# ... continue configuration for scheduler
+[observatory]
+enabled = true
+max_metrics_bytes_total = 5760000
+database_path = "./observatory/"
+[monitoring]
+enabled = true
+```
+## Observatory data stores
+The observatory stores profiling data in an SQLite database file. The location of this file can be
+configured as shown above using the `database_path` key. The storage needed for this file is in the
+order of several tens of MB, depending on the number of queries and their complexity.
+The observatory stores host metrics in a pre-allocated buffer in memory. The size of this buffer can
+be configured using the `max_metrics_bytes_total` key. And since the required memory for these
+metrics can quickly rise if a cluster is kept alive for a long time, there is no default value for
+this key. You can estimate the required memory at around 50 bytes per second per worker node. So for
+a cluster with 32 worker nodes, with a history of 1 hour, you would need around
+`50 * 32 * 3600 = 5760000` bytes, or 5.7 MB.
+## Host metrics exporter
+The host metrics exporter supports collecting CPU and memory usage metrics from the process tree,
+and cgroups v1 and v2. Since traversing the process tree, and collecting metrics for each process is
+quite compute expensive, and a cgroup's usage can be instantly queried, we recommend to always run
+Polars on-premises in a cgroup.
+If you don't use the dashboard's host metrics feature, we recommend disabling the host metrics
+exporter.
+```toml
+[monitoring]
+enabled = true
+[monitoring.host_metrics]
+enabled = false
+```
+## Disabling observatory and monitoring
+If you do not intend to use the dashboard, or the Python client's `result.await_profile()` method,
+you can disable the observatory and monitoring components completely. Queries will still be
+executed, but profiling data will not be collected.
+```toml
+[observatory]
+enabled = false
+[monitoring]
+enabled = false
+```
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/network-addresses.md
+---
+# Network addresses
+Polars on-premises exposes several network services for communication between nodes. Each of these
+services can be configured to bind to a specific network address. This can be important when running
+a node on a specific network interface or when preventing port collisions. Most of the addresses are
+configured by default, except:
+- The worker services require a public address when the bind address is `0.0.0.0`.
+- The `static_leader` section requires the public address of both the scheduler and observatory
+services.
+## Scheduler
+The scheduler has two main services: the client service and the worker service. The client service
+is used by the Python client to submit queries and receive query status updates. The worker service
+is used by the workers to register and send heartbeats. By default, they bind to `0.0.0.0:5051` and
+`0.0.0.0:5050`, respectively.
+```toml
+instance_id = "scheduler"
+[scheduler]
+enabled = true
+client_service.bind_addr = "0.0.0.0:5051"
+worker_service.bind_addr = "0.0.0.0:5050"
+# ...
+[static_leader]
+leader_instance_id = "scheduler"
+scheduler_service.public_addr = "192.168.1.2:5051"
+# ...
+```
+```toml
+instance_id = "worker-0"
+[worker]
+enabled = true
+# ...
+[static_leader]
+leader_instance_id = "scheduler"
+scheduler_service.public_addr = "192.168.1.2:5051"
+# ...
+```
+## Observatory
+The observatory consists of two main components: the profiler and the dashboard with its REST API.
+The profiler service receives OpenTelemetry traces from all cluster nodes. The other service exposes
+an API for accessing the query plans, profiling data, and host metrics.
+The observatory service (profiling) binds to `0.0.0.0:5049` by default. To enable sending traces to
+the observatory, you need to enable the `monitoring` section in the configuration of the second
+node, and configure the observatory service public address in the static leader section on the
+worker nodes.
+```toml
+instance_id = "scheduler"
+# ...
+[scheduler]
+enabled = true
+# ...
+[observatory]
+enabled = true
+service.bind_addr = "0.0.0.0:5049" # Defaults to 0.0.0.0:5049
+[observatory.rest_api]
+enabled = true
+service.bind_addr = "0.0.0.0:3001" # Defaults to 0.0.0.0:3001
+[static_leader]
+leader_instance_id = "scheduler"
+observatory_service.public_addr = "192.168.1.2:5049"
+# ...
+```
+```toml
+instance_id = "worker-0"
+# ...
+[worker]
+enabled = true
+# ...
+[monitoring]
+enabled = true
+[static_leader]
+leader_instance_id = "scheduler"
+observatory_service.public_addr = "192.168.1.2:5049"
+# ...
+```
+## Workers
+The worker has two services, the task service and the shuffle service. The task service is used by
+the scheduler to send tasks to the worker, and the shuffle service is used by the worker to serve
+shuffles between each other. By default, they bind to `0.0.0.0:5052` and `0.0.0.0:5053`,
+respectively. The shuffle service is only bound to when using local shuffle storage.
+The worker services need to also have configured a public address. This address is used by the
+scheduler to reach the worker services. If the bind address is `0.0.0.0`, the public address is
+required. The public address can also be configured when the ports go through a NAT or load
+balancer.
+The following example shows how to change the bind and public addresses for the worker services:
+```toml
+[worker]
+enabled = true
+task_service.bind_addr.port = 4005
+task_service.public_addr = "192.168.1.1:4005"
+shuffle_service.bind_addr.port = 4006
+shuffle_service.public_addr = "192.168.1.1:4006"
+```
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/reference.md
+---
+# Config file reference
+This page describes the different configuration options for Polars on-premises. The config file is a
+standard TOML file with different sections. Any of the configuration can be overridden using
+environment variables in the following format: `PC_CUBLET__section_name__key`.
+Example configuration files can be found at
+[Example Configurations](/polars-on-premises/bare-metal/configuration/example-configurations).
+See the sidebar for extensive documentation on important components and their configuration
+together.
+### Top-level configuration
+| Key | Type | Description |
+| -------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cluster_id` | string | Logical ID for the cluster; workers and scheduler that share this ID will form a single cluster.e.g. `prod-eu-1`; must be unique among all clusters. |
+| `instance_id` | string | Unique ID for this node within the cluster, used for addressing and leader selection.e.g. `scheduler`, `worker_0`; must be unique per cluster. |
+| `license` | path | Absolute path to the Polars on-premises license file required to start the process.e.g. `/etc/polars/license.json`. |
+| `memory_limit` | integer | Hard memory budget for all components in this node; enforced via cgroups when delegated.e.g. `1073741824` (1 GiB), `10737418240` (10 GiB). |
+### `[scheduler]` section
+| Key | Type | Description |
+| ---------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled` | boolean | Whether the scheduler component runs in this process. `true` for the leader node, `false` on pure workers. |
+| `allow_local_sinks` | boolean | Whether workers are allowed to write to a shared/local disk visible to the scheduler. `false` for fully remote/storage-only setups, `true` if you have a shared filesystem. |
+| `n_workers` | integer | Expected number of workers in this cluster; scheduler waits for the latter to be online before running queries.e.g. `4`. |
+| `anonymous_result_location` | object | Destination for results of queries that do not have an explicit sink. Currently supported local mounted (must be reachable on the exact same path and `allow_local_sinks` enabled) and S3-based. Both options must be network reachable by scheduler, workers, and client.e.g. `/mnt/storage/polars/results`.e.g. `s3://bucket/path/to/key` |
+| `anonymous_result_location.local` | object | Object used for local disk-backed anonymous results. |
+| `anonymous_result_location.local.path` | path | Local path where anonymous results are stored.e.g. `/mnt/storage/polars/results`. |
+| `anonymous_result_location.s3` | object | Object used for S3-backed anonymous results. |
+| `anonymous_result_location.s3.url` | string | S3 bucket url.e.g. `s3://bucket/path/to/key`. |
+| `anonymous_result_location.s3.aws_endpoint_url` | string | Storage option configuration, see [`scan_parquet()`](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html). |
+| `anonymous_result_location.s3.aws_region` | string | Storage option configuration.e.g. `eu-east-1` |
+| `anonymous_result_location.s3.aws_access_key_id` | string | Storage option configuration. |
+| `anonymous_result_location.s3.aws_secret_access_key` | string | Storage option configuration. |
+| `client_service` | object | Object used for configuring the bind address of the client service. This is the service used by the polars-cloud Python client. Defaults to `0.0.0.0:5051`. |
+| `client_service.bind_addr` | string | Bind address for the client service.e.g. `0.0.0.0:5051`. |
+| `client_service.bind_addr.ip` | string | IP address for the client service bind address.e.g. `192.168.1.1`. |
+| `client_service.bind_addr.port` | integer | Port for the client service bind address.e.g. `5051`. |
+| `client_service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-1`. |
+| `worker_service` | object | Object used for configuring the bind address of the worker service. This is an internal service used by the workers. Defaults to `0.0.0.0:5050`. |
+| `worker_service.bind_addr` | string | Bind address for the worker service.e.g. `0.0.0.0:5050`. |
+| `worker_service.bind_addr.ip` | string | IP address for the worker service bind address.e.g. `192.168.1.1`. |
+| `worker_service.bind_addr.port` | integer | Port for the worker service bind address.e.g. `5050`. |
+| `worker_service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+### `[worker]` section
+| Key | Type | Description |
+| ------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled` | boolean | Whether the worker component runs in this process. `true` on worker nodes, `false` on the dedicated scheduler. |
+| `heartbeat_period` | string | Interval for worker heartbeats towards the scheduler, used for liveness and load reporting. Either an ISO 8601 duration format or a jiff friendly duration format (see https://docs.rs/jiff/0.2.18/jiff/fmt/friendly/)e.g. `5 secs`.e.g. `PT5S`. |
+| `shuffle_location` | object | Object used for shuffle data storage. |
+| `shuffle_location.local` | object | Object used for local disk-backed shuffle data storage. |
+| `shuffle_location.local.path` | path | Local path where shuffle/intermediate data is stored; fast local SSD is recommended.e.g. `/mnt/storage/polars/shuffle`. |
+| `shuffle_location.shared_filesystem` | object | Object used for shared filesystem-backed shuffle data storage. |
+| `shuffle_location.shared_filesystem.path` | path | Shared filesystem path where shuffle/intermediate data is stored. Must be accessible by all workers on the same path.e.g. `/mnt/storage/polars/shuffle`. |
+| `shuffle_location.s3` | object | Object used for S3-backed shuffle data storage. |
+| `shuffle_location.s3.url` | path | Destination for shuffle/intermediate data.e.g. `s3://bucket/path/to/key`. |
+| `shuffle_location.s3.aws_endpoint_url` | string | Storage option configuration, see [`scan_parquet()`](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html). |
+| `shuffle_location.s3.aws_region` | string | Storage option configuration.e.g. `eu-east-1` |
+| `shuffle_location.s3.aws_access_key_id` | string | Storage option configuration. |
+| `shuffle_location.s3.aws_secret_access_key` | string | Storage option configuration. |
+| `task_service` | object | Object used for configuring the bind address of the task service. This is an internal service in the worker for receiving tasks from the scheduler. Defaults to `0.0.0.0:5052`. |
+| `task_service.bind_addr` | string | Bind address for the task service.e.g. `0.0.0.0:5052`. |
+| `task_service.bind_addr.ip` | string | IP address for the task service bind address.e.g. `192.168.1.1`. |
+| `task_service.bind_addr.port` | integer | Port for the task service bind address.e.g. `5052`. |
+| `task_service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+| `task_service.public_addr` | string | Address at which this service is reachable by the scheduler. Defaults to the bind address if not set. This field is required when the bind address is `0.0.0.0`.e.g. `192.168.1.1`. |
+| `task_service.public_addr.ip` | string | IP address for the task service public address.e.g. `192.168.1.2`. |
+| `task_service.public_addr.port` | integer | Port for the task service public address.e.g. `5052`. |
+| `task_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+| `shuffle_service` | object | Object used for configuring the bind address of the task service. This is an internal service in the worker for receiving tasks from the scheduler. Defaults to `0.0.0.0:5052`. |
+| `shuffle_service.bind_addr` | string | Bind address for the task service.e.g. `0.0.0.0:5053`. |
+| `shuffle_service.bind_addr.ip` | string | IP address for the task service bind address.e.g. `192.168.1.1`. |
+| `shuffle_service.bind_addr.port` | integer | Port for the task service bind address.e.g. `5053`. |
+| `shuffle_service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+| `shuffle_service.public_addr` | string | Address at which this service is reachable by the scheduler. Defaults to the bind address if not set. This field is required when the bind address is `0.0.0.0`.e.g. `192.168.1.1`. |
+| `shuffle_service.public_addr.ip` | string | IP address for the task service public address.e.g. `192.168.1.2`. |
+| `shuffle_service.public_addr.port` | integer | Port for the task service public address.e.g. `5053`. |
+| `shuffle_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+### `[observatory]` section
+| Key | Type | Description |
+| ------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled` | boolean | Enable sending/receiving profiling data so clients can call `result.await_profile()`. `true` on both scheduler and workers if you want profiles on queries; `false` to disable. |
+| `max_metrics_bytes_total` | integer | How many bytes all the worker host metrics will consume in total. If a system-wide memory limit is specified then this is added to the share that the scheduler takes. For every worker, about 50 bytes of metrics are stored per second. |
+| `database_path` | string | Location to use for storing profiling data. An SQLite database file will be created here, or if a file already exists it will be opened. If this points to a directory, a file in that directory will be created. Polars on-premises will automatically add the `cluster_id` to this file name to ensure uniqueness within the directory. |
+| `service` | object | Object used for configuring the bind address of the observatory service. This is an internal service in the scheduler for receiving profiling data from all nodes. Defaults to `0.0.0.0:5049`. |
+| `service.bind_addr` | string | Bind address for the observatory service.e.g. `0.0.0.0:5049`. |
+| `service.bind_addr.ip` | string | IP address for the observatory service bind address.e.g. `192.168.1.1`. |
+| `service.bind_addr.port` | integer | Port for the observatory service bind address.e.g. `5049`. |
+| `service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+| `rest_api.enabled` | boolean | By default enabled for exposing the observatory REST API. This is a public service for accessing the profiling data and host metrics data through a web interface. |
+| `rest_api.service` | object | Object used for configuring the bind address of the observatory REST API service. Defaults to `0.0.0.0:3001`. |
+| `rest_api.service.bind_addr` | string | Bind address for the observatory REST API service.e.g. `0.0.0.0:3001`. |
+| `rest_api.service.bind_addr.ip` | string | IP address for the observatory REST API service bind address.e.g. `192.168.1.1`. |
+| `rest_api.service.bind_addr.port` | integer | Port for the observatory REST API service bind address.e.g. `3001`. |
+| `rest_api.service.bind_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+### `[monitoring]` section
+| Key | Type | Description |
+| ---------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled` | boolean | Enable sending/receiving monitoring data to the observatory service. If enabled, it will use the address specified in `observatory_service.public_addr`. |
+| `host_metrics` | object | Object used for configuring the host metrics exporter. |
+| `host_metrics.enabled` | boolean | Enable/disable exporting host metrics from this node |
+### `[static_leader]` section
+| Key | Type | Description |
+| ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `leader_instance_id` | string | ID of the leader node; should match the schedulerâ€™s `instance_id`.Typically `scheduler` to match your scheduler node. |
+| `scheduler_service.public_addr` | string | Address at which the scheduler client service is reachable from this node.e.g. `192.168.1.1`. |
+| `scheduler_service.public_addr.ip` | string | IP address for the scheduler client service public address.e.g. `192.168.1.1`. |
+| `scheduler_service.public_addr.port` | integer | Port for the scheduler client service public address.e.g. `5051`. |
+| `scheduler_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+| `observatory_service.public_addr` | string | Address at which the observatory service is reachable from this node.e.g. `192.168.1.1`. |
+| `observatory_service.public_addr.ip` | string | IP address for the observatory service public address.e.g. `192.168.1.1`. |
+| `observatory_service.public_addr.port` | integer | Port for the observatory service public address.e.g. `5049`. |
+| `observatory_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/resource-limits.md
+---
+# Resource limits
+Polars will always attempt to use all available CPU resources, and consumes memory resources as
+needed. If possible, assign physical cores to Polars to avoid contention with other processes.
+Polars on-premises workers consist of a main process and an executor process, with the latter doing
+most computation. If the executor dies, it will lose all progress of the stage it was working on.
+All progress of previous stages (i.e. shuffle data) is managed by the main process.
+In other words, if the system is low on memory, the first process that should be killed, is the
+executor process. Polars on-premises will already automatically configure `oom-score-adj` on its
+executor process.
+If there are other system critical processes, we recommend either delegating a cgroup to Polars
+on-premises, or manually setting up cgroup limits for the entire Polars on-premises service.
+### Delegating cgroup to Polars on-premises
+Cgroups can contain subgroups, each with independent limits. Polars on-premises can create these
+cgroups, and choose proper memory limits for each of its components. To use this feature, ensure you
+delegate cgroups to the Polars On-Premise process and configure `memory_limit` in the configuration
+file.
+```toml
+cluster_id = "polars-cluster"
+instance_id = "node-0"
+license = "/etc/polars/license.json"
+memory_limit = 10737418240 # 10 GiB
+# ...
+```
+### Manually configuring cgroup limits
+You can also manually configure a memory limit on a cgroup containing all the processes. For example
+using Systemd's `resource-control`. The disadvantage of this approach is that the individual
+components will contend for the same memory capacity, which may prevent Polars on-premises from
+gracefully handling OOM errors on the executor.
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/shuffle-data.md
+---
+# Shuffle data
+When running distributed queries, data needs to be transferred in between the nodes. Polars
+on-premises requires a configuration for this storage location. You should decide and benchmark
+which location is the best for your infrastructure, as it has a large impact on query execution
+times.
+## Worker local storage
+When using local storage, Polars queries write shuffle data directly to a file. This is preferably
+configured with a node local SSD. For other nodes to access the data, the following sequence
+happens:
+```
+worker_1 -[fs write]-> disk
+worker_2 <-[net]- worker_1 <-[fs read]- disk
+```
+Local shuffles can be configured as shown below:
+```toml
+[worker]
+enabled = true
+shuffle_location.local.path = "/mnt/storage/polars/shuffle"
+# ...
+```
+## Worker shared storage
+If your infrastructure has some shared storage file system, such as NFS (or CephFs, etc.), Polars
+on-premises can use that for its shuffle data too. This reduces shuffle complexity, as Polars can
+directly write to the remote shared disk, and any worker can directly read from it. This setup can
+lead to improved performance when the network storage provider is fast enough. In addition, it
+provides automatic shuffle data persistence in case of worker node failure.
+```
+worker_1 -[net]-> shared storage -[fs]-> disk
+worker_2 <-[net]- shared storage <-[fs]- disk
+```
+A requirement for this to work is that all workers have the same shuffle location configured. An
+example configuration is shown below:
+```toml
+[worker]
+enabled = true
+shuffle_location.shared_filesystem.path = "/mnt/storage/polars/shuffle"
+# ...
+```
+## S3 compatible storage
+S3 compatible storage is similar to the shared filesystem storage described above, but uses the S3
+API. It has the same advantages and disadvantages as the shared filesystem storage. You can
+configure S3 compatible storage as follows:
+```toml
+[worker]
+enabled = true
+shuffle_location.s3.url = "s3://bucket/path/to/key"
+shuffle_location.s3.aws_secret_access_key = "YOURSECRETKEY"
+shuffle_location.s3.aws_access_key_id = "YOURACCESSKEY"
+```
+If you self-host an S3 compatible storage solution, you can override the `aws_endpoint_url`
+configuration option.
+```toml
+[worker]
+shuffle_location.s3.url = "s3://bucket/path/to/key"
+shuffle_location.s3.aws_endpoint_url = "http://your-s3-compatible-storage-host:8080"
+```
+The allowed keys under `shuffle_location.s3` are the same as in
+[`scan_parquet()`](https://docs.pola.rs/api/python/stable/reference/api/polars.scan_parquet.html)(_e.g._
+`aws_access_key_id`, `aws_secret_access_key`, `aws_session_token`, `aws_region`). We currently only
+support the AWS keys of the `storage_options` dictionary, but note that you can use any other cloud
+provider that supports the S3 API, such as MinIO or DigitalOcean Spaces.
+---
+polars/docs/source/polars-on-premises/bare-metal/configuration/static-leader.md
+---
+# Static leader configuration
+All nodes in the cluster need to know whether they are the leader or if not, where to find the
+leader. Generally, this section can be identical across all nodes. In this section, we need to
+specify the instance id of the leader node, and the public addresses of the observatory and
+scheduler services.
+```toml
+[static_leader]
+leader_instance_id = "node-1"
+observatory_service.public_addr = "127.0.0.1:4003"
+scheduler_service.public_addr = "127.0.0.1:4002"
+```
+If the current node's instance id matches the `leader_instance_id`, it will run the observatory and
+scheduler services (if those components are enabled). This setup allows you to use a single
+configuration file across all nodes in the cluster, only overriding the `instance_id` on each node.
+You can set any configuration option in the file using an environment variable in the format of
+`PC_CUBLET____`. For example, to override the `instance_id` for a node, you can set
+the environment variable `PC_CUBLET__instance_id=node-2`, and to disable the host metrics collection
+for a node, you can set the environment variable
+`PC_CUBLET__observatory__host_metrics__enabled=false`.
 ---
