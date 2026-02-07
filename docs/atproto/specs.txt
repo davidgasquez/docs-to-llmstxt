@@ -1642,29 +1642,27 @@ export const metadata = {
 
 Records and messages in atproto are stored, transmitted, encoded, and authenticated in a consistent way. The core "data model" supports both binary (CBOR) and textual (JSON) representations. {{ className: 'lead' }}
 
-When data needs to be authenticated (signed), referenced (linked by content hash), or stored efficiently, it is encoded in Concise Binary Object Representation (CBOR). CBOR is an IETF standard roughly based on JSON. The specific normalized subset of CBOR used in the atproto data model is called **DAG-CBOR**. All DAG-CBOR data is valid CBOR, and can be read with any CBOR library. Writing or strictly verifying DAG-CBOR with the correct normalization rules sometimes requires additional configuration or a special CBOR implementation. {{ className: 'lead' }}
+When data needs to be authenticated (signed), referenced (linked by content hash), or stored efficiently, it is encoded in Concise Binary Object Representation (CBOR). CBOR is an IETF standard roughly based on JSON. The specific normalized subset of CBOR used in the atproto data model is called [DRISL](https://dasl.ing/drisl.html) (which is successor to [DAG-CBOR](https://ipld.io/specs/codecs/dag-cbor/spec/)). All DRISL-CBOR data is valid CBOR, and can be read with any CBOR library. Writing or strictly verifying CBOR with the correct normalization rules sometimes requires additional configuration or a special CBOR implementation. {{ className: 'lead' }}
 
 The schema definition language for atproto is [Lexicon](/specs/lexicon). Other lower-level data structures, like [repository](/specs/repository) internals, are not specified with Lexicons, but use the same data model and encodings.
 
-Distinct pieces of data are called **nodes,** and when encoded in binary (DAG-CBOR) result in a **block.** A node may have internal nested structure (maps or lists). Nodes may reference each other by string URLs or URIs, just like with regular JSON on the web. They can also reference each other strongly by hash, referred a **link.** A set of linked nodes can form higher-level data structures like [Merkle Trees](https://en.wikipedia.org/wiki/Merkle_tree) or [Directed Acyclical Graphs (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph). Links can also refer to arbitrary binary data (blobs).
+Distinct pieces of data are called **nodes,** and when encoded in binary (DRISL-CBOR) result in a **block.** A node may have internal nested structure (maps or lists). Nodes may reference each other by string URLs or URIs, just like with regular JSON on the web. They can also reference each other strongly by hash, referred a **link.** A set of linked nodes can form higher-level data structures like [Merkle Trees](https://en.wikipedia.org/wiki/Merkle_tree) or [Directed Acyclical Graphs (DAG)](https://en.wikipedia.org/wiki/Directed_acyclic_graph). Links can also refer to arbitrary binary data (blobs).
 
 Unlike URLs, hash references (links) do not encode a specific network location where the content can be found. The location and access mechanism must be inferred by protocol-level context. Hash references do have the property of being "self-certifying", meaning that returned data can be verified against the link hash. This makes it possible to redistribute content and trust copies even if coming from an untrusted party.
 
-Links are encoded as [Content Identifiers](https://docs.ipfs.tech/concepts/content-addressing/#identifier-formats) (CIDs), which have both binary and string representations. CIDs include a metadata code which indicates whether it links to a node (DAG-CBOR) or arbitrary binary data. Some additional constraints on the use of CIDs in atproto are described below.
+Links are encoded as [Content Identifiers](https://dasl.ing/cid.html) (CIDs), which have both binary and string representations. CIDs include a metadata code which indicates whether it links to a node (DRISL-CBOR) or arbitrary binary data. Some additional constraints on the use of CIDs in atproto are described below.
 
 In atproto, object nodes often include a string field `$type` that specifies their Lexicon schema. Data is mostly self-describing and can be processed in schema-agnostic ways (including decoding and re-encoding), but can not be fully validated without the schema on-hand or known ahead of time.
 
-## Relationship With IPLD
+## Relationship With DASL and IPLD
 
-The data model is inspired by [Interplanetary Linked Data (IPLD)](https://ipld.io/docs/data-model/), a specification for hash-linked data structures from the IPFS ecosystem.
+The atproto data model aligns with [DASL](https://dasl.ing/), a specification for hash-linked data structures. DASL libraries and tooling can be used when implementing atproto. DASL itself is a subset of [Interplanetary Linked Data (IPLD)](https://ipld.io/docs/data-model/).
 
-IPLD specifies a normalized JSON encoding called **DAG-JSON,** but atproto uses a different set of conventions when encoding JSON data. The atproto JSON encoding is not designed to be byte-determinisitic, and the CBOR representation is used when data needs to be cryptographically signed or hashed.
-
-The IPLD Schema language is not used.
+IPLD specified a normalized JSON encoding called **DAG-JSON,** but atproto uses a different set of conventions when encoding JSON data. The atproto JSON encoding is not designed to be byte-determinisitic, and the CBOR representation is used when data needs to be cryptographically signed or hashed.
 
 ## Data Types
 
-| Lexicon Type  | IPLD Type | JSON                 | CBOR                    | Note                    |
+| Lexicon Type  | DASL Type | JSON                 | CBOR                    | Note                    |
 | ---           | ---       | ---                  | ---                     | ---                     |
 | -             | null      | Null                 | Special Value (major 7) |                         |
 | `boolean`     | boolean   | Boolean              | Special Value (major 7) |                         |
@@ -1725,7 +1723,7 @@ Note that the legacy format has no `$type` and can only be parsed for known Lexi
 
 atproto uses its own conventions for JSON, instead of using DAG-JSON directly. The main motivation was to have more idiomatic and human-readable representations for `link` and `bytes` in HTTP APIs. The DAG-JSON specification itself mentions that it is primarily oriented toward debugging and development environments, and we found that the use of `/` as a field key was confusing to developers.
 
-Normalizations like key sorting are also not required or enforced when using JSON in atproto: only DAG-CBOR is used as a byte-reproducible representation.
+Normalizations like key sorting are also not required or enforced when using JSON in atproto: only DRISL-CBOR is used as a byte-reproducible representation.
 
 The encoding for most of the core and compound types is straight forward, with only `link` and `bytes` needing special treatment.
 
@@ -1765,21 +1763,21 @@ For comparison, the DAG-JSON encoding has two nested objects, with outer key `/`
 
 ## Link and CID Formats
 
-The [IPFS CID specification](https://github.com/multiformats/cid) is very flexible. It supports a wide variety of hash types, a field indicating the "type" of content being linked to, and various string encoding options. These features are valuable to allow evolution over time, but to maximize interoperability among implementations, only a specific "blessed" set of CID types are allowed.
+The [original IPFS CID specification](https://github.com/multiformats/cid) is very flexible. It supports a wide variety of hash types, a field indicating the "type" of content being linked to, and various string encoding options. These features are valuable to allow evolution over time, but to maximize interoperability among implementations, only a specific "blessed" set of CID types are allowed. These align with the [DASL CID](https://dasl.ing/cid.html) specification.
 
 The blessed formats for CIDs in atproto are:
 
-- CIDv1
-- multibase: binary serialization within DAG-CBOR `link` fields, and `base32` for string encoding
-- multicodec: `dag-cbor` (0x71) for links to data objects, and `raw` (0x55) for links to blobs
-- multihash: `sha-256` with 256 bits (0x12) is preferred
+- CID version: 1 (0x01)
+- Codec: DRISL (0x71; also known as `dag-cbor`) for links to DRISL-CBOR data objects, and `raw` (0x55) for links to blobs
+- Hash type: `sha-256` (0x12) with size of 256 bits (0x20 bytes)
+- Encoding: binary serialization within DRISL-CBOR `cid-link` fields, and `base32` (with `b` prefix) for string encoding elsewhere
 
 The use of SHA-256 is a stable requirement in some contexts, such as the repository MST nodes. In other contexts, like referencing media blobs, there will likely be a set of "blessed" hash types which evolve over time. A balance needs to be struck between protocol flexibility on the one hand (to adopt improved hashes and remove weak ones), and ensuring broad and consistent interoperability throughout an ecosystem of protocol implementations.
 
 There are several ways to include a CID hash reference in an atproto object:
 
-- `link` field type (Lexicon type `cid-link`). In DAG-CBOR encodes as a binary CID (multibase type 0x00) in a bytestring with CBOR tag 42. In JSON, encodes as `$link` object (see above)
-- `string` field type, with Lexicon string format `cid`. In DAG-CBOR and JSON, encodes as a simple string
+- `link` field type (Lexicon type `cid-link`). In DRISL-CBOR, CIDs are encoded by prefixing their binary representation with `0x00`. The CBOR tag used to represent CIDs is 42. In JSON, encodes as `$link` objects (see above).
+- `string` field type, with Lexicon string format `cid`. In DRISL-CBOR and JSON, encodes as a simple string
 - `string` field type, with Lexicon string format `uri`, with URI scheme `ipld://`
 
 ## Usage and Implementation Guidelines
@@ -3071,8 +3069,6 @@ The Authenticated Transfer Protocol (AT Protocol or atproto) is a generic federa
 
 The AT Protocol itself does not specify common social media conventions like follows or avatars, leaving these to application-level Lexicons. The `com.atproto.*` Lexicons provide common APIs for things like account signup and login. These could be considered part of AT Protocol itself, though they can also be extended or replaced over time as needed. Bluesky is a microblogging social app built on top of AT Protocol, with lexicons under the `app.bsky.*` namespace.
 
-While atproto borrows several formats and specifications from the IPFS ecosystem (such as [IPLD](https://ipld.io/) and [CID](https://github.com/multiformats/cid)), atproto data does not need to be stored in the IPFS network, and the atproto reference implementation does not use the IPFS network at all.
-
 
 ## Protocol Extension and Applications
 
@@ -3202,7 +3198,7 @@ The atproto reference implementation from Bluesky supports both curves in all co
 
 Key points for both systems have loss-less "compressed" representations, which are useful when sharing the public keys. This is usually supported natively for `k256`, but sometimes requires extra methods or jumping through hoops for `p256`. You can read more about this at: [02, 03 or 04? So What Are Compressed and Uncompressed Public Keys?](https://medium.com/asecuritysite-when-bob-met-alice/02-03-or-04-so-what-are-compressed-and-uncompressed-public-keys-6abcb57efeb6).
 
-A common pattern when signing data in atproto is to encode the data in DAG-CBOR, hash the CBOR bytes with SHA-256, yielding raw bytes (not a hex-encoded string), and then sign the hash bytes.
+A common pattern when signing data in atproto is to encode the data in a strict CBOR format ([DRISL](https://dasl.ing/drisl.html)), hash the CBOR bytes with SHA-256, yielding raw bytes (not a hex-encoded string), and then sign the hash bytes.
 
 
 ## ECDSA Signature Malleability
@@ -3371,7 +3367,7 @@ export const metadata = {
 
 # Event Stream
 
-In addition to regular [HTTP API](/specs/xrpc) endpoints, atproto supports continuous event streams. Message schemas and endpoint names are transport-agnostic and defined in [Lexicons](/specs/lexicon). The initial encoding and transport scheme uses binary [DAG-CBOR](https://ipld.io/docs/codecs/known/dag-cbor/) encoding over [WebSockets](https://en.wikipedia.org/wiki/WebSocket). {{ className: 'lead' }}
+In addition to regular [HTTP API](/specs/xrpc) endpoints, atproto supports continuous event streams. Message schemas and endpoint names are transport-agnostic and defined in [Lexicons](/specs/lexicon). The initial encoding and transport scheme uses binary [DRISL-CBOR encoding](/lexicons/data-model) over [WebSockets](https://en.wikipedia.org/wiki/WebSocket). {{ className: 'lead' }}
 
 The Lexicon type for streams is `subscription`. The schema includes an identifier (`id`) for the endpoint, a `message` schema (usually a union, allowing multiple message types), and a list of error types (`errors`).
 
@@ -3386,7 +3382,7 @@ The initial subscription endpoints are also public and do not require authentica
 
 ## Streaming Wire Protocol (v0)
 
-To summarize, messages are encoded as DAG-CBOR and sent over a binary WebSocket. Clients connect to to a specific HTTP endpoint, with query parameters, then upgrade to WebSocket. Every WebSocket frame contains two DAG-CBOR objects, with bytes concatenated together: a header (indicating message type), and the actual message.
+To summarize, messages are encoded as [DRISL-CBOR](https://dasl.ing/drisl.html) and sent over a binary WebSocket. Clients connect to to a specific HTTP endpoint, with query parameters, then upgrade to WebSocket. Every WebSocket frame contains two CBOR objects, with bytes concatenated together: a header (indicating message type), and the actual message.
 
 The WebSockets "living standard" is currently maintained by [WHATWG](https://en.wikipedia.org/wiki/WHATWG), and can be found in full at [https://websockets.spec.whatwg.org/](https://websockets.spec.whatwg.org/).
 
@@ -3411,16 +3407,16 @@ Either the server or the client may decided to drop an open stream connection if
 
 ### Framing
 
-Each binary WebSocket frame contains two DAG-CBOR objects, concatenated. The first is a **header** and the second is the **payload.**
+Each binary WebSocket frame contains two DRISL-CBOR objects, concatenated. The first is a **header** and the second is the **payload.**
 
-The header DAG-CBOR object has the following fields:
+The header CBOR object has the following fields:
 
 - `op` ("operation", integer, required): fixed values, indicating what this frame contains
     - `1`: a regular message, with type indicated by `t`
     - `-1`: an error message
 - `t` ("type", string, optional): required if `op` is `1`, indicating the Lexicon sub-type for this message, in short form. Does not include the full Lexicon identifier, just a fragment. Eg: `#commit`. Should not be included in header if `op` is `-1`.
 
-Clients should ignore frames with headers that have unknown `op` or `t` values. Unknown fields in both headers and payloads should be ignored. Invalid framing or invalid DAG-CBOR encoding are hard errors, and the client should drop the entire connection instead of skipping the frame. Servers should ignore any frames received from the client, not treat them as errors.
+Clients should ignore frames with headers that have unknown `op` or `t` values. Unknown fields in both headers and payloads should be ignored. Invalid framing or DRISL-CBOR encoding are hard errors, and the client should drop the entire connection instead of skipping the frame. Servers should ignore any frames received from the client, not treat them as errors.
 
 Error payloads all have the following fields:
 
@@ -3459,7 +3455,7 @@ In some catastrophic failure modes (or large changes to infrastructure), it is p
 
 ## Usage and Implementation Guidelines
 
-The current stream transport is primarily designed for server-to-server data synchronization. It is also possible for web applications to connect directly from end-user browsers, but note that decoding binary frames and DAG-CBOR is non-trivial.
+The current stream transport is primarily designed for server-to-server data synchronization. It is also possible for web applications to connect directly from end-user browsers, but note that decoding binary frames and DRISL-CBOR is non-trivial.
 
 The combination of HTTP redirects and WebSocket upgrades is not consistently supported by WebSocket client libraries. Support is not specifically required or forbidden in atproto.
 
@@ -3475,7 +3471,7 @@ URLs referencing a stream endpoint at a particular host should generally use `ws
 
 As mentioned in the "Connection" section, only `wss://` (SSL) should be used for stream connections over the internet. Public services should reject non-SSL connections.
 
-Most HTTP XRPC endpoints work with content in JSON form, while stream endpoints work directly with DAG-CBOR objects as untrusted input. Precautions must be taken against hostile data encoding and data structure manipulation. Specific issues are discussed in the [Data Model](/specs/data-model) and [Repository](/specs/repository) specifications.
+Most HTTP XRPC endpoints work with content in JSON form, while stream endpoints work directly with CBOR objects as untrusted input. Precautions must be taken against hostile data encoding and data structure manipulation. Specific issues are discussed in the [Data Model](/specs/data-model) and [Repository](/specs/repository) specifications.
 
 ## Possible Future Changes
 
@@ -3483,7 +3479,7 @@ Event Streams are one of the newest components of the AT Protocol, and the detai
 
 The sequence number scheme may be tweaked to better support sharded streams. The motivation would be handle higher data throughputs over the public internet by splitting across multiple connections.
 
-Additional transports (other than WebSocket) and encodings (other than DAG-CBOR) may be specified. For example, JSON payloads in text WebSocket frames would be simpler to decode in browsers.
+Additional transports (other than WebSocket) and encodings (other than CBOR) may be specified. For example, JSON payloads in text WebSocket frames would be simpler to decode in browsers.
 
 Additional WebSocket features may be adopted:
 
@@ -5987,7 +5983,7 @@ The core label schema is versioned, and this document describes labels version `
 
 ## Schema and Data Model
 
-Labels are protocol objects, similar to repository commits or MST nodes. They are canonically encoded as DAG-CBOR (a strict, normalized subset of CBOR) for for signing (see sections below). There is a Lexicon definition (`com.atproto.label.defs#label`) which represents labels, but it has slightly different field requirements than the core protocol object: the version field (`ver`) and signature (`sig`) are both optional in that version.
+Labels are protocol objects, similar to repository commits or MST nodes. They are canonically encoded in a strict subset of CBOR ([DRISL](https://dasl.ing/drisl.html)) for for signing (see sections below). There is a Lexicon definition (`com.atproto.label.defs#label`) which represents labels, but it has slightly different field requirements than the core protocol object: the version field (`ver`) and signature (`sig`) are both optional in that version.
 
 The fields on the label object are:
 
@@ -6053,7 +6049,7 @@ Likewise, may continue to persist expired labels (after the expiration timestamp
 
 Labels are signed using public-key [Cryptography](/specs/cryptography), similar to repository commit objects. Signatures should be validated when labels are transferred between services. It is assumed that most end-clients will not validate signatures themselves, and signatures may be removed from API responses sent to clients for network efficiency. Clients and other parties should have a mechanism to verify signatures, by querying individual signatures from labeling authorities, and receiving back the full label, including signature.
 
-The process to sign or verify a signature is to construct a complete version of the label, using only the specified schema fields, and not including the `sig` field. This means including the `ver` field, but not any `$type` field or other un-specified fields which may have been included in a Lexicon representation of the label. This data object is then encoded in CBOR, following the deterministic IPLD/DAG-CBOR normalization rules. The CBOR bytes are hashed with SHA-256, and then the direct hash bytes (not a hex-encoded string) are signed (or verified) using the appropriate cryptographic key. The signature bytes are stored in the `sig` field as bytes (see [Data Model](/specs/data-model) for details representing bytes).
+The process to sign or verify a signature is to construct a complete version of the label, using only the specified schema fields, and not including the `sig` field. This means including the `ver` field, but not any `$type` field or other un-specified fields which may have been included in a Lexicon representation of the label. This data object is then encoded in CBOR, following the deterministic [DRISL](https://dasl.ing/drisl.html) normalization rules. The CBOR bytes are hashed with SHA-256, and then the direct hash bytes (not a hex-encoded string) are signed (or verified) using the appropriate cryptographic key. The signature bytes are stored in the `sig` field as bytes (see [Data Model](/specs/data-model) for details representing bytes).
 
 The key used for signing labels is found in the DID document for the issuing identity, and has fragment identifier `#atproto_label`. This key *may* have the same value as the `#atproto` signing key used for repository signatures. At this time, if an `#atproto_label` key is not found, implementation *should not* attempt to use other keys present in the DID document to verify the signature, they should simply consider the signature invalid and ignore the label.
 
@@ -6374,12 +6370,14 @@ The empty blob (zero bytes) is valid in general, though it may be disallowed by 
 
 ## Blob Metadata
 
-Currently, the only "blessed" CID type for blobs is similar to that for repository records, but with the `raw` multicodec:
+Currently, the only "blessed" CID type for blobs is similar to that for repository records, but with the `raw` codec:
 
-- CIDv1
-- Multibase: binary serialization within DAG-CBOR (or `base32` for JSON mappings)
-- Multicodec: `raw` (0x55)
-- Multihash: `sha-256` with 256 bits (0x12)
+- CID version: 1 (0x01)
+- Codec: `raw` (0x55)
+- Hash type: `sha-256` (0x12) with size of 256 bits (0x20 bytes)
+- Encoding: binary serialization within DRISL-CBOR `link` fields, and `base32` (with `b` prefix) for string encoding elsewhere
+
+This aligns with the [DASL-CID](https://dasl.ing/cid.html) specification.
 
 An example blob CID, in base32 string encoding: `bafkreibjfgx2gprinfvicegelk5kosd6y2frmqpqzwqkg7usac74l3t2v4`
 
@@ -6779,7 +6777,7 @@ Public atproto content (**records**) is stored in per-account repositories (freq
 
 The repository data structure is content-addressed (a [Merkle-tree](https://en.wikipedia.org/wiki/Merkle_tree)), and every mutation of repository contents (eg, addition, removal, and updates to records) results in a new commit `data` hash value (CID). Commits are cryptographically signed, with rotatable signing keys, which allows recursive validation of content as a whole or in part. {{ className: 'lead' }}
 
-Repositories and their contents are canonically stored in binary [DAG-CBOR](https://ipld.io/docs/codecs/known/dag-cbor/) format, as a graph of data objects referencing each other by content hash (CID Links). Large binary blobs are not stored directly in repositories, though they are referenced by hash ([CID](https://github.com/multiformats/cid)). This includes images and other media objects. Repositories can be exported as [CAR](https://ipld.io/specs/transport/car/carv1/) files for offline backup, account migration, or other purposes. {{ className: 'lead' }}
+Repositories and their contents are canonically stored in [DRISL](https://dasl.ing/drisl.html) CBOR, as a graph of data objects referencing each other by content hash (CID Links). Large binary blobs are not stored directly in repositories, though they are referenced by hash ([CID](https://github.com/multiformats/cid)). This includes images and other media objects. Repositories can be exported as [CAR](https://dasl.ing) files for offline backup, account migration, or other purposes. {{ className: 'lead' }}
 
 In the atproto federation architecture, the authoritative location of an account's repository is the associated Personal Data Server (PDS). An account's current PDS location is authoritatively indicated in the DID Document. {{ className: 'lead' }}
 
@@ -6794,7 +6792,7 @@ Version `2` had a slightly different commit object schema, but is mostly compati
 
 Version `1` had a different MST fanout configuration, and an incompatible schema for commits and repository metadata. Version `1` is deprecated, no repositories in this format exist in the network, and implementations do not need to support it.
 
-At a high level, a repository is a key/value mapping where the keys are path names (as strings) and the values are records (DAG-CBOR objects).
+At a high level, a repository is a key/value mapping where the keys are path names (as strings) and the values are records (CBOR objects).
 
 A **Merkle Search Tree** (MST) is used to store this mapping. This content-addressed deterministic data structure stores data in key-sorted order. It is reasonably efficient for key lookups, key range scans, and appends (assuming sorted record paths). The properties of MSTs in general are described in this academic publication:
 
@@ -6820,9 +6818,9 @@ The top-level data object in a repository is a signed commit. The data fields ar
 - `prev` (CID link, nullable): pointer (by hash) to a previous commit object for this repository. Could be used to create a chain of history, but largely unused (included for v2 backwards compatibility). In version `3` repos, this field must exist in the CBOR object, but is virtually always `null`. NOTE: previously specified as nullable and optional, but this caused interoperability issues.
 - `sig` (byte array, required): cryptographic signature of this commit, as raw bytes
 
-An UnsignedCommit data object has all the same fields except for `sig`. The process for signing a commit is to populate all the data fields, and then serialize the UnsignedCommit with DAG-CBOR. The output bytes are then hashed with SHA-256, and the binary hash output (without hex encoding) is then signed using the current "signing key" for the account. The signature is then stored as raw bytes in a commit object, along with all the other data fields.
+An UnsignedCommit data object has all the same fields except for `sig`. The process for signing a commit is to populate all the data fields, and then serialize the UnsignedCommit with DRISL CBOR. The output bytes are then hashed with SHA-256, and the binary hash output (without hex encoding) is then signed using the current "signing key" for the account. The signature is then stored as raw bytes in a commit object, along with all the other data fields.
 
-The CID for a commit overall is generated by serializing a *signed* commit object as DAG-CBOR. See notes on the "blessed" CID format below, and in particular be sure to use the `dag-cbor` multicodec for CIDs linking to commit objects.
+The CID for a commit overall is generated by serializing a *signed* commit object as DRISL CBOR. See notes on the "blessed" CID format below, and in particular be sure to use the `dag-cbor` multicodec for CIDs linking to commit objects.
 
 Note that neither the signature itself nor the signed commit indicate either the type of key used (curve type), or the specific public key used. That information must be fetched from the account's DID document. With key rotation, verification of older commit signatures can become ambiguous. The most recent commit should always be verifiable using the current DID document. This implies that a new repository commit should be created every time the signing key is rotated. Such a commit does not need to update the `data` CID link.
 
@@ -6863,23 +6861,16 @@ When parsing MST data structures, the depth and sort order of keys should be ver
 
 ### CID Formats
 
-The IPFS CID specification is very flexible, and supports a wide variety of hash types, a field indicating the type of content being linked to, and various string encoding options. These features are valuable to allow evolution of the repo format over time, but to maximize interoperability among implementations, only a specific "blessed" set of CID types are allowed.
+The blessed CID format described in [Data Model](/specs/data-model) is used for references to commit objects, MST node objects, and records (eg, MST leaf nodes to records).
 
-The blessed format for commit objects and MST node objects, when linking to commit objects, MST nodes (aka, `data`, or MST internal links), or records (aka, MST leaf nodes to records), is:
+In the context of repositories, it is desirable for the overall data structure to be reproducible given the contents, so the CID types should be strictly constrained and enforced. Commit objects with non-compliant `prev` or `data` links are considered invalid. MST Node objects with non-compliant links to other MST Node objects are considered invalid, and the entire MST data structure invalid.
 
-- CIDv1
-- Multibase: binary serialization within DAG-CBOR (or `base32` for JSON mappings)
-- Multicodec: `dag-cbor` (0x71)
-- Multihash: `sha-256` with 256 bits (0x12)
-
-In the context of repositories, it is also desirable for the overall data structure to be reproducible given the contents, so the allowed CID types are strictly constrained and enforced. Commit objects with non-compliant `prev` or `data` links are considered invalid. MST Node objects with non-compliant links to other MST Node objects are considered invalid, and the entire MST data structure invalid.
-
-More flexibility is allowed in processing the "leaf" links from MST to records, and implementations should retain the exact CID links used for these mappings, instead of normalizing. Implementations should strictly follow the CID blessed format when generating new CID Links to records.
+More flexibility is allowed in processing the "leaf" links from MST to records, and implementations should retain the exact CID links used for these mappings. Implementations should strictly follow the CID blessed format when generating new CID Links to records.
 
 
 ## CAR File Serialization
 
-The standard file format for storing data objects is Content Addressable aRchives (CAR). The standard repository export format for atproto repositories is [CAR v1](https://ipld.io/specs/transport/car/carv1/), which have file suffix `.car` and mimetype `application/vnd.ipld.car`.
+The standard file format for storing data objects is Content Addressable aRchives (CAR). The standard repository export format for atproto repositories is [CAR v1](https://ipld.io/specs/transport/car/carv1/), which have file suffix `.car` and mimetype `application/vnd.ipld.car`. This aligns with the [DASL CAR](https://dasl.ing/car.html) specification.
 
 The CARv1 format is very simple. It contains a small metadata header (which can indicate one or more "root" CID links), and then a series of binary "blocks", each of which is a data object. In the context of atproto repositories:
 
@@ -6952,7 +6943,7 @@ At the overall atproto specification level, additional "blessed" cryptographic a
 
 Repository CAR exports may include linked "blobs" (larger binary files). This might become the default, or a configurable option, or some another mechanism for blob export might be chosen (eg, `.tar` or `.zip` export).
 
-Record content could conceivably be something other than DAG-CBOR some day. This would probably be a repo format version bump. Note that it is possible to efficiently wrap other data formats in a DAG-CBOR wrapper (via a byte array field), or to have a small DAG-CBOR record type that links to a blob in arbitrary format.
+Record content could conceivably be something other than CBOR some day. This would probably be a repo format version bump. Note that it is possible to efficiently wrap other data formats in a CBOR wrapper (via a byte array field), or to have a small CBOR record type that links to a blob in arbitrary format.
 
 Repository CAR exports may end up with a preferred block ordering scheme specified.
 
