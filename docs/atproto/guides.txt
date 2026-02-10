@@ -31,7 +31,7 @@ This document complements the [Account Hosting](/specs/account) specification, w
 
 - PDS emits an `#account` event, with `active` false and status `deleted`.
 - Relay updates local account status for the repo, and passes through the `#account` event. If the Relay is a full mirror, it immediately stop serving `getRepo`, `getRecord`, and similar API requests for the account, indicating the reason in the response error. The Relay may fully delete repo content locally according to local policy. The firehose backfill window does not need to be immediately purged of commit events for the repo, as long as the backfill window is time-limited.
-- the PDS should not emit `#commit` events for an account which is not "active'. If any further `#commit` messages are emitted for the repo (eg, by accident or out-of-order processing or delivery), all downstream services should ignore the event and not pass it through
+- the PDS should not emit `#commit` events for an account which is not "active". If any further `#commit` messages are emitted for the repo (eg, by accident or out-of-order processing or delivery), all downstream services should ignore the event and not pass it through
 - downstream services (eg, AppView) should immediately stop serving/distributing content for the account. They may defer permanent data deletion according to local policy. Updating aggregations (eg, record counts) may also be deferred or processed in a background queue according to policy and implementation. Error status messages may indicate either that the content is "gone" (existed, but no longer available), or that content is "not found" (not revealing that content existed previously)
 
 Account takedowns work similarly to account deletion.
@@ -795,7 +795,7 @@ In this tutorial we've covered the key steps to building an atproto app. Data is
 
 When building your app, think in these four key steps:
 
-- Design the [Lexicon](#) schemas for the records you'll publish into the Atmosphere.
+- Design the [Lexicon](https://atproto.com/guides/lexicon) schemas for the records you'll publish into the Atmosphere.
 - Create a database for aggregating the records into useful views.
 - Build your application to write the records on your users' repos.
 - Listen to the firehose to aggregate data across the network.
@@ -1047,7 +1047,7 @@ Lexicon's sole purpose is to help developers build compatible software.
 
 ## Data Repo
 
-The "data repository" or "repo" is the public dataset which represents a user. It is comprised of [collections](#collection) of JSON [records](#record) and unstructured [blobs](#blob). Every repo is assigned a single permanent [DID](#did-decentralized-id) which identifies it. Repos may also have any number of [domain handles](#handle) which act as human-readable names.
+The "data repository" or "repo" is the public dataset which represents a user. It is comprised of [collections](#collection) of JSON [records](#record) and unstructured [blobs](#blob). Every repo is assigned a single permanent [DID](#did-decentralized-id) which identifies it. Repos may also have a single [domain handle](#handle) which act as human-readable names.
 
 Data repositories are signed merkle trees. Their signatures can be verified against the key material published under the repo's [did](#did-decentralized-id).
 
@@ -1141,15 +1141,15 @@ We provide a [PDS install script](https://github.com/bluesky-social/pds) that is
 
 If you are running a non-Bluesky app in addition to a PDS deployment, **you will need separate domain names** for your PDS hosting and your app. This is because image and video blobs would otherwise be served from the same domain name as the OAuth and session management pages. This could lead to security issues such as credential theft, and means that using subdomains isn't a practical solution.
 
-In other words, if you have an app at [https://greensky.app](https://greensky.app/), you should not use [https://pds.greensky.app](https://pds.greensky.app/) as a PDS hostname, you should use something like [https://greensky-pds.net](https://greensky-pds.net/). If you used [https://pds.greensky.social](https://pds.greensky.social/) (which would make sense), it might rule out an OAuth client app at [https://chat.greensky.social](https://chat.greensky.social/) in the future. But you could do something like [https://chat.greensky.app](https://chat.greensky.app/).
+In other words, if you have an app at `https://greensky.app`, you should not use `https://pds.greensky.app` as a PDS hostname, you should use something like `https://greensky-pds.net`. If you used `https://pds.greensky.social` (which would make sense), it might rule out an OAuth client app at `https://chat.greensky.social` in the future. But you could do something like `https://chat.greensky.app`.
 
 The PDS has restrictive CORS headers by default. 
 
-It is difficult to change a PDS hostname once it has active accounts — every account needs to be migrated individually. This is absolutely possible using [PLC rotation keys], but migrating is not turnkey. Also note that the PDS is the domain that users will enter their passwords on (and therefore remembered in password managers).
+It is difficult to change a PDS hostname once it has active accounts — every account needs to be migrated individually. This is absolutely possible using [PLC rotation keys](https://web.plc.directory/spec/v0.1/did-plc), but migrating is not turnkey. Also note that the PDS is the domain that users will enter their passwords on (and therefore remembered in password managers).
 
 ### Backups and Recovery
 
-Our [official PDS install script](https://github.com/bluesky-social/pds) configures SQLite as a database backend. Specifically, it uses one SQLite DB for each user's [data repository], and a few others for PDS-wide data. This may be surprising, since SQLite doesn't have any mechanism for handling backups or replications out of the box, but SQLite has increasingly been found to [scale very well](https://fly.io/blog/sqlite-internals-rollback-journal/) with some additional tooling.
+Our [official PDS install script](https://github.com/bluesky-social/pds) configures SQLite as a database backend. Specifically, it uses one SQLite DB for each user's [data repository](https://atproto.com/guides/data-repos), and a few others for PDS-wide data. This may be surprising, since SQLite doesn't have any mechanism for handling backups or replications out of the box, but SQLite has increasingly been found to [scale very well](https://fly.io/blog/sqlite-internals-rollback-journal/) with some additional tooling.
 
 The secret sauce here is [Litestream](https://fly.io/blog/litestream-v050-is-here/), which does exactly that — [Backups and Recovery for SQLite](https://github.com/benbjohnson/litestream). To get a recoverable, scalable PDS SQLite deployment with Litestream, we recommend:
 
