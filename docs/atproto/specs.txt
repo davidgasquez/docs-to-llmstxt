@@ -1,6 +1,6 @@
 atproto/src/app/[locale]/specs/at-uri-scheme/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'AT URI scheme (at://)',
   description:
     'A URI scheme for addressing ATP repository data.',
@@ -157,7 +157,7 @@ Relative references may be supported in Lexicons in `at-uri` fields. For example
 ---
 atproto/src/app/[locale]/specs/at-uri-scheme/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'AT URI 스키마 (at://)',
   description: 'ATP 저장소 데이터를 주소 지정하기 위한 URI 스키마입니다.',
 }
@@ -313,26 +313,28 @@ JSON Path의 fragment 문법과 Lexicon 참조 문법을 혼동하지 마세요.
 ---
 atproto/src/app/[locale]/specs/at-uri-scheme/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'AT URI scheme (at://)',
   description: 'A URI scheme for addressing ATP repository data.',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/record-key/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Record Key',
   description:
     'Identifier for individual records in a collection',
@@ -449,7 +451,7 @@ Additional constraints on the generic syntax may be added. For example, requirin
 ---
 atproto/src/app/[locale]/specs/record-key/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '레코드 키',
   description:
     'AT 프로토콜 레포지토리 내 컬렉션의 개별 레코드를 식별하는 식별자',
@@ -559,26 +561,28 @@ dHJ1ZQ==
 ---
 atproto/src/app/[locale]/specs/record-key/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Record Key',
   description: 'Identifier for individual records in a collection',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/cryptography/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Cryptography',
   description:
     'Cryptographic systems, curves, and key types used in AT Protocol',
@@ -658,7 +662,7 @@ The set of supported cryptographic systems is expected to evolve slowly. There a
 ---
 atproto/src/app/[locale]/specs/cryptography/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '암호학',
   description:
     'AT Protocol에서 사용되는 암호 시스템, 곡선 및 키 유형',
@@ -739,6 +743,8 @@ atproto 생태계 전반에서 개인 키에 대해 특정 추천 바이트 또�
 ---
 atproto/src/app/[locale]/specs/cryptography/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Cryptography',
   description:
@@ -746,20 +752,20 @@ export const metadata = {
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/oauth/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'OAuth',
   description:
     'OAuth for Client/Server Authentication and Authorization',
@@ -1162,7 +1168,7 @@ The details around session and token lifetimes might change with further securit
 ---
 atproto/src/app/[locale]/specs/oauth/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'OAuth',
   description:
     '클라이언트/서버 인증 및 권한 부여를 위한 OAuth',
@@ -1543,26 +1549,28 @@ atproto OAuth 프로파일에서는 모든 클라이언트가 인증 서버 및 
 ---
 atproto/src/app/[locale]/specs/oauth/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'OAuth',
   description: 'OAuth for Client/Server Authentication and Authorization',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/lexicon/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Lexicon',
   description:
     'A schema definition language.',
@@ -2081,7 +2089,7 @@ For an in-depth style guide for designing Lexicons, see the [Lexicon Style Guide
 ---
 atproto/src/app/[locale]/specs/lexicon/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Lexicon',
   description:
     '스키마 정의 언어입니다.',
@@ -2488,26 +2496,28 @@ JSON 또는 CBOR에서 Lexicon 기반의 구조로 데이터를 직렬화/역직
 ---
 atproto/src/app/[locale]/specs/lexicon/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Lexicon',
   description: 'A schema definition language.',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/account/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Accounts',
   description:
     'Account Hosting and Lifecycle',
@@ -2608,7 +2618,7 @@ The migration process itself may also be improved and simplified.
 ---
 atproto/src/app/[locale]/specs/account/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '계정',
   description: '계정 호스팅 및 수명 주기',
 }
@@ -2708,26 +2718,28 @@ boolean `active` 외에도, 계정은 보다 구체적인 상태를 가질 수 �
 ---
 atproto/src/app/[locale]/specs/account/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Accounts',
   description: 'Account Hosting and Lifecycle',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/repository/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Repository',
   description:
     'Self-authenticating storage for public account content',
@@ -2919,7 +2931,7 @@ Adding optional fields to commit and MST node objects may or may not result in a
 ---
 atproto/src/app/[locale]/specs/repository/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '레포지토리',
   description: '공개 계정 콘텐츠를 위한 자가 인증 스토리지',
 }
@@ -3114,26 +3126,28 @@ atproto 전체 사양에서는 시간이 지남에 따라 추가적인 "blessed"
 ---
 atproto/src/app/[locale]/specs/repository/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Repository',
   description: 'Self-authenticating storage for public account content',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/tid/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Timestamp Identifiers (TIDs)',
   description:
     'A compact timestamp-based identifier for revisions and records.',
@@ -3219,7 +3233,7 @@ kjzfcijpj2z2a
 ---
 atproto/src/app/[locale]/specs/tid/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Timestamp Identifiers (TIDs)',
   description: '수정 및 레코드를 위한 간결한 타임스탬프 기반 식별자입니다.',
 }
@@ -3310,6 +3324,8 @@ kjzfcijpj2z2a
 ---
 atproto/src/app/[locale]/specs/tid/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Timestamp Identifiers (TIDs)',
   description:
@@ -3317,20 +3333,20 @@ export const metadata = {
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/nsid/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Namespaced Identifiers (NSIDs)',
   description:
     'A specification for global semantic IDs.',
@@ -3431,7 +3447,7 @@ No automated mechanism for verifying control of a "domain authority" currently e
 ---
 atproto/src/app/[locale]/specs/nsid/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Namespaced Identifiers (NSIDs)',
   description: '전역 의미 체계 식별자에 대한 명세입니다.',
 }
@@ -3526,26 +3542,28 @@ NSID 구문이 마지막 세그먼트에 유니코드 문자를 허용하도록 
 ---
 atproto/src/app/[locale]/specs/nsid/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Namespaced Identifiers (NSIDs)',
   description: 'A specification for global semantic IDs.',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/handle/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Handle',
   description:
     'A specification for human-friendly account identifiers.',
@@ -3739,7 +3757,7 @@ It is conceivable that `.onion` handles would be allowed at some point in the fu
 ---
 atproto/src/app/[locale]/specs/handle/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '핸들',
   description: '사람 친화적인 계정 식별자에 대한 명세입니다.',
 }
@@ -3926,26 +3944,28 @@ PDS(개인 데이터 서버)는 계정을 호스팅하면서 계정의 핸들이
 ---
 atproto/src/app/[locale]/specs/handle/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Handle',
   description: 'A specification for human-friendly account identifiers.',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/xrpc/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'HTTP API (XRPC)',
   description:
     'Cross-system queries and procedures over HTTP',
@@ -4154,7 +4174,7 @@ The `lxm` JWT field for inter-service auth may become required.
 ---
 atproto/src/app/[locale]/specs/xrpc/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'HTTP API (XRPC)',
   description: 'HTTP를 통한 크로스 시스템 쿼리 및 프로시저',
 }
@@ -4343,19 +4363,21 @@ EXIF 메타데이터와 같이 개인 식별 정보가 포함된 블롭에 대�
 ---
 atproto/src/app/[locale]/specs/xrpc/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'HTTP API (XRPC)',
   description: 'Cross-system queries and procedures over HTTP',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
@@ -5030,26 +5052,28 @@ include:com.example.authBasicFeatures?aud=did:web:api.example.com%23svc_appview
 ---
 atproto/src/app/[locale]/specs/permission/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Permissions',
   description: 'Auth Permissions for Account Resources',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/blob/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Blobs',
   description:
     'Media files referenced by records',
@@ -5137,7 +5161,7 @@ More specific mitigation of metadata leakage (eg, EXIF metadata stripping) shoul
 ---
 atproto/src/app/[locale]/specs/blob/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '블롭',
   description: '레코드가 참조하는 미디어 파일',
 }
@@ -5221,26 +5245,28 @@ EXIF 메타데이터 제거와 같이 메타데이터 누출을 보다 구체적
 ---
 atproto/src/app/[locale]/specs/blob/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Blobs',
   description: 'Media files referenced by records',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/did/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'DID',
   description:
     'Persistent decentralized identifiers (as used in atproto)',
@@ -5422,7 +5448,7 @@ There is a good chance that the set of "blessed" DID methods will slowly expand 
 ---
 atproto/src/app/[locale]/specs/did/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'DID',
   description:
     'AT Protocol에서 사용되는 영구적인 분산 식별자 (Decentralized Identifiers)',
@@ -5591,26 +5617,28 @@ DID는 대소문자를 구분합니다. 현재 지원되는 메서드는 대소�
 ---
 atproto/src/app/[locale]/specs/did/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'DID',
   description: 'Persistent decentralized identifiers (as used in atproto)',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/label/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Labels',
   description:
     'Self-authenticating string annotations on accounts or content for moderation and other purposes.',
@@ -5796,7 +5824,7 @@ More mature governance, namespacing, and style guide recommendations on label va
 ---
 atproto/src/app/[locale]/specs/label/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '라벨',
   description:
     '모더레이션 및 기타 목적으로 사용되는 계정 또는 콘텐츠에 대한 자체 인증 문자열 주석.',
@@ -5979,6 +6007,8 @@ atproto-content-labelers: did:web:mod.example.com;redact, did:plc:abc123, did:pl
 ---
 atproto/src/app/[locale]/specs/label/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Labels',
   description:
@@ -5986,20 +6016,20 @@ export const metadata = {
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/atp/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'AT Protocol',
   description:
     'Specification for the Authenticated Transfer Protocol (AT Protocol)',
@@ -6056,7 +6086,7 @@ Smaller changes are described in individual specification documents, but a few l
 ---
 atproto/src/app/[locale]/specs/atp/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'AT Protocol',
   description: 'Authenticated Transfer Protocol (AT Protocol)의 명세',
 }
@@ -6114,6 +6144,8 @@ AT Protocol은 제3자 애플리케이션 개발에 유연성을 부여하면서
 ---
 atproto/src/app/[locale]/specs/atp/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'AT Protocol',
   description:
@@ -6121,20 +6153,20 @@ export const metadata = {
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/event-stream/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Event Stream',
   description:
     'Network wire protocol for subscribing to a stream of Lexicon objects',
@@ -6276,7 +6308,7 @@ Authentication schemes may be supported, similar to those for regular HTTP XRPC 
 ---
 atproto/src/app/[locale]/specs/event-stream/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '이벤트 스트림',
   description:
     'Lexicon 객체 스트림 구독을 위한 네트워크 와이어 프로토콜',
@@ -6409,6 +6441,8 @@ WebSocket 이외의 추가 전송 방식이나, DAG-CBOR 이외의 다른 인코
 ---
 atproto/src/app/[locale]/specs/event-stream/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Event Stream',
   description:
@@ -6417,20 +6451,20 @@ export const metadata = {
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/data-model/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Data Model',
   description:
     'Consistent data encoding for records and messages.',
@@ -6600,7 +6634,7 @@ Additional hash types are likely to be included in the set of "blessed" CID conf
 ---
 atproto/src/app/[locale]/specs/data-model/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '데이터 모델',
   description: '레코드와 메시지를 위한 일관된 데이터 인코딩 방식입니다.',
 }
@@ -6764,26 +6798,28 @@ atproto 객체에서 CID 해시 참조를 포함시키는 방법은 여러 가�
 ---
 atproto/src/app/[locale]/specs/data-model/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Data Model',
   description: 'Consistent data encoding for records and messages.',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
 ---
 atproto/src/app/[locale]/specs/sync/en.mdx
 ---
-export const metadata = {
+export const header = {
   title: 'Sync',
   description:
     'Firehose and other data synchronization mechanisms.',
@@ -6969,7 +7005,7 @@ Alternatives to the full authenticated firehose may be added to the protocol. Fo
 ---
 atproto/src/app/[locale]/specs/sync/ko.mdx
 ---
-export const metadata = {
+export const header = {
   title: '동기화',
   description:
     'Firehose 및 기타 데이터 동기화 메커니즘.',
@@ -7150,19 +7186,21 @@ firehose는 새로운 데이터 업데이트를 실시간으로 반영하는 데
 ---
 atproto/src/app/[locale]/specs/sync/page.tsx
 ---
+import { Page } from '@/components/Page'
+
 export const metadata = {
   title: 'Sync',
   description: 'Firehose and other data synchronization mechanisms.',
 }
 
 export default async function HomePage({ params }: any) {
+  let Content
   try {
-    const Content = (await import(`./${params.locale}.mdx`)).default
-    return <Content />
+    Content = await import(`./${params.locale}.mdx`)
   } catch (error) {
-    const Content = (await import(`./en.mdx`)).default
-    return <Content />
+    Content = await import(`./en.mdx`)
   }
+  return <Page {...Content} />
 }
 
 
