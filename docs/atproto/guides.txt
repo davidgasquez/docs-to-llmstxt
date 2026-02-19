@@ -236,7 +236,7 @@ Our repo is a regular Web app. We're rendering our HTML server-side like it's 19
 
 Our starting stack:
 
-- Typescript
+- TypeScript
 - NodeJS web server ([express](https://expressjs.com/))
 - SQLite database ([Kysely](https://kysely.dev/))
 - Server-side rendering ([uhtml](https://www.npmjs.com/package/uhtml))
@@ -544,7 +544,7 @@ Now let's run some code-generation using our schema:
 ./node_modules/.bin/lex gen-server ./src/lexicon ./lexicons/*
 ```
 
-This will produce Typescript interfaces as well as runtime validation functions that we can use in our app. Here's what that generated code looks like:
+This will produce TypeScript interfaces as well as runtime validation functions that we can use in our app. Here's what that generated code looks like:
 
 ```typescript
 /** src/lexicon/types/xyz/statusphere/status.ts **/
@@ -854,7 +854,7 @@ export const header = {
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-    You can log in using any [OAuth](/guides/auth) provider, or with [PasswordSession](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex-password-session) from our SDK if you are using password auth.
+    You can log in using any [OAuth](/guides/oauth-cli-tutorial) provider, or with [PasswordSession](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex-password-session) from our SDK if you are using password auth.
 
     Begin by installing the Atproto packages:
 
@@ -863,7 +863,7 @@ export const header = {
     ```
     </TabPanel>
     <TabPanel value="go">
-    You can log in using any [OAuth](/guides/auth) provider, or with password authentication from our SDK.
+    You can log in using any [OAuth](/guides/go-oauth-cli-tutorial) provider, or with password authentication from our SDK.
 
     Begin by installing the Atproto packages:
 
@@ -878,7 +878,7 @@ Next, authenticate with an [SDK](/guides/sdk-auth).
 
 ## About authorization
 
-**Auth is the first part of our docs for a reason!** You don't need to be authed to [read records](/reading-data#unauthenticated-reads) or even to [stream data from the firehose](/guides/streaming-data). But if you're building an app that integrates with the Atmosphere, you'll begin with auth.
+**Auth is the first part of our docs for a reason!** You don't need to be authed to [read records](/guides/reading-data#unauthenticated-reads) or even to [stream data from the firehose](/guides/streaming-data). But if you're building an app that integrates with the Atmosphere, you'll begin with auth.
 
 You might start out by just using Atproto identities as an OAuth source — though you'll find that there's lots more you can do by building on top of the Atproto [social graph](/guides/social-graph).
 
@@ -1123,7 +1123,7 @@ You should also have our `lex` CLI tool installed globally:
 npm install -g @atproto/lex
 ```
 
-Now, create a new Typescript project directory and initialize your project:
+Now, create a new TypeScript project directory and initialize your project:
 
 ```bash
 mkdir my-agent
@@ -1450,7 +1450,7 @@ You'll also need to install [`tap`](/guides/the-at-stack#tap) to consume the fir
 go install github.com/bluesky-social/indigo/cmd/tap
 ```
 
-Now, create a new Typescript project directory and initialize your project:
+Now, create a new TypeScript project directory and initialize your project:
 
 ```bash
 mkdir my-agent
@@ -2075,6 +2075,8 @@ We maintain a Feed Generator example in TypeScript. Refer to the [tutorial](/gui
 
 There are also community-maintained implementations in [Python](https://github.com/MarshalX/bluesky-feed-generator) and [Ruby](https://github.com/mackuba/bluesky-feeds-rb).
 
+You can also add some machine learning features to further tailor a feed algorithm — see [tri-bsky-feed](https://tangled.org/cuducos.me/tri-bsky-feed) for an example.
+
 ## Implementing Feeds
 
 How a feed generator fulfills the `getFeedSkeleton` request is completely at their discretion. At the simplest end, a Feed Generator could supply a "feed" that only contains some hardcoded posts.
@@ -2231,6 +2233,261 @@ DAG-CBOR is a serialization format used by [atproto](#at-protocol). It was chose
 XRPC is [atproto's](#at-protocol) HTTP API. It stands for "Cross-organizational Remote Procedure Calls" and is a thin wrapper around standard HTTPS. XRPC uses [Lexicon](#lexicon) schemas to define the valid parameters and responses for each API endpoint.
 
 - [HTTP API spec](/specs/xrpc)
+
+
+---
+atproto/src/app/[locale]/guides/go-oauth-cli-tutorial/en.mdx
+---
+export const header = {
+  title: 'OAuth with Go Tutorial',
+  description: 'Authenticate with Atproto OAuth from a Go app',
+}
+
+In this tutorial, you'll build a minimal Go tool that authenticates a user with [Atproto OAuth](/guides/auth) and fetches their session info. The entire app fits in a single file.
+
+This is a good starting point for understanding how OAuth works in AT Protocol. For a TypeScript version, see the [OAuth with Node Tutorial](/guides/oauth-cli-tutorial). For building production web apps, see the [OAuth with NextJS Tutorial](/guides/oauth-tutorial).
+
+## Prerequisites
+
+You should have a working understanding of Go.
+
+You should have installed:
+- Go 1.24+
+
+On platforms supported by [homebrew](https://brew.sh/), you can install it with:
+
+```bash
+brew install go
+```
+
+You should also have an Atproto handle to test with.
+
+## Part 1: Project Setup
+
+Create a new Go module and install the [Go SDK](https://github.com/bluesky-social/indigo):
+
+```bash
+mkdir go-oauth-cli
+cd go-oauth-cli
+go mod init go-oauth-cli
+go get github.com/bluesky-social/indigo/atproto/auth/oauth
+```
+
+That's it — the Go SDK includes everything you need for OAuth, including an in-memory session store for development.
+
+## Part 2: Build the OAuth Client
+
+Create `main.go`. Start with the imports and the OAuth client setup:
+
+```go
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"net/url"
+	"os"
+	"os/exec"
+	"runtime"
+	"strings"
+
+	"github.com/bluesky-social/indigo/atproto/auth/oauth"
+)
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "Usage: go run main.go <your-handle>")
+		os.Exit(1)
+	}
+	handle := os.Args[1]
+
+	if err := run(context.Background(), handle); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+Now add the `run` function. First, set up a callback server on a random port, then configure the OAuth client:
+
+```go
+func run(ctx context.Context, handle string) error {
+	// Start the callback server on a random available port
+	callbackCh := make(chan url.Values, 1)
+	port, server, err := listenForCallback(ctx, callbackCh)
+	if err != nil {
+		return err
+	}
+	defer server.Close()
+
+	callbackURL := fmt.Sprintf("http://127.0.0.1:%d/callback", port)
+
+	// Create an OAuth client with localhost config and in-memory storage
+	config := oauth.NewLocalhostConfig(callbackURL, []string{"atproto"})
+	store := oauth.NewMemStore()
+	oauthClient := oauth.NewClientApp(&config, store)
+```
+
+`NewLocalhostConfig` sets up a loopback client.
+
+<Note>
+OAuth loopback works by using a special redirect URI (like `http://127.0.0.1:PORT/callback`) to send authorization codes directly back to an app, which listens on a local port, avoiding browser-based callbacks and enabling secure, direct communication for token exchange. Instead of a web redirect, the app opens a local listener, you can auth in a browser, and the server redirects back to the app's local URI, letting the app grab the code and exchange it for a token. It's particularly useful for development scenarios.
+</Note>
+
+`NewMemStore` provides in-memory session storage for development.
+
+## Part 3: Login Flow
+
+Continue the `run` function with the login flow. This resolves the handle, opens the browser, and waits for the callback:
+
+```go
+	// Start the OAuth flow
+	fmt.Printf("Logging in as %s...\n", handle)
+	authURL, err := oauthClient.StartAuthFlow(ctx, handle)
+	if err != nil {
+		return fmt.Errorf("starting auth flow: %w", err)
+	}
+
+	// Open the browser to the authorization URL
+	fmt.Printf("Opening browser...\n")
+	if !strings.HasPrefix(authURL, "https://") {
+		return fmt.Errorf("unexpected non-https auth URL")
+	}
+	if err := openBrowser(authURL); err != nil {
+		fmt.Printf("Could not open browser automatically.\nPlease visit: %s\n", authURL)
+	}
+
+	// Wait for the OAuth callback
+	fmt.Println("Waiting for authorization...")
+	params := <-callbackCh
+```
+
+The flow works like this:
+
+1. `StartAuthFlow` resolves the user's handle, discovers their PDS, sends a [Pushed Authorization Request (PAR)](/guides/permission-sets#requesting-permissions), and returns an authorization URL.
+2. The user's browser opens to a consent screen.
+3. After the user approves, their PDS redirects back to `http://127.0.0.1:<port>/callback` with an authorization code.
+
+## Part 4: Use the Session
+
+Complete the `run` function by exchanging the callback for a session and making an authenticated API call:
+
+```go
+	// Exchange the authorization code for a session
+	sessData, err := oauthClient.ProcessCallback(ctx, params)
+	if err != nil {
+		return fmt.Errorf("processing callback: %w", err)
+	}
+	fmt.Printf("Logged in! DID: %s\n", sessData.AccountDID)
+
+	// Resume the session to get an API client
+	session, err := oauthClient.ResumeSession(ctx, sessData.AccountDID, sessData.SessionID)
+	if err != nil {
+		return fmt.Errorf("resuming session: %w", err)
+	}
+
+	// Fetch the user's session info to prove it works
+	client := session.APIClient()
+	var resp struct {
+		DID    string `json:"did"`
+		Handle string `json:"handle"`
+	}
+	if err := client.Get(ctx, "com.atproto.server.getSession", nil, &resp); err != nil {
+		return fmt.Errorf("fetching session: %w", err)
+	}
+
+	fmt.Printf("\nSession:\n")
+	fmt.Printf("  Handle: %s\n", resp.Handle)
+	fmt.Printf("  DID:    %s\n", resp.DID)
+	fmt.Printf("  Host:   %s\n", sessData.HostURL)
+
+	return nil
+}
+```
+
+`ProcessCallback` exchanges the authorization code for tokens. `ResumeSession` wraps those tokens in a session that handles DPoP signing and token refresh automatically. `APIClient()` returns an HTTP client pre-configured with the user's credentials — you can use it to make any [XRPC](/specs/xrpc) call.
+
+## Part 5: Helper Functions
+
+Add the callback server and browser-opening helpers:
+
+```go
+func listenForCallback(ctx context.Context, res chan url.Values) (int, *http.Server, error) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return 0, nil, err
+	}
+
+	mux := http.NewServeMux()
+	server := &http.Server{Handler: mux}
+
+	mux.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
+		res <- r.URL.Query()
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(200)
+		w.Write([]byte("<h1>Authorized! You can close this tab.</h1>"))
+		go server.Shutdown(ctx)
+	})
+
+	go func() {
+		if err := server.Serve(listener); !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal(err)
+		}
+	}()
+
+	return listener.Addr().(*net.TCPAddr).Port, server, nil
+}
+
+func openBrowser(url string) error {
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", url).Run()
+	case "windows":
+		return exec.Command("cmd", "/c", "start", url).Run()
+	default:
+		return exec.Command("xdg-open", url).Run()
+	}
+}
+```
+
+The callback server listens on `127.0.0.1:0`, which tells the OS to assign any available port. When the callback arrives, it sends the query parameters through a channel back to the main flow and shuts itself down.
+
+## Part 6: Run It
+
+Run your CLI tool, passing your handle as an argument:
+
+```bash
+go run main.go your-handle.bsky.social
+```
+
+Your browser should open to a consent screen. After you approve, the CLI will print your session info:
+
+```
+Logging in as your-handle.bsky.social...
+Opening browser...
+Waiting for authorization...
+Logged in! DID: did:plc:xxxxx
+
+Session:
+  Handle: your-handle.bsky.social
+  DID:    did:plc:xxxxx
+  Host:   https://shimeji.us-east.host.bsky.network
+```
+
+## Conclusion
+
+You've built a minimal OAuth CLI tool in Go that authenticates with the AT Protocol. The full source is about 120 lines of code.
+
+A few things to keep in mind:
+
+- **This is for local development.** The localhost client won't work in production. For a production-ready Go example with SQLite persistence and multiple commands, see the [go-oauth-cli-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app) in the Cookbook.
+- **Sessions are in-memory.** Every run requires re-authorization. The Cookbook example shows how to persist sessions with SQLite.
+- **Scopes.** This tutorial requests only the base `atproto` scope. To read or write data on behalf of the user, you'll need additional [scopes](/guides/scopes).
+
+You can find more guides and tutorials in our [Docs](/guides), and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
 
 
 ---
@@ -3086,6 +3343,213 @@ Learn all about the types and format of moderation [labels](/guides/labels). The
 - [Subscriptions](/guides/subscriptions)
 - [Label Specs](/specs/label)
 - [Using Ozone](/guides/using-ozone)
+
+---
+atproto/src/app/[locale]/guides/oauth-cli-tutorial/en.mdx
+---
+export const header = {
+  title: 'OAuth with Node Tutorial',
+  description: 'Authenticate with Atproto OAuth from Node.js',
+}
+
+In this tutorial, you'll build a minimal Node.js tool that authenticates a user with [Atproto OAuth](/guides/auth) and fetches their profile. The entire app fits in a single TypeScript file.
+
+This is a good starting point for understanding how OAuth works in AT Protocol. For building production web apps, see the full [OAuth with NextJS Tutorial](/guides/oauth-tutorial).
+
+## Prerequisites
+
+This tutorial involves building a TypeScript application from scratch. You should have a working understanding of TypeScript and Node.js.
+
+You should have installed:
+- Node.js 18+
+
+On platforms supported by [homebrew](https://brew.sh/), you can install it with:
+
+```bash
+brew install node
+```
+
+You should also have an Atproto handle to test with.
+
+## Part 1: Project Setup
+
+Create a new project directory and install the [SDK](https://www.npmjs.com/package/@atproto/lex) and other project dependencies:
+
+```bash
+mkdir oauth-cli
+cd oauth-cli
+npm init -y
+npm i -D typescript @types/node @atproto/oauth-client-node @atproto/lex open
+npx tsc --init --target ES2022 --module NodeNext --moduleResolution NodeNext --types node --strict --esModuleInterop --skipLibCheck --verbatimModuleSyntax false
+```
+
+You'll also need the `lex` CLI tool installed globally, and the `app.bsky.actor.profile` Lexicon installed in this project to fetch the user's profile:
+
+```bash
+npm i -g @atproto/lex
+lex install app.bsky.actor.profile
+lex build
+```
+
+This generates TypeScript types for the Lexicon in your project, which you'll use later to read the authenticated user's profile.
+
+## Part 2: Build the OAuth Client
+
+Create a new file at `src/index.ts`. This file will contain all of the code for your CLI tool.
+
+Start by importing the packages you'll need, and setting up the OAuth client:
+
+```ts
+import http from 'node:http'
+import { NodeOAuthClient, buildAtprotoLoopbackClientMetadata } from '@atproto/oauth-client-node'
+import type { NodeSavedSession, NodeSavedState } from '@atproto/oauth-client-node'
+import { Client } from '@atproto/lex'
+import open from 'open'
+import * as app from './lexicons/app.js'
+
+const stateStore = new Map<string, NodeSavedState>()
+const sessionStore = new Map<string, NodeSavedSession>()
+
+const oauthClient = new NodeOAuthClient({
+  clientMetadata: buildAtprotoLoopbackClientMetadata({
+    scope: 'atproto',
+    redirect_uris: ['http://127.0.0.1:3000/callback'],
+  }),
+  stateStore: {
+    async get(key: string) { return stateStore.get(key) },
+    async set(key: string, value: NodeSavedState) { stateStore.set(key, value) },
+    async del(key: string) { stateStore.delete(key) },
+  },
+  sessionStore: {
+    async get(key: string) { return sessionStore.get(key) },
+    async set(key: string, value: NodeSavedSession) { sessionStore.set(key, value) },
+    async del(key: string) { sessionStore.delete(key) },
+  },
+})
+```
+
+The `NodeOAuthClient` manages the OAuth flow. `buildAtprotoLoopbackClientMetadata` configures it for local development using loopback.
+
+<Note>
+OAuth loopback works by using a special redirect URI (like `http://127.0.0.1:PORT/callback`) to send authorization codes directly back to an app, which listens on a local port, avoiding browser-based callbacks and enabling secure, direct communication for token exchange. Instead of a web redirect, the app opens a local listener, you can auth in a browser, and the server redirects back to the app's local URI, letting the app grab the code and exchange it for a token. It's particularly useful for development scenarios.
+</Note>
+
+The `stateStore` and `sessionStore` are in-memory Maps. The state store holds temporary data during the OAuth handshake; the session store holds the authenticated session keyed by DID. In a production app, you'd use a database for these.
+
+## Part 3: Login Flow
+
+Now add the login flow. You'll start a temporary HTTP server to receive the OAuth callback, then open the user's browser to authorize the app:
+
+```ts
+async function login(handle: string) {
+  // Start the OAuth flow — this resolves the handle, finds their auth
+  // server (PDS), and returns a URL to redirect the user to
+  const authUrl = await oauthClient.authorize(handle, { scope: 'atproto' })
+
+  // Wait for the callback from the authorization server
+  const params = await new Promise<URLSearchParams>((resolve, reject) => {
+    const server = http.createServer((req, res) => {
+      const url = new URL(req.url!, 'http://127.0.0.1:3000')
+      if (url.pathname === '/callback') {
+        res.writeHead(200, { 'Content-Type': 'text/html' })
+        res.end('<h1>Authorized! You can close this tab.</h1>')
+        resolve(url.searchParams)
+        server.close()
+      }
+    })
+    server.listen(3000, '127.0.0.1', () => {
+      console.log('Listening on http://127.0.0.1:3000/callback for OAuth redirect...')
+      open(authUrl.toString())
+    })
+    server.on('error', reject)
+  })
+
+  // Exchange the authorization code for a session
+  const { session } = await oauthClient.callback(params)
+  return session
+}
+```
+
+The flow works like this:
+
+1. `oauthClient.authorize(handle)` resolves the user's handle, discovers their PDS, and returns an authorization URL.
+2. The `open` package opens that URL in the user's browser, where they'll see a consent screen.
+3. After the user approves, their PDS redirects back to `http://127.0.0.1:3000/callback` with an authorization code.
+4. `oauthClient.callback(params)` exchanges that code for an authenticated session.
+
+## Part 4: Use the Session
+
+With the session in hand, you can create a lex `Client` to interact with the AT Protocol. Add a `main()` function that ties it all together:
+
+```ts
+async function main() {
+  const handle = process.argv[2]
+  if (!handle) {
+    console.error('Usage: npx tsx src/index.ts <your-handle>')
+    process.exit(1)
+  }
+
+  console.log(`Logging in as ${handle}...`)
+  const session = await login(handle)
+  console.log(`Logged in! DID: ${session.did}`)
+
+  // Create a lex Client with the authenticated session
+  const client = new Client(session)
+
+  // Fetch the user's profile
+  const profile = await client.get(app.bsky.actor.profile, {
+    repo: session.did,
+  })
+
+  console.log('\nProfile:')
+  console.log(`  Handle: ${handle}`)
+  console.log(`  DID: ${session.did}`)
+  console.log(`  Display name: ${profile.value?.displayName ?? '(not set)'}`)
+  console.log(`  Description: ${profile.value?.description ?? '(not set)'}`)
+}
+
+main().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})
+```
+
+The `Client` from `@atproto/lex` accepts the OAuth session directly — the same way it accepts a `PasswordSession` in the [Build an Agent tutorial](/guides/bot-tutorial). From here you can `.get()`, `.list()`, `.create()`, and `.call()` any installed Lexicon.
+
+## Part 5: Run It
+
+Run your CLI tool with `npx tsx`, passing your handle as an argument:
+
+```bash
+npx tsx src/index.ts your-handle.bsky.social
+```
+
+Your browser should open to a consent screen. After you approve, the CLI will print your profile:
+
+```
+Logging in as your-handle.bsky.social...
+Listening on http://127.0.0.1:3000/callback for OAuth redirect...
+Logged in! DID: did:plc:xxxxx
+
+Profile:
+  Handle: your-handle.bsky.social
+  DID: did:plc:xxxxx
+  Display name: Your Name
+  Description: Your bio here
+```
+
+## Conclusion
+
+You've built a minimal OAuth CLI tool that authenticates with the AT Protocol. The full source is about 80 lines of code.
+
+A few things to keep in mind:
+
+- **This is for local development.** The loopback client won't work in production — see the [OAuth with NextJS Tutorial](/guides/oauth-tutorial) for deploying a real app.
+- **Sessions are in-memory.** Every run requires re-authorization. For persistent sessions, use a database as shown in the [NextJS tutorial](/guides/oauth-tutorial#part-3-adding-database-persistence).
+- **Scopes.** This tutorial requests only the base `atproto` scope. To read or write data on behalf of the user, you'll need additional [scopes](/guides/scopes).
+
+You can find more guides and tutorials in our [Docs](/guides), and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
+
 
 ---
 atproto/src/app/[locale]/guides/oauth-patterns/en.mdx
@@ -4423,7 +4887,7 @@ did: "did:plc:3vekukmab2djjeengw2o3wln"
 }
 ```
 
-The Typescript SDK also provides the DID of the currently-authenticated as `client.did`:
+The TypeScript SDK also provides the DID of the currently-authenticated as `client.did`:
 
 ```tsx
 const your_did = client.did
@@ -4671,7 +5135,9 @@ If you are using password auth, you should generate an [app password](/specs/xrp
     }
     ```
 
-    Applications with an end user login flow should use [OAuth](/guides/auth) authentication rather than app password sessions. Password auth is acceptable for bots and command line tools. Both methods will produce the same authenticated `session`.
+    Applications with an end user login flow should use [OAuth](/guides/oauth-cli-tutorial) authentication rather than app password sessions. Password auth is acceptable for bots and command line tools.
+    
+    Both methods will produce the same authenticated `session`.
     </TabPanel>
     <TabPanel value="go">
     Start by importing the `atproto` and `xrpc` libraries, creating an `&xrpc.Client{}`, and providing credentials to call `ServerCreateSession()`:
@@ -4696,6 +5162,8 @@ If you are using password auth, you should generate an [app password](/specs/xrp
       })
     }
     ```
+
+    Applications with an end user login flow should use [OAuth](/guides/go-oauth-cli-tutorial) authentication rather than app password sessions. Password auth is acceptable for bots and command line tools.
     </TabPanel>
   </TabPanels>
 </TabGroup>
@@ -4788,19 +5256,27 @@ There are also several community PDS implementations! For example:
 - [Tranquil PDS](https://tangled.org/tranquil.farm/tranquil-pds), written in Rust.
 - [Cocoon](https://tangled.org/hailey.at/cocoon), written in Go.
 
+## Relays
+
+Hosting your own Relay is possible, though bandwidth intensive. Relays typically operate in a [full-network mode](/guides/the-at-stack#relays), where they replicate data from all PDSes and repositories on the AT Protocol network. However, operating a Relay is *not* storage-intensive, as Relays are not required to retain archival copies of network data as of [Sync 1.1](/blog/relay-updates-sync-v1-1).
+
+There are a few different relay implementations:
+- [Reference Implementation](https://github.com/bluesky-social/indigo/blob/main/cmd/relay/README.md), written in Go.
+- [Blacksky Relay](https://github.com/blacksky-algorithms/rsky/tree/main/rsky-relay#rsky-relay), written in Rust.
+
 ## Tap
 
 Tap is used for syncing existing records from the AT network and then continuing to receive new records from the firehose. For a guide to deploying Tap, refer to the [Tap readme](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/README.md#distribution--deployment).
 
 We also provide a quick start guide for [deploying Tap](https://github.com/bluesky-social/indigo/blob/main/cmd/tap/RAILWAY_DEPLOY.md) to [Railway](https://railway.com/).
 
-## AppViews or Relays
+## AppViews
 
-Hosting your own AppView or Relay is possible, but resource intensive. Compared with hosting your own PDS, which is a way of personally controlling access to your own data repository, hosting an AppView or Relay is something that you would only do to provide application-level infrastructure. Generally, the first thing you would need to do here is replicate all of the data in the network for the Lexicons that your application handles. Refer to the [Sync](/guides/sync) docs for a starting point.
+Creating or hosting your own AppView is possible, but resource intensive. Compared with hosting your own PDS, which is a way of personally controlling access to your own data repository, hosting an AppView is something that you would only do to provide application-level infrastructure. Generally, the first thing you would need to do here is replicate all of the data in the network for the Lexicons that your application handles. Refer to the [Sync](/guides/sync) docs for a starting point, or see the Tap section above.
 
 There are lots of other decisions that will go into designing and running your own Atmosphere apps! This will not be a comprehensive list of recommendations.
 
-- For your app's signup flow, you will need users to log in or create an account. We generally recommend hosting your own PDS alongside your app to allow first-time users of the Atmosphere — who may not yet be aware of the concept of a PDS — to sign up directly within your application. Your PDS and AppView should have [different domain names](/going-to-production#domain-names).
+- For your app's signup flow, you will need users to log in or create an account. We generally recommend hosting your own PDS alongside your app to allow first-time users of the Atmosphere — who may not yet be aware of the concept of a PDS — to sign up directly within your application. Your PDS and AppView should have [different domain names](/guides/going-to-production#domain-names).
 
 ## Ozone
 
@@ -5856,6 +6332,7 @@ The PDS handles:
 - secret key management: AT signing key, and PLC rotation key
 - [PLC](https://web.plc.directory/) identity operations and endpoints: change handle; validate, sign, and submit PLC ops
 - email delivery: for reset flows, as well as forwarding moderation mail
+- data synchronisation using repository event streams
 - output `#identity` and `#account` (coming soon) events on repo event stream
 - usually the ability to manage a default handle namespace (base domain)
 - OAuth client flows, including web sign-in pages, and optional MFA
@@ -5867,9 +6344,26 @@ You can migrate an individual account's data repository freely from one PDS to a
 - https://boat.kelinci.net/, a set of interfaces for repository import and export
 - https://github.com/bluesky-social/goat, our Go AT command-line tool.
 
+## Relays
+
+**Relays** handle all of your events in real-time. The Relay also handles rate limiting and network abuse of individual PDSes to ensure that availability from across the network. Importantly, relays themselves do not interpret records in repositories; they simply store them temporarily and forward them to consumers. Relays produce a [**firehose**](/guides/streaming-data) of events, which combines the [event streams](/specs/event-stream) from multiple repositories and PDSes.
+
+Relays can be operated at different scales. Full-network relays track all repositories across the entire network, providing complete coverage. Partial-network relays might focus on specific communities, applications, or regions, reducing resource requirements. Specialized relays could serve particular use cases, such as academic research, brand monitoring, or archive preservation.
+
+A full network relay isn't particularly expensive to operate, and doesn't require specialized hardware, though it does require significant ingress and egress network bandwidth, which is the main cost in operating a relay.
+
+There are several relays available, each may have their own rate limits and network policies. Some of the available relays are:
+- `relay.fire.hose.cam` and `relay3.fr.hose.cam` from [microcosm](https://www.microcosm.blue/).
+- `atproto.africa` from [Blacksky](https://blackskyweb.xyz/)
+- `relay.upcloud.world` from [Upcloud](https://upcloud.com/)
+- The two from [Bluesky PBC](https://docs.bsky.app/docs/advanced-guides/firehose).
+- The three from [firehose.network](https://firehose.network)
+
+The relays operated by [Bluesky PBC](https://docs.bsky.app/docs/advanced-guides/firehose) are probably the most commonly used since this is the default relay for the reference PDS server implementation which many PDS hosts use. They have documented their [rate limits](https://docs.bsky.app/docs/advanced-guides/rate-limits) on their website.
+
 ## Tap
 
-Tap is used for syncing existing records from the AT network and then continuing to receive new records from the firehose.
+Tap is used for syncing existing records from the AT network from PDS repositories and then continuing to receive new records from the firehose via a relay.
 
 Tap simplifies AT sync by handling the firehose connection, verification, backfill, and filtering. Your application connects to a Tap and receives simple JSON events for only the repos and collections you care about, no need to worry about binary formats for validating cryptographic signatures. Tap features:
 
@@ -5882,19 +6376,19 @@ Tap simplifies AT sync by handling the firehose connection, verification, backfi
 - SQLite or Postgres backend
 - designed for moderate scale (millions of repos, 30k+ events/sec)
 
-There is a Typescript library for working with Tap at [@atproto/tap](https://www.npmjs.com/package/@atproto/tap).
+There is a TypeScript library for working with Tap at [@atproto/tap](https://www.npmjs.com/package/@atproto/tap).
 
-## App Views and Relay
+## App Views
 
-**Relays** handle all of your events, like retrieving large-scale metrics (likes, reposts, followers), content discovery (algorithms), and user search. The Relay also handles [rate limiting](https://docs.bsky.app/docs/advanced-guides/rate-limits) of individual PDSes to ensure that content can be indexed from across the network.
+**App Views** handle application specific logic like retrieving large-scale metrics (likes, reposts, followers), content discovery (algorithms), and user search.
 
 An App View is the piece that actually assembles your feed and all the other data you see in the app, and is downstream from a Relay's firehose of data. This is a semantically-aware service that produces aggregations across the network and views over some subset of the network. For example, the Relay might crawl to grab data such as a certain post's likes and reposts, and the app view will output the count of those metrics.
 
 There can be an ecosystem of App Views for each lexicon deployed on the network. For example, *Bluesky* currently supports a micro-blogging mode: the `app.bsky` Lexicon. Developers who create new lexicons could deploy a corresponding App View that understands their Lexicon to service their users. Other lexicons could include [video](https://stream.place/), or [long-form blogging](https://leaflet.pub/), or [collaborative coding](https://tangled.org/). By bootstrapping off of an existing Relay, data collation will already be taken care of for these new applications. They can benefit from the critical mass of users already posting on Bluesky and populating their repositories with other Lexicons; they only need to provide the indexing behaviors necessary for their application.
 
-App Views and Relays are both application-level tooling, rather than inherent parts of the AT protocol. Our App View implementation responds to [XRPC](/specs/xrpc) calls — our HTTP API.
+App Views are application-level tooling, rather than inherent parts of the AT protocol. App Views respond to [XRPC](/specs/xrpc) calls over HTTP.
 
-You can find a well-documented example of other App View and Relay implementations in [The Blacksky Architecture](https://blackskyweb.xyz/overview/#blacksky-architecture). Different Atmosphere applications may make different implementation choices.
+You can find a well-documented example of other App View implementations in [The Blacksky Architecture](https://blackskyweb.xyz/overview/#blacksky-architecture). Different Atmosphere applications may make different implementation choices.
 
 ## DID PLC
 
@@ -5933,6 +6427,7 @@ Most AT tooling is implemented in Go and TypeScript.
 - The https://github.com/bluesky-social/atproto repository contains most of our TypeScript tooling, including the code for the [PDS](https://github.com/bluesky-social/atproto/tree/main/packages/pds) and the TypeScript SDK.
 - There are many other community tools that we use every day. For example, the [Microcosm](https://www.microcosm.blue/) tooling, written in Rust, provides a set of APIs to help build query layers without requiring dedicated AppViews! Refer to https://constellation.microcosm.blue/ for details.
 
+
 ---
 atproto/src/app/[locale]/guides/tutorials/en.mdx
 ---
@@ -5958,6 +6453,18 @@ Create an agent that can interact with the AT Protocol, post content, and respon
 Learn how to create and deploy custom feeds to curate content for users based on specific criteria.
 
 [**Custom Feed Tutorial**](/guides/custom-feed-tutorial)
+
+## OAuth with Go
+
+Authenticate with AT Protocol OAuth from a minimal Go CLI app.
+
+[**OAuth with Go Tutorial**](/guides/go-oauth-cli-tutorial)
+
+## OAuth with Node.js
+
+Authenticate with AT Protocol OAuth from a minimal Node.js CLI app. A good starting point for understanding how ATProto OAuth works.
+
+[**OAuth with Node.js Tutorial**](/guides/oauth-cli-tutorial)
 
 ## OAuth with NextJS
 

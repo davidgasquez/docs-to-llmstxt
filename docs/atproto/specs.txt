@@ -2010,7 +2010,7 @@ A PDS has three Lexicon validation options when creating or updating records:
 
 In Go, this is implemented by setting `Validate` to `true` or `false` on the `CreateRecord` or `UpdateRecord` options struct, or leaving it unset (`nil`) for optimistic validation.
 
-In Typescript, this is implemented by setting `validate` to `true` or `false` on the `createRecord` or `updateRecord` options object, or leaving it unset (`undefined`) for optimistic validation.
+In TypeScript, this is implemented by setting `validate` to `true` or `false` on the `createRecord` or `updateRecord` options object, or leaving it unset (`undefined`) for optimistic validation.
 
 A flag in the success response from the PDS will indicate whether Lexicon validation happened.
 
@@ -4076,7 +4076,7 @@ If the service identifier is not included, the scope is general purpose and the 
 
 The receiving service may require or prohibit specific service identifiers for access to specific resources or endpoints.
 
-The signature is computed using the regular JWT process, using the account's signing key (the same used to sign repo commits). As Typescript pseudo-code, this looks like:
+The signature is computed using the regular JWT process, using the account's signing key (the same used to sign repo commits). As TypeScript pseudo-code, this looks like:
 
 ```
 const headerPayload = utf8ToBase64Url(jsonStringify(header)) + '.' + utf8ToBase64Url(jsonString(body))
@@ -4284,7 +4284,7 @@ JWT의 주요 매개변수는 다음과 같습니다:
 
 요청을 받는 서비스는 특정 리소스나 엔드포인트에 접근할 때 특정 서비스 식별자의 사용을 요구하거나 금지할 수 있습니다.
 
-서명은 계정의 서명 키(레포지토리 커밋에 서명하는 데 사용된 동일한 키)를 사용하여 일반적인 JWT 프로세스를 통해 계산됩니다. Typescript 의사 코드는 다음과 같습니다:
+서명은 계정의 서명 키(레포지토리 커밋에 서명하는 데 사용된 동일한 키)를 사용하여 일반적인 JWT 프로세스를 통해 계산됩니다. TypeScript 의사 코드는 다음과 같습니다:
 
 ```
 const headerPayload = utf8ToBase64Url(jsonStringify(header)) + '.' + utf8ToBase64Url(jsonString(body))
@@ -6175,7 +6175,7 @@ export const header = {
 
 # Event Stream
 
-In addition to regular [HTTP API](/specs/xrpc) endpoints, atproto supports continuous event streams. Message schemas and endpoint names are transport-agnostic and defined in [Lexicons](/specs/lexicon). The initial encoding and transport scheme uses binary [DRISL-CBOR encoding](/lexicons/data-model) over [WebSockets](https://en.wikipedia.org/wiki/WebSocket). {{ className: 'lead' }}
+In addition to regular [HTTP API](/specs/xrpc) endpoints, atproto supports continuous event streams. Message schemas and endpoint names are transport-agnostic and defined in [Lexicons](/specs/lexicon). The initial encoding and transport scheme uses binary [DRISL-CBOR encoding](/specs/data-model) over [WebSockets](https://en.wikipedia.org/wiki/WebSocket). {{ className: 'lead' }}
 
 The Lexicon type for streams is `subscription`. The schema includes an identifier (`id`) for the endpoint, a `message` schema (usually a union, allowing multiple message types), and a list of error types (`errors`).
 
