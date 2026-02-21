@@ -3155,7 +3155,7 @@ Design recommendations to make schemas flexible to future evolution and extensio
 - the `app.bsky.richtext.facet` system can be used to annotate short text strings in a way that is simpler and safer to work with than full-featured markup languages
     - for more details see ["Why RichText facets in Bluesky"](https://www.pfrazee.com/blog/why-facets)
     - the feature type system is an open union which can be extended with additional types
-    - more powerful systems like Markdown are more appropriate for long-form text
+    - Markdown can also be used for long-form text
 - One pattern for extending or supplementing a record is to define “sidecar” records in the same account repository with the same record key and different types (collections).
     - Sidecar records can be defined and managed by the original Lexicon designer or by independent developers.
     - The sidecar records can be updated (mutated) without breaking strong references to the original record.
@@ -3568,6 +3568,7 @@ export const header = {
 - [@atproto/oauth-client-node](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-node#readme) ([npmjs](https://www.npmjs.com/package/@atproto/oauth-client-node)) - Suitable for Electron desktop apps or server-side deployments.
 - [@atproto/oauth-client-expo](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-expo#readme) ([npmjs](https://www.npmjs.com/package/@atproto/oauth-client-expo)) - For use in React Native projects (e.g. mobile apps)
 - [@atproto/oauth-client](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client#readme) ([npmjs](https://www.npmjs.com/package/@atproto/oauth-client)) (This is the core implementation on which the above three libraries depend)
+- [@fujocoded/authproto](https://github.com/FujoWebDev/fujocoded-plugins/tree/main/astro-authproto) ([npmjs](https://www.npmjs.com/package/@fujocoded/authproto)) - Community implementation for Astro apps
 
 ## Go
 
