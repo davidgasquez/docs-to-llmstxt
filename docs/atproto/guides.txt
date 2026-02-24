@@ -41,7 +41,7 @@ The relevant events and behaviors when migrating an account to a new PDS:
 - downstream services (eg, AppView) **should** immediately stop serving/distributing content for the account. They *may* defer permanent data deletion according to local policy. Updating aggregations (eg, record counts) may also be deferred or processed in a background queue according to policy and implementation. Error status messages may indicate either that the content is "gone" (existed, but no longer available), or that content is "not found" (not revealing that content existed previously)
 
 <Note>
-The behavior of downstream services is a recurring theme throughout this guide. Due to the nature of the AT Protocol, downstream services may go out of sync with [firehose events](/guides/streaming-data), and may fail to process requests such as deletion requests. Records that have been requested to be deleted, or have been removed from a self-hosted PDS, may still exist elsewhere if they were processed by a Relay and ingested into another application or data model that does not follow the AT Proto spec — i.e., doesn't resolve record requests back to the origin PDS. Full records are [deliberately not included](https://github.com/bluesky-social/indigo/issues/927) with delete events on the firehose to further mitigate this. As a rule, the PDS *should* be considered the source of truth for hosted accounts.
+The behavior of downstream services is a recurring theme throughout this guide. Due to the nature of the AT Protocol, downstream services may go out of sync with [firehose events](/guides/streaming-data), and may fail to process requests such as deletion requests. Records that have been requested to be deleted, or have been removed from a self-hosted PDS, may still exist elsewhere if they were processed by a Relay and ingested into another application or data model that does not follow the atproto spec — i.e., doesn't resolve record requests back to the origin PDS. Full records are [deliberately not included](https://github.com/bluesky-social/indigo/issues/927) with delete events on the firehose to further mitigate this. As a rule, the PDS *should* be considered the source of truth for hosted accounts.
 </Note>
 
 Account takedowns work similarly to account deletion.
@@ -203,7 +203,7 @@ We will cover how to: {{className: 'lead'}}
 - Listen to the network firehose for new data {{className: 'lead'}}
 - Publish data on the user's account using a custom schema {{className: 'lead'}}
 
-We're going to keep this light so you can quickly wrap your head around ATProto. There will be links with more information about each step. {{className: 'lead'}}
+We're going to keep this light so you can quickly wrap your head around atproto. There will be links with more information about each step. {{className: 'lead'}}
 
 ## Introduction
 
@@ -807,7 +807,7 @@ router.post(
 
 You'll notice this code looks almost exactly like what we're doing in `ingester.ts`.
 
-## Thinking in AT Proto
+## Thinking in atproto
 
 In this tutorial we've covered the key steps to building an atproto app. Data is published in its canonical form on users' `at://` repos and then aggregated into apps' databases to produce views of the network.
 
@@ -842,7 +842,7 @@ import {Container} from "@/components/Container"
 
 export const header = {
   title: 'Auth',
-  description: 'Auth for Atproto application developers',
+  description: 'Auth for atproto application developers',
 }
 
 ## Getting Started
@@ -856,7 +856,7 @@ export const header = {
     <TabPanel value="ts">
     You can log in using any [OAuth](/guides/oauth-cli-tutorial) provider, or with [PasswordSession](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex-password-session) from our SDK if you are using password auth.
 
-    Begin by installing the Atproto packages:
+    Begin by installing the atproto packages:
 
     ```bash
     npm install @atproto/lex @atproto/lex-password-session
@@ -865,7 +865,7 @@ export const header = {
     <TabPanel value="go">
     You can log in using any [OAuth](/guides/go-oauth-cli-tutorial) provider, or with password authentication from our SDK.
 
-    Begin by installing the Atproto packages:
+    Begin by installing the atproto packages:
 
     ```bash
     go get github.com/bluesky-social/indigo
@@ -880,9 +880,9 @@ Next, authenticate with an [SDK](/guides/sdk-auth).
 
 **Auth is the first part of our docs for a reason!** You don't need to be authed to [read records](/guides/reading-data#unauthenticated-reads) or even to [stream data from the firehose](/guides/streaming-data). But if you're building an app that integrates with the Atmosphere, you'll begin with auth.
 
-You might start out by just using Atproto identities as an OAuth source — though you'll find that there's lots more you can do by building on top of the Atproto [social graph](/guides/social-graph).
+You might start out by just using atproto identities as an OAuth source — though you'll find that there's lots more you can do by building on top of the atproto [social graph](/guides/social-graph).
 
-This section is aimed at developers building applications on Atproto. Applications with their own end-user login flow should implement [OAuth](#what-is-oauth) for authentication. Single-purpose applications such as bots or command line tools may use [password authentication](/guides/sdk-auth) instead.
+This section is aimed at developers building applications on atproto. Applications with their own end-user login flow should implement [OAuth](#what-is-oauth) for authentication. Single-purpose applications such as bots or command line tools may use [password authentication](/guides/sdk-auth) instead.
 
 <Note>
 We also support the use of [App Passwords](/specs/xrpc#app-passwords). Accounts can create and revoke app passwords separate from their primary password. This way, you do not need to supply your primary password to applications that use password auth.
@@ -904,11 +904,11 @@ Atproto [specifies](/specs/oauth) a particular "profile" of the OAuth standards,
 
 There are a few details that might catch you off guard if you're used to using other OAuth systems.
 
-- **Atproto is distributed**: Usually, when an app has a "sign in with..." button, it provides a choice of which authorities it allows to authenticate users (usually one of a few big corporations). With ATProto OAuth, the app has no prior relationship with the authentication provider: a user's [PDS](/guides/the-at-stack#pds). This is also the reason why Atproto OAuth is not compatible with OIDC, which requires a pre-established relationship.
+- **Atproto is distributed**: Usually, when an app has a "sign in with..." button, it provides a choice of which authorities it allows to authenticate users (usually one of a few big corporations). With atproto OAuth, the app has no prior relationship with the authentication provider: a user's [PDS](/guides/the-at-stack#pds). This is also the reason why atproto OAuth is not compatible with OIDC, which requires a pre-established relationship.
 
-- **Migration**: Atproto users can migrate their accounts between servers ([PDSes](/guides/glossary#pds-personal-data-server)) over time. To facilitate this Atproto has a flexible [Identity](/guides/identity) layer, which allows usernames ([handles](/specs/handle)) to be resolved to a static user ID ([DID](/specs/did)), which in turn can be resolved to locate the user's PDS. When a user logs in to an app, the OAuth client dynamically resolves these relationships.
+- **Migration**: Atproto users can migrate their accounts between servers ([PDSes](/guides/glossary#pds-personal-data-server)) over time. To facilitate this atproto has a flexible [Identity](/guides/identity) layer, which allows usernames ([handles](/specs/handle)) to be resolved to a static user ID ([DID](/specs/did)), which in turn can be resolved to locate the user's PDS. When a user logs in to an app, the OAuth client dynamically resolves these relationships.
 
-- **Client IDs**: In other OAuth ecosystems, it is often necessary for client apps to pre-register themselves with the resource server. This is not viable in a decentralized system (with many clients and many resource servers), so Atproto addresses this using [Client ID Metadata Documents](/specs/oauth#client-id-metadata-document).
+- **Client IDs**: In other OAuth ecosystems, it is often necessary for client apps to pre-register themselves with the resource server. This is not viable in a decentralized system (with many clients and many resource servers), so atproto addresses this using [Client ID Metadata Documents](/specs/oauth#client-id-metadata-document).
 
 ## Further Reading and Resources
 
@@ -933,7 +933,7 @@ export const header = {
 
 Backfilling is the process of syncing all the data in the network from scratch. You may want to do this if you're running a service that requires a complete copy of the data in the network. This is not generally necessary for running feed generators, labelers, or bots, as most of the time they are fine handling live data off of the firehose. However, backfilling may be of interest if you want to perform large-scale data analysis.
 
-For the entire network to be backfillable by third parties at all is a novel concept for AT. Other, monolithic social networks generally only offer an large-scale event stream (like our firehose) from the current date and time, making it difficult to perform longitudinal data analysis without additional data vendors. With the AT Protocol and adequate resources, you can *always* backfill the entire network on your own. This, in turn, benefits researchers and other forms of data analysis — if you can provision enough storage, you can have your own local copy of the entire Atmosphere.
+For the entire network to be backfillable by third parties at all is a novel concept for atproto. Other, monolithic social networks generally only offer an large-scale event stream (like our firehose) from the current date and time, making it difficult to perform longitudinal data analysis without additional data vendors. With the AT Protocol and adequate resources, you can *always* backfill the entire network on your own. This, in turn, benefits researchers and other forms of data analysis — if you can provision enough storage, you can have your own local copy of the entire Atmosphere.
 
 When backfilling, you generally need to maintain 'up to date' replica of the data, which requires a cutover to streaming firehose data once the backfill is complete. We created `tap` to streamline this process.
 
@@ -965,7 +965,7 @@ When a repo is added, tap provides:
 4. Cutover: After historical events complete, buffered live events are drained
 5. Live streaming: New firehose events are delivered immediately (marked live: true)
 
-We also provide a [TypeScript library](https://www.npmjs.com/package/@atproto/tap) for working with Tap. For more information, refer to [The AT Stack](/guides/the-at-stack#tap) and the [tap repository](https://github.com/bluesky-social/indigo/tree/main/cmd/tap).
+We also provide a [TypeScript library](https://www.npmjs.com/package/@atproto/tap) for working with Tap. For more information, refer to [The AT Stack](/guides/the-at-stack#tap) and the [tap repository](https://github.com/bluesky-social/indigo/tree/main/cmd/tap). If you are backfilling a large number of records with Tap and need a scalable database service, we've had good experiences with [ClickHouse](https://clickhouse.com/).
 
 ## How backfilling works
 
@@ -1051,7 +1051,7 @@ Some applications may have a long delay between blob upload and reference from a
 - [Blob security](/guides/blob-security)
 - [Video handling](/guides/video-handling)
 - [Blob Specs](/specs/blob)
-- [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on Atproto.
+- [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on atproto.
 
 ---
 atproto/src/app/[locale]/guides/blob-security/en.mdx
@@ -1090,7 +1090,7 @@ Servers may need to take measures to prevent malicious resource consumption. For
 - [Blob security](/guides/blob-security)
 - [Video handling](/guides/video-handling)
 - [Blob Specs](/specs/blob)
-- [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on ATProto.
+- [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on atproto.
 
 ---
 atproto/src/app/[locale]/guides/bot-tutorial/en.mdx
@@ -1137,7 +1137,7 @@ If you aren't using an existing account to post from, you should [create a new a
 
 ## Part 1: Lexicons 
 
-[Lexicons](/guides/lexicon) define Atproto records. Your bot will create Bluesky posts, using the [app.bsky.feed.post](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.feed.post) Lexicon. You can use `lex` to download and build this Lexicon into your project:
+[Lexicons](/guides/lexicon) define atproto records. Your bot will create Bluesky posts, using the [app.bsky.feed.post](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.feed.post) Lexicon. You can use `lex` to download and build this Lexicon into your project:
 
 ```bash
 lex install app.bsky.feed.post
@@ -1340,7 +1340,7 @@ Automated bots that post to an account on an regular interval are welcome on the
 
 ## Conclusion
 
-You've now built an automated Atproto app that creates records on the network!
+You've now built an automated atproto app that creates records on the network!
 
 You can find more guides and tutorials in our [Guides](/guides) section, and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
 
@@ -1464,7 +1464,7 @@ You'll begin by adding Lexicons to your project.
 
 ## Part 1: Lexicons and Tap
 
-[Lexicons](/guides/lexicon) define Atproto records. A baseline feed generator requires the `app.bsky.feed.describeFeedGenerator` and `app.bsky.feed.getFeedSkeleton` Lexicons. You can use `lex` to download and build these Lexicons into your project:
+[Lexicons](/guides/lexicon) define atproto records. A baseline feed generator requires the `app.bsky.feed.describeFeedGenerator` and `app.bsky.feed.getFeedSkeleton` Lexicons. You can use `lex` to download and build these Lexicons into your project:
 
 ```bash
 lex install app.bsky.feed.describeFeedGenerator app.bsky.feed.getFeedSkeleton
@@ -1799,11 +1799,11 @@ tap run --collection-filters=app.bsky.feed.post \
 
 ## Conclusion
 
-You've now built a custom Atproto feed that retrieves posts from the network, indexes them based on your own algorithm, and serves them via XRPC to clients like Bluesky.
+You've now built a custom atproto feed that retrieves posts from the network, indexes them based on your own algorithm, and serves them via XRPC to clients like Bluesky.
 
 Now that your feed server is running, you can customize it further, then publish it for others to use. To do that, you'll want to deploy it to a public server (e.g., AWS, DigitalOcean, etc.) and ensure it's accessible over HTTPS.
 
-After that, you can clone down our original [feed-generator repo](https://github.com/bluesky-social/feed-generator) and run the [publishFeedGen.ts](https://github.com/bluesky-social/feed-generator/blob/main/scripts/publishFeedGen.ts) script interactively. This creates the necessary Atproto records to point to your feed server, and allow it to be discovered:
+After that, you can clone down our original [feed-generator repo](https://github.com/bluesky-social/feed-generator) and run the [publishFeedGen.ts](https://github.com/bluesky-social/feed-generator/blob/main/scripts/publishFeedGen.ts) script interactively. This creates the necessary atproto records to point to your feed server, and allow it to be discovered:
 
 <Container>
   <Image src={bsky} alt="" className="w-full max-w-md mx-auto" />
@@ -1939,7 +1939,7 @@ export const header = {
 
 # FAQ
 
-Frequently Asked Questions about the Authenticated Transfer Protocol (Atproto). For FAQ about Bluesky, visit [here](https://bsky.social/about/faq).
+Frequently Asked Questions about the Authenticated Transfer Protocol (atproto). For FAQ about Bluesky, visit [here](https://bsky.social/about/faq).
 
 ## Is the AT Protocol a blockchain?
 
@@ -2099,7 +2099,7 @@ Implementing Feed Feedback is optional, but can help improve user experience.
 
 - A community feed: Compile a list of DIDs within that community and filter the firehose for all posts from users within that list.
 - A topical feed: Filter the algorithm for posts and pass the post text through some filtering mechanism (an LLM, a keyword matcher, etc.) that filters for the topic of your choice.
-- [graze.social](https://www.graze.social/) provides an application model for Atproto feeds.
+- [graze.social](https://www.graze.social/) provides an application model for atproto feeds.
 - You can find other examples of community-created feeds at [https://bsky.app/feeds](https://bsky.app/feeds).
 
 ## Further Reading and Resources
@@ -2240,10 +2240,10 @@ atproto/src/app/[locale]/guides/go-oauth-cli-tutorial/en.mdx
 ---
 export const header = {
   title: 'OAuth with Go Tutorial',
-  description: 'Authenticate with Atproto OAuth from a Go app',
+  description: 'Authenticate with atproto OAuth from a Go app',
 }
 
-In this tutorial, you'll build a minimal Go tool that authenticates a user with [Atproto OAuth](/guides/auth) and fetches their session info. The entire app fits in a single file.
+In this tutorial, you'll build a minimal Go tool that authenticates a user with [atproto OAuth](/guides/auth) and fetches their session info. The entire app fits in a single file.
 
 This is a good starting point for understanding how OAuth works in AT Protocol. For a TypeScript version, see the [OAuth with Node Tutorial](/guides/oauth-cli-tutorial). For building production web apps, see the [OAuth with NextJS Tutorial](/guides/oauth-tutorial).
 
@@ -2260,7 +2260,7 @@ On platforms supported by [homebrew](https://brew.sh/), you can install it with:
 brew install go
 ```
 
-You should also have an Atproto handle to test with.
+You should also have an atproto handle to test with.
 
 ## Part 1: Project Setup
 
@@ -2853,7 +2853,7 @@ It is generally recommended to use an object storage implementation for working 
 - [Blob security](/guides/blob-security)
 - [Video handling](/guides/video-handling)
 - [Blob Specs](/specs/blob)
-- [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on ATProto.
+- [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on atproto.
 
 ---
 atproto/src/app/[locale]/guides/installing-lexicons/en.mdx
@@ -2927,7 +2927,7 @@ export const header = {
 
 ## About labels
 
-Moderation in Atproto consists of multiple, stackable systems, including:
+Moderation in atproto consists of multiple, stackable systems, including:
 
 1. Network takedowns which filter the content from the APIs
 2. Labels placed on content by moderation services
@@ -3040,7 +3040,7 @@ atproto/src/app/[locale]/guides/lexicon-style-guide/en.mdx
 export const header = {
   title: 'Lexicon Style Guide',
   description:
-    'A style guide for creating new ATProto Lexicons',
+    'A style guide for creating new atproto Lexicons',
 }
 
 ## Overview
@@ -3316,7 +3316,7 @@ export const header = {
 
 ## About moderation
 
-The Atproto model is that *speech* and *reach* should be two separate layers, built to work with each other. The “speech” layer should remain permissive, distributing authority and designed to ensure everyone has a voice. The “reach” layer lives on top, built for flexibility and designed to scale. Atproto moderation is implemented using [Labels](/guides/labels).
+The atproto model is that *speech* and *reach* should be two separate layers, built to work with each other. The “speech” layer should remain permissive, distributing authority and designed to ensure everyone has a voice. The “reach” layer lives on top, built for flexibility and designed to scale. Atproto moderation is implemented using [Labels](/guides/labels).
 
 <Container>
   <Image src={moderation} alt="" className="w-full max-w-md mx-auto" />
@@ -3349,10 +3349,10 @@ atproto/src/app/[locale]/guides/oauth-cli-tutorial/en.mdx
 ---
 export const header = {
   title: 'OAuth with Node Tutorial',
-  description: 'Authenticate with Atproto OAuth from Node.js',
+  description: 'Authenticate with atproto OAuth from Node.js',
 }
 
-In this tutorial, you'll build a minimal Node.js tool that authenticates a user with [Atproto OAuth](/guides/auth) and fetches their profile. The entire app fits in a single TypeScript file.
+In this tutorial, you'll build a minimal Node.js tool that authenticates a user with [atproto OAuth](/guides/auth) and fetches their profile. The entire app fits in a single TypeScript file.
 
 This is a good starting point for understanding how OAuth works in AT Protocol. For building production web apps, see the full [OAuth with NextJS Tutorial](/guides/oauth-tutorial).
 
@@ -3369,7 +3369,7 @@ On platforms supported by [homebrew](https://brew.sh/), you can install it with:
 brew install node
 ```
 
-You should also have an Atproto handle to test with.
+You should also have an atproto handle to test with.
 
 ## Part 1: Project Setup
 
@@ -3583,6 +3583,7 @@ These simple example apps demonstrate usage of their respective SDKs.
   rows={[
     [{label: 'cookbook/react-native-oauth', href:' https://github.com/bluesky-social/cookbook/tree/main/react-native-oauth#readme' }, {label: 'TypeScript'}, {label: '@atproto/oauth-client-expo'}, {label: 'Mobile App (no backend)'}, {label: 'No'}, {label: 'No (requires hosted client metadata)'},],
     [{label: 'cookbook/vanillajs-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/vanillajs-oauth-web-app#readme' }, {label: 'JavaScript'}, {label: '@atproto/oauth-client-browser'}, {label: 'Web SPA (no backend)'}, {label: 'No'}, {label: 'Optionally'},],
+    [{label: 'cookbook/nextjs-oauth', href:' https://github.com/bluesky-social/nextjs-oauth-tutorial/tree/129cf28b4146ae709e0dac43ce20154ab5237559#readme' }, {label: 'TypeScript'}, {label: '@atproto/oauth-client-node'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},],
     [{label: 'cookbook/go-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme' }, {label: 'Go'}, {label: 'indigo'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},],
     [{label: 'cookbook/go-oauth-cli-app', href:' https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app#readme' }, {label: 'Go'}, {label: 'indigo'}, {label: 'Native CLI'}, {label: 'No'}, {label: 'No (requires hosted client metadata)'},],
     [{label: 'cookbook/python-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme' }, {label: 'Python'}, {label: 'None'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},]
@@ -3618,6 +3619,7 @@ Of these three, the BFF pattern is the currently recommended approach for buildi
 - [OAuth spec](/specs/oauth)
 - [Permissions spec](/specs/permission)
 
+
 ---
 atproto/src/app/[locale]/guides/oauth-tutorial/en.mdx
 ---
@@ -3628,7 +3630,7 @@ import metadata from "./client-metadata.png"
 
 export const header = {
   title: 'OAuth with NextJS Tutorial',
-  description: 'Build a Next.js app supporting OAuth with ATProto identity.',
+  description: 'Build a Next.js app supporting OAuth with atproto identity.',
 }
 
 In this tutorial, you'll build a Next.js app where users can log in with their AT Protocol identity using OAuth. If you [host your own PDS](/guides/self-hosting), that means you can provide your own auth source for any apps in the Atmosphere.
@@ -3639,7 +3641,7 @@ See a demo version running at: [https://nextjs-oauth-tutorial.up.railway.app/](h
 
 ## Prerequisites
 
-This OAuth tutorial does not use many Atproto concepts or dependencies. You should have a working understanding of Next.js and TypeScript.
+This OAuth tutorial does not use many atproto concepts or dependencies. You should have a working understanding of Next.js and TypeScript.
 
 You should have installed:
 - Node.js 20+
@@ -3660,7 +3662,7 @@ npx create-next-app@latest my-app --yes
 cd my-app
 ```
 
-Next, add the `oauth-client-node` package from the Atproto ecosystem, which provides OAuth client functionality.
+Next, add the `oauth-client-node` package from the atproto ecosystem, which provides OAuth client functionality.
 
 ```bash
 pnpm add @atproto/oauth-client-node
@@ -3889,7 +3891,7 @@ export async function POST() {
 }
 ```
 
-Finally, you'll make one last route, to expose the `oauth-client-metadata.json` at a well-known URL. This is [used in ATProto OAuth](/specs/oauth#clients) to discover client configuration. Create `app/oauth-client-metadata.json/route.ts`:
+Finally, you'll make one last route, to expose the `oauth-client-metadata.json` at a well-known URL. This is [used in atproto OAuth](/specs/oauth#clients) to discover client configuration. Create `app/oauth-client-metadata.json/route.ts`:
 
 ```typescript
 import { getOAuthClient } from "@/lib/auth/client";
@@ -4422,7 +4424,7 @@ This constant is used in three places:
 
 By centralizing it in one constant, you only need to change it in one place. Now, when you log in to your app again, you'll be prompted to approve the additional scopes.
 
-Congratulations on completing this tutorial! You now have a solid Next.js foundation for building Atproto apps with OAuth. From here, you can move on to our [**Statusphere Example App Tutorial**](/guides/statusphere-tutorial).
+Congratulations on completing this tutorial! You now have a solid Next.js foundation for building atproto apps with OAuth. From here, you can move on to our [**Statusphere Example App Tutorial**](/guides/statusphere-tutorial).
 
 ---
 atproto/src/app/[locale]/guides/overview/en.mdx
@@ -4435,7 +4437,7 @@ export const header = {
 
 # Protocol Overview
 
-The **Authenticated Transfer Protocol**, aka **Atproto**, is a decentralized protocol for large-scale social web applications. This document will introduce you to the ideas behind the AT Protocol.
+The **Authenticated Transfer Protocol**, aka **atproto**, is a decentralized protocol for large-scale social web applications. This document will introduce you to the ideas behind the AT Protocol.
 
 ## Identity
 
@@ -4522,15 +4524,15 @@ export const header = {
 
 ## For app developers
 
-This guide describes how to request permissions for your Atproto application. [OAuth](/guides/auth) is used to authorize third-party applications to access users' social graphs, and is a prerequisite for the concepts described here.
+This guide describes how to request permissions for your atproto application. [OAuth](/guides/auth) is used to authorize third-party applications to access users' social graphs, and is a prerequisite for the concepts described here.
 
-Control over Atproto resources is described and granted using [permissions](/specs/permission). A group of a permissions related to a specific Lexicon namespace (record types and API endpoints) can be bundled together as a "permission set". Both are used in the context of [OAuth](/specs/auth) to grant client software access to account resources on a PDS: For example, the ability to write records of specific types to the user's public repository, or make authenticated API requests to remote services. Developers declare the permissions their app requires to function, and end users are shown the permissions when granting access to the app.
+Control over atproto resources is described and granted using [permissions](/specs/permission). A group of a permissions related to a specific Lexicon namespace (record types and API endpoints) can be bundled together as a "permission set". Both are used in the context of [OAuth](/specs/auth) to grant client software access to account resources on a PDS: For example, the ability to write records of specific types to the user's public repository, or make authenticated API requests to remote services. Developers declare the permissions their app requires to function, and end users are shown the permissions when granting access to the app.
 
 In general, it is best to use existing permission sets for cleaner UI, but you can also request individual permissions and define your own permission sets as needed. Refer to the [OAuth flow examples](#oauth-flow-examples) section for how these requests appear in the OAuth flow.
 
 ## Requesting permissions
 
-When your app initiates an OAuth flow with an Atproto identity provider, it can request specific permission sets by including them in the `scope` parameter of the authorization request. This should be supplied as a *space-separated list* in the [`oauth-client-metadata.json` file](/specs/oauth#clients) when registering your OAuth client:
+When your app initiates an OAuth flow with an atproto identity provider, it can request specific permission sets by including them in the `scope` parameter of the authorization request. This should be supplied as a *space-separated list* in the [`oauth-client-metadata.json` file](/specs/oauth#clients) when registering your OAuth client:
 
 ```
 {
@@ -4579,7 +4581,7 @@ Your release and deployment process for the [client metadata document](/specs/oa
 
 Lexicons are authored in JSON — you can find examples in the [Lexicon Guide](/guides/lexicon). Atmosphere HTTP API methods each scope and implement a particular set of Lexicons, so Lexicons must include valid query parameters, request bodies, and response bodies as appropriate. Each Lexicon, in turn, becomes a permission scope — in other words, `app.bsky.feed.post` is an AT record format, a web endpoint, and a granular permission all at once.
 
-Lexicon schemas are published publicly as records in ATProto Lexicon repositories. Refer to [Lexicon Publication and Resolution](/specs/lexicon#lexicon-publication-and-resolution) for technical details.
+Lexicon schemas are published publicly as records in atproto Lexicon repositories. Refer to [Lexicon Publication and Resolution](/specs/lexicon#lexicon-publication-and-resolution) for technical details.
 
 ## Permission Set design
 
@@ -4684,11 +4686,11 @@ $ goat lex resolve app.bsky.feed.post
 
 ## Revising Permission Sets
 
-Permission sets can be revised, but removing them or making destructive changes can break existing applications. In general, permission sets should be closely tied to the applications they are designed for, but not necessarily 1:1. Remember that Atproto applications can utilize multiple different Lexicons.
+Permission sets can be revised, but removing them or making destructive changes can break existing applications. In general, permission sets should be closely tied to the applications they are designed for, but not necessarily 1:1. Remember that atproto applications can utilize multiple different Lexicons.
 
 ## OAuth flow examples
 
-Apps that are using Atproto identity providers *solely* for authentication [only need to request the `atproto` permission](/guides/scopes). This provides the same OAuth flow that you might expect from other identity providers; no features of the Atmosphere social graph are used, and no additional permissions are required:
+Apps that are using atproto identity providers *solely* for authentication [only need to request the `atproto` permission](/guides/scopes). This provides the same OAuth flow that you might expect from other identity providers; no features of the Atmosphere social graph are used, and no additional permissions are required:
 
 <Container>
   <Image src={oauth} alt="" className="w-full max-w-md mx-auto"/>
@@ -4710,7 +4712,7 @@ You can click through on the **?** icons to see the details of each permission s
   <Image src={granular} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-From the expanded Atproto and Bluesky permissions, you might recognize `atproto` (for OAuth login), `blob:*/*` (for image and video handling), and several other `app.bsky.*` permissions for profile and social graph interactions.
+From the expanded atproto and Bluesky permissions, you might recognize `atproto` (for OAuth login), `blob:*/*` (for image and video handling), and several other `app.bsky.*` permissions for profile and social graph interactions.
 
 The *Skyblur* Lexicon permissions are defined and summarized differently:
 
@@ -4874,7 +4876,7 @@ Refer to [`app.bsky.feed.post`](https://lexicon.garden/lexicon/did:plc:4v4y5r3lw
 
 ## DID Resolution
 
-In AT, user data is resolved through [DIDs](/guides/sync#data-repositories), also known as [Decentralized Identifiers](https://en.wikipedia.org/wiki/Decentralized_identifier). Most AT Protocol applications use [`did:plc` DIDs](/guides/the-at-stack#did-plc) when registering user accounts.
+In atproto, user data is resolved through [DIDs](/guides/sync#data-repositories), also known as [Decentralized Identifiers](https://en.wikipedia.org/wiki/Decentralized_identifier). Most AT Protocol applications use [`did:plc` DIDs](/guides/the-at-stack#did-plc) when registering user accounts.
 
 You can resolve a known username to a DID using the `com.atproto.identity.resolveHandle` endpoint. This means that you can just visit this address in a browser with a `handle=` arugment to look up your DID:
 
@@ -4971,9 +4973,9 @@ export const header = {
 
 ## AT Records
 
-The AT Protocol distributes user data across different nodes of your network, using the core building blocks of the web. The AT Protocol interconnects applications so that their backends share state, including user accounts and content, in individual data repositories. Many operations you'll perform when working with Atproto apps involve reading and writing these data repositories.
+The AT Protocol distributes user data across different nodes of your network, using the core building blocks of the web. The AT Protocol interconnects applications so that their backends share state, including user accounts and content, in individual data repositories. Many operations you'll perform when working with atproto apps involve reading and writing these data repositories.
 
-For more context, see [Atproto for distributed systems engineers](/articles/atproto-for-distsys-engineers) and [The ATProto Ethos](/articles/atproto-ethos).
+For more context, see [Atproto for distributed systems engineers](/articles/atproto-for-distsys-engineers) and [The Atproto Ethos](/articles/atproto-ethos).
 
 ## Prerequisites
 
@@ -5068,7 +5070,7 @@ If you are making use of Bluesky profile information, you may also need:
 If you need to link any uploaded images or videos to the records (posts) you create, you will also need:
 - `blob:*/*`
 
-The ergonomics of OAuth scopes in Atproto are still evolving. This minimal set is designed to provide a known-good starting point for app developers that does not grant unnecessary permissions. While we finalize granular permission scopes, we are also supporting a set of temporary coarse-grained scopes called the "transition scopes". There are currently no plans to deprecate either the transition scopes or the use of App Passwords. For an overview of these transition scopes, and more in-depth information on OAuth, see [Authorization Scopes](/specs/oauth#authorization-scopes). For the granular permission scopes, see [Permissions](/specs/permission).
+The ergonomics of OAuth scopes in atproto are still evolving. This minimal set is designed to provide a known-good starting point for app developers that does not grant unnecessary permissions. While we finalize granular permission scopes, we are also supporting a set of temporary coarse-grained scopes called the "transition scopes". There are currently no plans to deprecate either the transition scopes or the use of App Passwords. For an overview of these transition scopes, and more in-depth information on OAuth, see [Authorization Scopes](/specs/oauth#authorization-scopes). For the granular permission scopes, see [Permissions](/specs/permission).
 
 ## Clients
 
@@ -5298,7 +5300,7 @@ export const header = {
 
 ## Querying social graphs
 
-New applications that build on the AT Protocol can leverage existing social graph data — for example, from the `app.bsky.graph.getFollows` Lexicon RPC endpoint — to build new use cases, and bootstrap with an existing user base. This, in turn, gets you to native ATProtocol concepts like [A Social Filesystem](https://overreacted.io/a-social-filesystem/).
+New applications that build on the AT Protocol can leverage existing social graph data — for example, from the `app.bsky.graph.getFollows` Lexicon RPC endpoint — to build new use cases, and bootstrap with an existing user base. This, in turn, gets you to native atproto concepts like [A Social Filesystem](https://overreacted.io/a-social-filesystem/).
 
 See [Exploring AT Protocol with Python](https://davidgasquez.com/exploring-atproto-python/) for another example of this approach.
 
@@ -5350,7 +5352,7 @@ On platforms supported by [homebrew](https://brew.sh/), you can install them wit
 brew install node pnpm go
 ```
 
-Begin by adding these Atproto libraries to your existing project:
+Begin by adding these atproto libraries to your existing project:
 
 ```bash
 pnpm add @atproto/common-web @atproto/lex @atproto/syntax @atproto/tap
@@ -5366,7 +5368,7 @@ You'll begin by adding Lexicons to your project.
 
 ## Part 1: Lexicons
 
-[Lexicons](/guides/lexicon) define the schema for records in Atproto. To create this tutorial, we've already published a new "Statusphere" Lexicon to our repository, available at `xyz.statusphere.status`. You can use `lex` to download and build this Lexicon into your project:
+[Lexicons](/guides/lexicon) define the schema for records in atproto. To create this tutorial, we've already published a new "Statusphere" Lexicon to our repository, available at `xyz.statusphere.status`. You can use `lex` to download and build this Lexicon into your project:
 
 ```bash
 lex install xyz.statusphere.status
@@ -6048,7 +6050,7 @@ tap run \
 
 ## Conclusion
 
-You've now built a complete Atproto app that uses OAuth to sign in, a custom Lexicon to define status records, and Tap to synchronize records in real-time.
+You've now built a complete atproto app that uses OAuth to sign in, a custom Lexicon to define status records, and Tap to synchronize records in real-time.
 
 This gives you all the tools you need to continue building on AT Protocol. You can find more guides and tutorials in our [Guides](/guides) section, and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
 
@@ -6077,7 +6079,7 @@ $ websocat wss://bsky.network/xrpc/com.atproto.sync.subscribeRepos
 
 From here, you would need to read each message as it comes in, and decode the associated data. Our [Go](https://github.com/bluesky-social/indigo) SDK is currently the most feature-complete for interacting with the firehose directly.
 
-Bear in mind that firehose output format is one of the more complex parts of AT, involving decoding binary [CBOR](/specs/data-model) data and [CAR](/specs/repository#car-file-serialization) files. Additionally, the volume of data has increased rapidly as the network has grown. The full synchronization firehose is core network infrastructure, but for end users such as [feed developers](/guides/feeds), we provide an alternative streaming solution called **Jetstream.**
+Bear in mind that firehose output format is one of the more complex parts of atproto, involving decoding binary [CBOR](/specs/data-model) data and [CAR](/specs/repository#car-file-serialization) files. Additionally, the volume of data has increased rapidly as the network has grown. The full synchronization firehose is core network infrastructure, but for end users such as [feed developers](/guides/feeds), we provide an alternative streaming solution called **Jetstream.**
 
 ## Jetstream
 
@@ -6425,7 +6427,7 @@ Most AT tooling is implemented in Go and TypeScript.
 
 - The [indigo](https://github.com/bluesky-social/indigo) repository contains most of our Go tooling, including the code for the [Relay](https://github.com/bluesky-social/indigo/blob/main/cmd/relay/README.md) and the Go SDK.
 - There's also https://github.com/bluesky-social/goat, our Go AT command-line tool.
-- The https://github.com/bluesky-social/atproto repository contains most of our TypeScript tooling, including the code for the [PDS](https://github.com/bluesky-social/atproto/tree/main/packages/pds) and the TypeScript SDK.
+- The https://github.com/bluesky-social/atproto repository contains most of our TypeScript tooling, including the code for the [PDS](https://github.com/bluesky-social/atproto/tree/main/packages/pds) and the TypeScript SDK. The [atcute](https://github.com/mary-ext/atcute) community project provides alternative TypeScript packages.
 - There are many other community tools that we use every day. For example, the [Microcosm](https://www.microcosm.blue/) tooling, written in Rust, provides a set of APIs to help build query layers without requiring dedicated AppViews! Refer to https://constellation.microcosm.blue/ for details.
 
 
@@ -6463,7 +6465,7 @@ Authenticate with AT Protocol OAuth from a minimal Go CLI app.
 
 ## OAuth with Node.js
 
-Authenticate with AT Protocol OAuth from a minimal Node.js CLI app. A good starting point for understanding how ATProto OAuth works.
+Authenticate with AT Protocol OAuth from a minimal Node.js CLI app. A good starting point for understanding how atproto OAuth works.
 
 [**OAuth with Node.js Tutorial**](/guides/oauth-cli-tutorial)
 
@@ -6733,7 +6735,7 @@ There are client-side code samples for both methods here:
 - [Blob lifecycle](/guides/blob-lifecycle)
 - [Blob security](/guides/blob-security)
 - [Blob Specs](/specs/blob)
-- [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on ATProto.
+- [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on atproto.
 
 
 ---
