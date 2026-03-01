@@ -8,12 +8,12 @@ export const header = {
 
 # AT URI Scheme (at://)
 
-The AT URI scheme (`at://`) makes it easy to reference individual records in a specific repository, identified by either DID or handle. AT URIs can also be used to reference a collection within a repository, or an entire repository (aka, an identity). {{ className: 'lead' }}
+The AT URI scheme (`at://`) makes it easy to reference individual records in a specific repository, identified by either DID or handle. {{ className: 'lead' }}
 
 Both of these AT URIs reference the same record in the same repository; one uses the account's DID, and one uses the account's handle.
 
-- `at://did:plc:44ybard66vv44zksje25o7dz/app.bsky.feed.post/3jwdwj2ctlk26`
-- `at://bnewbold.bsky.team/app.bsky.feed.post/3jwdwj2ctlk26`
+- `at://did:plc:vwzwgnygau7ed7b7wt5ux7y2/app.bsky.feed.post/3k5nobkf2w72g`
+- `at://retr0.id/app.bsky.feed.post/3k5nobkf2w72g`
 
 <Note>
 **Caveats for Handle-based AT URIs**
@@ -41,7 +41,7 @@ In current atproto Lexicon use, the **query** and **fragment** parts are not yet
 "at://" AUTHORITY [ "/" COLLECTION [ "/" RKEY ] ]
 ```
 
-The **authority** section is required, and should be normalized. Similar to the rules for DID syntax elsewhere in atproto, it is syntaxtually valid to have AT URIs with unsupported DID methods, though the URI will not resolve or function properly. The optional **collection** part of the path must be a normalized [NSID](./nsid). The optional **rkey** part of the path must be a valid [Record Key](./record-key).
+The **authority** section is required, and should be normalized. Similar to the rules for DID syntax elsewhere in atproto, it is syntaxtually valid to have AT URIs with unsupported DID methods, though the URI will not resolve or function properly. The optional **collection** part of the path must be a normalized [NSID](/specs/nsid). The optional **rkey** part of the path must be a valid [record key](/specs/record-key).
 
 An AT URI pointing to a specific record in a repository is not a *strong* reference, in that it is not content-addressed. The record may change or be removed over time, or the DID itself may be deleted or unavailable. For `did:web`, control of the DID (and thus repository) may change over time. For AT URIs with a handle in the authority section, the handle-to-DID mapping can also change.
 
@@ -104,7 +104,7 @@ Particularly when included in atproto records, strict normalization should be fo
 - No trailing slashes in path part
 - No duplicate slashes or "dot" sections in path part (`/./` or `/abc/../` for example)
 - NSID in path: domain authority part lowercased
-- Record Key is case-sensitive and not normalized
+- Record key is case-sensitive and not normalized
 - Query and fragment parts should not be included when referencing repositories or records in Lexicon records
 
 Refer to [RFC-3986](https://www.rfc-editor.org/rfc/rfc3986) for generic rules to normalize paths and remove `..` / `.` relative references.
@@ -342,14 +342,14 @@ export const header = {
 
 # Record Keys
 
-A **Record Key** (sometimes shortened to `rkey`) is used to name and reference an individual record within the same collection of an atproto repository. It ends up as a segment in AT URIs, and in the repo MST path. {{ className: 'lead' }}
+A **record key** (sometimes shortened to "rkey") is used to name and reference an individual record within the same collection of an atproto repository. It ends up as a segment in AT URIs, and in the repo MST path. {{ className: 'lead' }}
 
-A few different Record Key naming schemes are supported. Every record Lexicon schema will indicate which of the record key types should be used, depending on the needs and semantics of the record collection. {{ className: 'lead' }}
+A few different record key naming schemes are supported. Every record Lexicon schema will indicate which of the record key types should be used, depending on the needs and semantics of the record collection. {{ className: 'lead' }}
 
 
 ### Record Key Type: `tid`
 
-This is the most common record naming scheme, using [TID ("timestamp identifier") syntax](/specs/tid), such as `3jzfcijpj2z2a`. TIDs are usually generated from a local clock at the time of record creation, with some additional mechanisms to ensure they always increment and are not reused or duplicated with the same collection in a given repository.
+This is the most common record naming scheme, using [Timestamp Identifier (TID)(/specs/tid) syntax, such as `3jzfcijpj2z2a`. TIDs are usually generated from a local clock at the time of record creation, with some additional mechanisms to ensure they always increment and are not reused or duplicated with the same collection in a given repository.
 
 The original creation timestamp of a record can be inferred if it has a TID record key, but remember that these keys can be specified by the end user and could have any value, so they should not be trusted.
 
@@ -363,13 +363,13 @@ For cases where the record key must be a valid [NSID](/specs/nsid).
 
 ### Record Key Type: `literal:<value>`
 
-This key type is used when there should be only a single record in the collection, with a fixed, well-known Record Key.
+This key type is used when there should be only a single record in the collection, with a fixed, well-known record key.
 
 The most common value is `self`, specified as `literal:self` in a Lexicon schema.
 
 ### Record Key Type: `any`
 
-Any string meeting the overall Record Key schema requirements (see below) is allowed. This is the most flexible type of Record Key.
+Any string meeting the overall record key schema requirements (see below) is allowed. This is the most flexible type of record key.
 
 This may be used to encode semantics in the name, for example, a domain name, integer, or (transformed) AT URI. This enables de-duplication and known-URI lookups.
 
@@ -378,7 +378,7 @@ This may be used to encode semantics in the name, for example, a domain name, in
 
 Lexicon string type: `record-key`
 
-Regardless of the type, Record Keys must fulfill some baseline syntax constraints:
+Regardless of the type, record keys must fulfill some baseline syntax constraints:
 
 - restricted to a subset of ASCII characters — the allowed characters are alphanumeric (`A-Za-z0-9`), period, dash, underscore, colon, or tilde (`.-_:~`)
 - must have at least 1 and at most 512 characters
@@ -386,12 +386,12 @@ Regardless of the type, Record Keys must fulfill some baseline syntax constraint
 - must be a permissible part of repository MST path string (the above constraints satisfy this condition)
 - must be permissible to include in a path component of a URI (following RFC-3986, section 3.3).  The above constraints satisfy this condition, by matching the "unreserved" characters allowed in generic URI paths.
 
-Record Keys are case-sensitive.
+Record keys are case-sensitive.
 
 
 ### Examples
 
-Valid Record Keys:
+Valid record keys:
 
 ```
 3jui7kd54zh2y
@@ -403,7 +403,7 @@ pre:fix
 _
 ```
 
-Invalid Record Keys:
+Invalid record keys:
 
 ```
 alpha/beta
@@ -421,25 +421,23 @@ dHJ1ZQ==
 
 ### Usage and Implementation Guidelines
 
-Implementations should not rely on global uniqueness of TIDs, and should not trust TID timestamps as actual record creation timestamps. Record Keys are "user-controlled data" and may be arbitrarily selected by hostile accounts.
+Implementations should not rely on global uniqueness of TIDs, and should not trust TID timestamps as actual record creation timestamps. Record keys are "user-controlled data" and may be arbitrarily selected by hostile accounts.
 
-Most software processing repositories and records should be agnostic to the Record Key type and values, and usually treat them as simple strings. For example, relying on TID keys to decode as `base32` into a unique `uint64` makes it tempting to rely on this for use as a database key, but doing so is not resilient to key format changes and is discouraged.
+Most software processing repositories and records should be agnostic to the record key type and values, and usually treat them as simple strings. For example, relying on TID keys to decode as `base32` into a unique `uint64` makes it tempting to rely on this for use as a database key, but doing so is not resilient to key format changes and is discouraged.
 
-Note that in the context of a repository, the same Record Key value may be used under multiple collections. The tuple of `(did, rkey)` is not unique; the tuple `(did, collection, rkey)` is unique.
+Note that in the context of a repository, the same record key value may be used under multiple collections. The tuple of `(did, rkey)` is not unique; the tuple `(did, collection, rkey)` is unique.
 
-As a best practice, keep key paths to under 80 characters in virtually all situations.
-
-The colon character was de-facto allowed in the reference implementation in 2023, and the spec was updated to allow this character in February 2024.
+As a best practice, try to keep key paths to under 80 characters in virtually all situations.
 
 Note that "most" DIDs work as record keys, but that the full DID W3C specification allows DIDs with additional characters. This means that DIDs could be used as record keys at time of writing, and this will work with current "blessed" DID methods (note that `did:web` is restricted in atproto to only full domains, not paths or port specification), but that this could break in the future with different DID methods or DID features (like `did:web` paths) allowed.
 
-While Record Keys are case-sensitive, it is a recommended practice to use all-lower-case Record Keys to avoid confusion and maximize possible re-use in case-insensitive contexts.
+While record keys are case-sensitive, it is a recommended practice to use all-lower-case record keys to avoid confusion and maximize possible re-use in case-insensitive contexts.
 
 ### Possible Future Changes
 
-The constraints on Record Key syntax may be relaxed in the future to allow non-ASCII Unicode characters. Record keys will always be valid Unicode, never relaxed to allow arbitrary byte-strings.
+The constraints on record key syntax may be relaxed in the future to allow non-ASCII Unicode characters. Record keys will always be valid Unicode, never relaxed to allow arbitrary byte-strings.
 
-Additional Record Key types may be defined.
+Additional record key types may be defined.
 
 The maximum length may be tweaked.
 
@@ -590,20 +588,26 @@ export const header = {
 
 # Cryptography
 
-Two elliptic curves are currently supported throughout the protocol, and implementations are expected to fully support both: {{ className: 'lead' }}
+AT Protocol uses public key cryptography to authenticate public data. For simplicity and consistency, a small number of cryptographic systems and signing techniques are reused through the protocol framework. Data encryption is not used directly in the protocol, though many components use secure network transport based on TLS. {{ className: 'lead' }}
+
+Two elliptic curves are currently supported, and implementations are expected to fully support both:
 
 - `p256` elliptic curve: aka "NIST P-256", aka `secp256r1` (note the `r`), aka `prime256v1`
     - This curve *is* included in the WebCrypto API. It is commonly supported by personal device hardware (Trusted Platform Modules (TPMs) and mobile Secure Enclaves), and by cloud Hardware Security Modules (HSMs)
 - `k256` elliptic curve: aka `secp256k1` (note the `k`)
-    - This curve *is not* included in the WebCrypto API. It is used in Bitcoin and other cryptocurrencies, and as a result is broadly supported by personal secret key management technologies. It is also supported by cloud HSMs.
+    - This curve *is not* included in the WebCrypto API. It is broadly supported by personal secret key management technologies and hardware, due to it's use in popular cryptocurrencies, including Bitcoin. It is also supported by cloud HSMs.
 
-Because of the subtle visual distinction when the full curve names are written out, we often refer to them as `p256` or `k256`.
+Because of the subtle visual distinction when the full curve names are written out, they are often referred to as `p256` or `k256`.
 
-The atproto reference implementation from Bluesky supports both curves in all contexts, and creates `k256`  key pairs by default.
+The original atproto reference implementation consistently support both curve types. When generating new key pairs, it uses `k256` by default.
 
 Key points for both systems have loss-less "compressed" representations, which are useful when sharing the public keys. This is usually supported natively for `k256`, but sometimes requires extra methods or jumping through hoops for `p256`. You can read more about this at: [02, 03 or 04? So What Are Compressed and Uncompressed Public Keys?](https://medium.com/asecuritysite-when-bob-met-alice/02-03-or-04-so-what-are-compressed-and-uncompressed-public-keys-6abcb57efeb6).
 
-A common pattern when signing data in atproto is to encode the data in a strict CBOR format ([DRISL](https://dasl.ing/drisl.html)), hash the CBOR bytes with SHA-256, yielding raw bytes (not a hex-encoded string), and then sign the hash bytes.
+A common pattern when signing data in atproto is to:
+
+- encode the data in a strict CBOR format ([DRISL](https://dasl.ing/drisl.html))
+- hash the resulting CBOR bytes using SHA-256, resulting in raw bytes (not a hex-encoded string)
+- sign the hash bytes.
 
 
 ## ECDSA Signature Malleability
@@ -619,30 +623,32 @@ In atproto, signatures should always be verified using the verification routines
 
 ## Public Key Encoding
 
-When encoding public keys as strings, the preferred representation uses multibase (with `base58btc` specifically) and a multicode prefix to indicate the specific key type. By embedding metadata about the type of key in the encoding itself, they can be parsed unambiguously. The process for encoding a public key in this format is:
+When encoding public keys as strings, the preferred representation is the "multikey" encoding used by `did:key`. Because this representation includes a "codec" indicating the curve type, they can be parsed umabiguously.
+
+The process for encoding a public key in this format is:
 
 - Encode the public key curve "point" as bytes. Be sure to use the smaller "compact" or "compressed" representation. This is usually easy for `k256`, but might require a special argument or configuration for `p256` keys
-- Prepend the appropriate curve multicodec value, as varint-encoded bytes, in front of the key bytes:
+- Prepend the appropriate curve codec value, as varint-encoded bytes, in front of the key bytes:
     - `p256` (compressed, 33 byte key length): `p256-pub`, code 0x1200, varint-encoded bytes: [0x80, 0x24]
     - `k256` (compressed, 33 byte key length): `secp256k1-pub`, code 0xE7, varint bytes: [0xE7, 0x01]
-- Encode the combined bytes with with `base58btc`, and prefix with a `z` character, yielding a multibase-encoded string
+- Encode the combined bytes with with `base58btc`, and prefix with a `z` character, yielding string
 
 The decoding process is the same in reverse, using the identified curve type as context.
 
-To encode a key as a `did:key` identifier, use the above multibase encoding, and add the ASCII prefix `did:key:`. This identifier is used as an internal implementation detail in the DID PLC method.
+To encode a key as a `did:key` identifier, use the above multikey encoding, and add the ASCII prefix `did:key:`. This identifier is used as an internal implementation detail in the DID PLC method.
 
-Note that there is a variant legacy multibase encoding described in the [atproto DID specification document](/specs/did), which does not include a multicodec type value, and uses uncompressed byte encoding of keys. This format is deprecated.
+Note that there is a variant legacy "multibase" encoding described in the [atproto DID specification document](/specs/did), which does not include a codec type value, and uses uncompressed byte encoding of keys. This format is deprecated.
 
 ### Encoded Examples
 
-A P-256 public key, encoded in multibase (with multicodec), and as `did:key`:
+A P-256 public key, encoded as a multikey, and as `did:key`:
 
 ```
 zDnaembgSGUhZULN2Caob4HLJPaxBh92N7rtH21TErzqf8HQo
 did:key:zDnaembgSGUhZULN2Caob4HLJPaxBh92N7rtH21TErzqf8HQo
 ```
 
-A K-256 public key, encoded in multibase (with multicodec), and as `did:key`:
+A K-256 public key, encoded as a multikey, and as `did:key`:
 
 ```
 zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc
@@ -651,7 +657,7 @@ did:key:zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc
 
 ## Usage and Implementation Guidelines
 
-There is no specific recommended byte or string encoding for private keys across the atproto ecosystem. Sometimes simple hex encoding is used, sometimes multibase with or without multicodec type information.
+There is no specific recommended byte or string encoding for private keys across the atproto ecosystem. Sometimes simple hex encoding is used, sometimes multikey, and sometimes JWK.
 
 
 ## Possible Future Changes
@@ -1646,7 +1652,7 @@ Specifies schema of data objects stored in [Repositories](/specs/repository).
 
 Type-specific fields:
 
-- `key` (string, required): specifies the [Record Key type](/specs/record-key)
+- `key` (string, required): specifies the [record key](/specs/record-key) type
 - `record` (object, required): a schema definition with type `object`, which specifies this type of record
 
 ### Query and Procedure (HTTP API)
@@ -1893,7 +1899,7 @@ Strings can optionally be constrained to one of the following `format` types:
 - `handle`: [Handle Identifier](/specs/handle)
 - `nsid`: [Namespaced Identifier](/specs/nsid)
 - `tid`: [Timestamp Identifier (TID)](/specs/tid)
-- `record-key`: [Record Key](/specs/record-key), matching the general syntax ("any")
+- `record-key`: [record key](/specs/record-key), matching the general syntax ("any")
 - `uri`: generic URI, details specified below
 - `language`: language code, details specified below
 
@@ -2525,9 +2531,9 @@ export const header = {
 
 # Account Hosting
 
-All users in the atproto network have an "identity", based around a unique and immutable DID. Active users also have an "account" on a Personal Data Server (PDS). The PDS provides a number of network services, including repository hosting, authorization and authentication, and blob storage. Accounts have a lifecycle (including deletions and takedowns). Identities may migrate between hosting providers. Downstream services, including relays and AppViews, may redistribute account content.
+All users in the atproto network have an "identity", based around a unique and immutable DID. Active users also have an "account" on a Personal Data Server (PDS). The PDS provides a number of network services, including repository hosting, authorization and authentication, and blob storage. Accounts have a lifecycle (including account deletion and account takedowns). Identities may migrate between hosting providers.
 
-Each service which redistributes content must decide independently what accounts and content to host and redistribute. For example, they might focus on a subset of accounts in the network, define their own content policies, or have regional legal obligations. All services are expected to respect certain protocol-level account actions (described below), such as temporary account deactivation. Combined, each network service has a synthesized “hosting status” for each account they distribute public data for.
+Downstream services, including relays and AppViews, redistribute account content. Each service which redistributes content decides independently what scope of accounts and content to host and redistribute. For example, they might focus on a subset of accounts in the network; define their own content policies; or have regional legal obligations. All services are expected to respect certain protocol-level account actions (described below), such as temporary account deactivation. Combined, each network service has a synthesized "hosting status" for each account they distribute public data for.
 
 This document describes the various hosting states an account and identity can have in the network, what the expectations are for downstream services when states change, and how accounts can be migrated between hosting providers (PDS instances).
 
@@ -2539,14 +2545,16 @@ Identity metadata (DID documents and handle status), and the account hosting sta
 
 Network services are encouraged to implement API endpoints (such as `com.atproto.sync.getRepoStatus`) which describe current hosting status for individual accounts. If they expose an event stream, they should also emit `#account` events when their local account hosting status updates for an account.
 
-In addition to the `active` boolean, an account might in a more specific state (all of which correspond with `active=false`):
+In addition to the `active` boolean, an account might be in a more specific state:
 
-- `deleted`: user or host has deleted the account, and content should be removed from the network. Implied permanent or long-term, though may be reverted (deleted accounts may reactivate on the same or another host).
-- `deactivated`: user has temporarily paused their overall account. Content should not be displayed or redistributed, but does not need to be deleted from infrastructure. Implied time-limited. Also the initial state for an account after migrating to another PDS instance.
-- `takendown`: host or service has takendown the account. Implied permanent or long-term, though may be reverted.
-- `suspended`: host or service has temporarily paused the account. Implied time-limited.
+- `deleted` (active is false): user or host has deleted the account, and content should be removed from the network. Implied permanent or long-term, though may be reverted (deleted accounts may reactivate on the same or another host).
+- `deactivated` (active is false): user has temporarily paused their overall account. Content should not be displayed or redistributed, but does not need to be deleted from infrastructure. Implied time-limited. Also the initial state for an account after migrating to another PDS instance.
+- `takendown` (active is false): host or service has takendown the account. Implied permanent or long-term, though may be reverted.
+- `suspended` (active is false): host or service has temporarily paused the account. Implied time-limited.
+- `desynchronized` (active may be true): host or service has detected a problem synchronizing the account's repository, and may be missing content
+- `throttled` (active may be true): host or service has paused processing of new content because a resource rate-limit has been exceeded
 
-New account states will be added in the future. To prevent broken expectations, relevant API endpoints (such as `com.atproto.sync.getRepoStatus`, and the `#account` event on the `com.atproto.sync.subscribeRepos` event stream) break out `active` as a boolean flag, and then clarify non-active accounts with a separate `status` string. Services should use the `active` flag to control overall account visibility (observable behavior) with the `status` string acting as clarification which might determine more specific infrastructure behaviors (such as data deletion).
+New account states may be added in the future. To prevent broken expectations, relevant API endpoints (such as `com.atproto.sync.getRepoStatus`, and the `#account` event on the `com.atproto.sync.subscribeRepos` event stream) include `active` as a boolean flag, and an additional `status` string indicating the specific status. Services should use the `active` flag to control overall account visibility (observable behavior) with the `status` string acting as clarification which might determine more specific infrastructure behaviors (such as data deletion) or help understand behaviors (such as exceeding rate limits).
 
 The deactivation and suspension states are implied to be temporary, though they might have indefinite time periods. Deletion and takedowns are implied to be more final, but can still technically be reverted (and frequently are, in practice).
 
@@ -2566,11 +2574,11 @@ To summarize, when an account status is non-`active`, the content that hosts sho
 
 Unlike other aspects of atproto, account status is not self-certifying, and there is not a method for authenticated transfer or redistributing of account status between arbitrary parties.
 
-Most commonly, account status is propagated “hop by hop”, with each “downstream” service accepting and adopting the hosting status for accounts at their upstream. If an intermediate service (such as a relay) overrides the status of their upstream (for example, an infrastructure account takedown), they will broadcast and propagate that action downstream to subscribers.
+Most commonly, account status is propagated "hop by hop", with each "downstream" service accepting and adopting the hosting status for accounts at their upstream. If an intermediary service (such as a relay) overrides the status of their upstream (for example, an infrastructure account takedown), they will broadcast and propagate that action downstream to subscribers.
 
 By default, if an account’s current active PDS is not available, account status should remain unchanged, at least for some time period. This keeps the network resilient and accounts online during temporary infrastructure outages. Services may decide their own policies for accounts whose PDS hosts remain offline for long periods of time.
 
-The general expectation is that downstream services will not list an account as `active` if it is inactive at an upstream service. However, the concept of “upstream” is informal, and services may need to define their own policies for some corner-cases. For example, an AppView might consume from multiple independent relay providers, who report differing statuses for the same account, due to policy differences. If the network connection between a relay and PDS is disrupted, they may report different statuses for the same account. 
+The general expectation is that downstream services will not list an account as `active` if it is inactive at an upstream service. However, the concept of "upstream" is informal, and services may need to define their own policies for some corner-cases. For example, an AppView might consume from multiple independent relay providers, who report differing statuses for the same account, due to policy differences. If the network connection between a relay and PDS is disrupted, they may report different statuses for the same account.
 
 If there is doubt about about an account’s general status in the network, the account’s current active PDS host can be queried using the `com.atproto.sync.getRepoStatus` endpoint. If the account is not `active` there, it is generally expected to not be active elsewhere, especially in the case of user-initiated actions (deactivation or deletion).
 
@@ -2578,7 +2586,7 @@ If there is doubt about about an account’s general status in the network, the 
 
 Separate from overall account status, individual pieces of content may be removed. When accounts remove records from their public repositories, hosting services should remove public access to that content.
 
-Applications which would benefit from explicit “tombstones” (indications that content previously existed) should explicitly design them in to Lexicon schemas. In the absence of explicit application-level tombstones, services are expected not to differentiate between content which has never existed and content which has been entirely deleted. Note that this is different from acknowledging account-level deletion, which is encouraged.
+Applications which would benefit from explicit "tombstones" (indications that content previously existed) should explicitly design them in to Lexicon schemas. In the absence of explicit application-level tombstones, services are expected not to differentiate between content which has never existed and content which has been entirely deleted. Note that this is different from acknowledging account-level deletion, which is encouraged.
 
 ## PDS Account Migration
 
@@ -2590,9 +2598,9 @@ However, in the common case, when there is an active account on a functional cur
 
 - creating an account on the new PDS (which may start with `active` false, such as `deactivated`)
 - migrating data from the old PDS to the new PDS
-- updating identity (DID document) to point to the new PDS and using a new atproto signing key. For PLC DIDs, usually involves updating PLC rotation keys as well.
-- updating account status on both PDS instances, such that old is inactive, and new is active
-- emitting a `#commit` event from the new PDS, signed by the new atproto signing key, with a higher commit `rev`.
+- updating identity (DID document) to point to the new PDS and using a new atproto signing key. For PLC DIDs, usually involves updating PLC rotation keys as well. This results in an `#identity` event being emitted from at least the new PDS host, and ideally from the old PDS as well.
+- updating account status on both PDS instances, such that old is inactive, and new is active. This results in `#account` event being emitted from each PDS.
+- emitting a `#sync` and/or `#commit` event from the new PDS, signed by the new atproto signing key, with a higher commit `rev`.
 
 ## Usage and Implementation Guidelines
 
@@ -2742,45 +2750,42 @@ atproto/src/app/[locale]/specs/repository/en.mdx
 export const header = {
   title: 'Repository',
   description:
-    'Self-authenticating storage for public account content',
+    'Self-certifying storage for public account content',
 }
 
 # Repository
 
-*See the [Data Repositories Guide](../guides/data-repos) for a higher-level introduction.*
+Each atproto account has a **repository** (or "repo") which stores all of their public data **records**. Repository contents are entirely public and verifiable ("self-certifying"). Record deletion is supported without leaving a trace or "tombstone" of previous contents. {{ className: 'lead' }}
 
-Public atproto content (**records**) is stored in per-account repositories (frequently shortened to **repo**). All currently active records are stored in the repository, and current repository contents are publicly available, but both content deletions and account deletions are fully supported. {{ className: 'lead' }}
+The repository data structure is a content-addressed [Merkle-tree](https://en.wikipedia.org/wiki/Merkle_tree). Creating, updating, or deleting records (or any other mutations to the repository) changes the root hash value of the overall repository tree. Each published version of the repository tree structure is represented as a **commit**. Commits are cryptographically signed, with rotatable signing keys, which allows recursive authentication of either the repository structure as a whole, or compact "proof chains" for individual records. {{ className: 'lead' }}
 
-The repository data structure is content-addressed (a [Merkle-tree](https://en.wikipedia.org/wiki/Merkle_tree)), and every mutation of repository contents (eg, addition, removal, and updates to records) results in a new commit `data` hash value (CID). Commits are cryptographically signed, with rotatable signing keys, which allows recursive validation of content as a whole or in part. {{ className: 'lead' }}
+Repositories and their contents are represented as a graph of data objects, encoded in [DRISL CBOR](https://dasl.ing/drisl.html) and referencing each other by content hash (CID Links). Larger binary media files (["blobs"](/specs/blob)) are also referenced by content hash, but are not stored directly in the repository. Complete repositories can be exported as [CAR](https://dasl.ing/car.html) files for synchronization, offline backup, account migration, or other purposes. {{ className: 'lead' }}
 
-Repositories and their contents are canonically stored in [DRISL](https://dasl.ing/drisl.html) CBOR, as a graph of data objects referencing each other by content hash (CID Links). Large binary blobs are not stored directly in repositories, though they are referenced by hash ([CID](https://github.com/multiformats/cid)). This includes images and other media objects. Repositories can be exported as [CAR](https://dasl.ing) files for offline backup, account migration, or other purposes. {{ className: 'lead' }}
-
-In the atproto federation architecture, the authoritative location of an account's repository is the associated Personal Data Server (PDS). An account's current PDS location is authoritatively indicated in the DID Document. {{ className: 'lead' }}
-
-In real-world use, it is expected that individual repositories will contain anywhere from dozens to millions of records. {{ className: 'lead' }}
+In the atproto network architecture, the authoritative location of an account's repository is the associated Personal Data Server (PDS). An account's current PDS location is declared in the DID Document. {{ className: 'lead' }}
 
 
-## Repo Data Structure (v3)
-
-This describes version `3` of the repository binary format.
-
-Version `2` had a slightly different commit object schema, but is mostly compatible with `3`.
-
-Version `1` had a different MST fanout configuration, and an incompatible schema for commits and repository metadata. Version `1` is deprecated, no repositories in this format exist in the network, and implementations do not need to support it.
+## Repository Data Structure
 
 At a high level, a repository is a key/value mapping where the keys are path names (as strings) and the values are records (CBOR objects).
 
-A **Merkle Search Tree** (MST) is used to store this mapping. This content-addressed deterministic data structure stores data in key-sorted order. It is reasonably efficient for key lookups, key range scans, and appends (assuming sorted record paths). The properties of MSTs in general are described in this academic publication:
+A **Merkle Search Tree** (MST) is used to store this mapping. This content-addressed deterministic data structure stores data in key-sorted order. It is reasonably efficient for key lookups, key range scans, and appends (assuming sorted record paths). Merkle Search Trees and their performance properties were originally described in this research publication:
 
 > Alex Auvolat, François Taïani. Merkle Search Trees: Efficient State-Based CRDTs in Open Networks. SRDS 2019 - 38th IEEE International Symposium on Reliable Distributed Systems, Oct 2019, Lyon, France. pp.1-10, ff10.1109/SRDS.2019.00032 ([pdf](https://inria.hal.science/hal-02303490/document))
 
-The specific details of the MST as used in atproto repositories are described below.
+You do not need to read the above publication to implement MSTs as they are used in atproto.
+
+Repositories are intended to store up to single-digit millions records. Beyond that they become unweidly to distribute and process.
+
+This document describes version `3` of the repository binary format. Version `2` had a slightly different commit object schema, but is mostly compatible with `3`. Version `1` had a different MST fanout configuration, and an incompatible schema for commits and repository metadata. Version `1` is deprecated, no repositories in this format exist in the network, and implementations do not need to support it.
+
+
+### Repository Paths
 
 Repo paths are strings, while MST keys are byte arrays. Neither may be empty (zero-length). While repo path strings are currently limited to a subset of ASCII (making encoding a no-op), the encoding is specified as UTF-8.
 
-Repo paths currently have a fixed structure of `<collection>/<record-key>`. This means a valid, normalized [NSID](./nsid), followed by a `/`, followed by a valid [Record Key](./record-key). The path should not start with a leading `/`, and should always have exactly two path segments. The ASCII characters allowed in the entire path string are currently: letters (`A-Za-z`), digits (`0-9`), slash (`/`), period (`.`), hyphen (`-`), underscore (`_`), and tilde (`~`). The specific path segments `.` and `..` are not valid NSIDs or Record Keys, and will always be disallowed in repo paths.
+Repo paths currently have a fixed structure of `<collection>/<record-key>`. This means a valid, normalized [Namespace ID (NSID)](/specs/nsid), followed by a `/`, followed by a valid [Record Key](/specs/record-key). The path should not start with a leading `/`, and should always have exactly two path segments. The ASCII characters allowed in the entire path string are currently: letters (`A-Za-z`), digits (`0-9`), slash (`/`), period (`.`), hyphen (`-`), underscore (`_`), and tilde (`~`). The specific path segments `.` and `..` are not valid NSIDs or record keys, and will always be disallowed in repo paths.
 
-Note that repo paths for all records in the same collection are sorted together in the MST, making enumeration (via key scan) and export efficient. Additionally, the TID Record Key scheme was intentionally selected to provide chronological sorting of MST keys within the scope of a collection. Appends are more efficient than random insertions/mutations within the tree, and when enumerating records within a collection they will be in chronological order (assuming that TID generation was done correctly, which cannot be relied on in general).
+Note that repo paths for all records in the same collection are sorted together in the MST, making enumeration (via key scan) and export efficient. Additionally, the [Timestamp ID (TID)](/specs/tid) record key scheme was intentionally selected to provide chronological sorting of MST keys within the scope of a collection. Appends are more efficient than random insertions/mutations within the tree, and when enumerating records within a collection they will be in chronological order (assuming that TID generation was done correctly, which cannot be relied on in general).
 
 
 ### Commit Objects
@@ -2794,9 +2799,9 @@ The top-level data object in a repository is a signed commit. The data fields ar
 - `prev` (CID link, nullable): pointer (by hash) to a previous commit object for this repository. Could be used to create a chain of history, but largely unused (included for v2 backwards compatibility). In version `3` repos, this field must exist in the CBOR object, but is virtually always `null`. NOTE: previously specified as nullable and optional, but this caused interoperability issues.
 - `sig` (byte array, required): cryptographic signature of this commit, as raw bytes
 
-An UnsignedCommit data object has all the same fields except for `sig`. The process for signing a commit is to populate all the data fields, and then serialize the UnsignedCommit with DRISL CBOR. The output bytes are then hashed with SHA-256, and the binary hash output (without hex encoding) is then signed using the current "signing key" for the account. The signature is then stored as raw bytes in a commit object, along with all the other data fields.
+An unsigned commit object has all the same fields except for `sig`. The process for signing a commit is to populate all the data fields, and then serialize the unsigned commit with DRISL CBOR. The output bytes are then hashed with SHA-256, and the binary hash output (without hex encoding) is then signed using the current "signing key" for the account. The signature is then stored as raw bytes in a commit object, along with all the other data fields.
 
-The CID for a commit overall is generated by serializing a *signed* commit object as DRISL CBOR. See notes on the "blessed" CID format below, and in particular be sure to use the `dag-cbor` multicodec for CIDs linking to commit objects.
+The CID for a commit overall is generated by serializing a *signed* commit object as DRISL CBOR. The DRISL CBOR (not "raw") codec should be used for CIDs linking to commit objects. See notes on the "blessed" CID format below.
 
 Note that neither the signature itself nor the signed commit indicate either the type of key used (curve type), or the specific public key used. That information must be fetched from the account's DID document. With key rotation, verification of older commit signatures can become ambiguous. The most recent commit should always be verifiable using the current DID document. This implies that a new repository commit should be created every time the signing key is rotated. Such a commit does not need to update the `data` CID link.
 
@@ -2850,51 +2855,55 @@ The standard file format for storing data objects is Content Addressable aRchive
 
 The CARv1 format is very simple. It contains a small metadata header (which can indicate one or more "root" CID links), and then a series of binary "blocks", each of which is a data object. In the context of atproto repositories:
 
-- The first element of the CAR `roots` metadata array must be the CID of the most relevant Commit object. for a generic export, this is the current (most recent) commit. additional CIDs may also be present in the `roots` array, with (for now) undefined meaning or order
+- The first element of the CAR `roots` metadata array must be the CID of the most relevant Commit object. For a generic export, this is the current (most recent) commit. Additional CIDs may also be present in the `roots` array, with (for now) undefined meaning or order
 - For full exports, the full repo structure must be included for the indicated commit, which includes all records and all MST nodes
-- The order of blocks within the CAR file is not currently defined or restricted. implementations may have a "preferred" ordering, but should be tolerant of unexpected ordering
+- The preferred order of blocks within the CAR file is described below. At this time, this order is not required, and parsing implementations (and services) must be tolerant of CAR files with arbitrary block ordering.
 - Additional blocks, including records, may or may not be included in the CAR file
 
 When importing CAR files, note that there may existing dangling CID references. For example, repositories may contain CID Links to blobs or records in other repositories, and the blocks corresponding to those blobs or references would likely not be included in the CAR file.
 
 The CARv1 specification is agnostic about the same block appearing multiple times in the same file ("Duplicate Blocks)". Implementations should be robust to both duplication and de-duplication of blocks, and should also ignore any unnecessary or unlinked blocks.
 
-## Repository Diffs
+### Streamable CAR Block Ordering
 
 <Note>
-An updated version of the Synchronization protocol is being rolled out to the live network in early 2025. There is a ["Sync v1.1" proposal document](https://github.com/bluesky-social/proposals/tree/main/0006-sync-iteration) and an [update blog post](https://docs.bsky.app/blog/relay-sync-updates) with deployment details. The written specifications will be updated soon.
+The block ordering scheme described here is still work-in-progress. As of February 2026, it has not been included in popular implementations or deployed broadly in the atproto network. Details may change based on implementation experience.
 </Note>
 
-A concept which supports efficient synchronization of data between independent services is "diffs" of repository trees between different revisions. The basic principle is that a repository diff contains all the data (commit object, MST nodes, and records) that have changed between an older revision and the current revision of a repo. The diff can be "applied" to the older mirror of the repository, and the result will be the complete MST tree at the current (newer) commit revision.
+Repository export CAR files are usually parsed in to an MST structure. If the blocks in the CAR file are in a consistent order, this can be done by "walking" references in a single pass, without buffering the entire CAR file in memory. This memory efficiency is helpful when working with large repositories, or processing many repositories in parallel.
 
-Repo diffs can be serialized as CAR files, sometimes referred to as "CAR slices". Some details about diff CAR slices:
+The consistent block ordering rules to support this use case are:
 
-- same format, version, and atproto-specific constraints as full repo export CAR files
-    - blocks "should" be de-duplicated by CID (only one copy included), though receiving implementations must be resilient to duplication
-- the root CID indicated in the CAR header (the first element of `roots`) should point to the commit block (which must be included)
-- any required blocks must be included even if they have appeared in the history of the repository previously. eg, if a record is created in rev C, deleted in rev F, and re-created in rev N, the diff "since F" must include the record block
+- The commit object must be the first block.
+- MST nodes are included in "pre-order", meaning that parent nodes precede child nodes and leaf nodes. Record blocks are interleaved between MST nodes. This starts with the root MST node (referenced from the commit `data` field) as the second block.
+- Following each MST node in the tree, include the blocks corresponding to the entries in that node, in the order they are listed in the node. If an entry slot is a child MST node, include that node (and recurse depth-first). If the entry slot is a record, include the record block.
+
+
+## Repository Diffs
+
+Mutations to a repository tree can be encapsulated as a "diff". The basic idea is that all new data blocks (including the new commit object, MST nodes, and records) that have changed since a previous revision can be bundled together and serialized in CAR format. Conceptually, diffs could be "applied" to mirrors of a repository to keep them updated. This forms the basis of the [Data Synchronization](/specs/sync) part of the specification.
+
+Some details about representing repository diffs are "CAR slices":
+
+- uses the same CAR format described above for full repository exports
+- the root CID indicated in the CAR header (the first element of `roots`) must point to the new commit block (which must be included)
+- all MST nodes in the current repo revision which did not exist in the previous repo revision must be included
+- any additional MST nodes needed to support "operation inversion" must be included (described below)
+- all required blocks must be included even if they appeared previously in the history of the repository.
+  - for example, if a record is created in rev C, deleted in rev F, and re-created in rev N, the diff "since F" must include the record block
 - all "created" records must be included
-- any records which have been "deleted" and do not exist in the current repo should not be included
-- any records which have been "updated" should include the final version, and should not include the previous version
-- all MST nodes in the current repo which didn't exist in the previous repo version must be included
-- with the exception of removed record data, the diff may include additional blocks, which receivers should ignore.
-  - however, diffs which intentionally contain a large amount of irrelevant block data to consume network or compute resources are considered a form of network abuse.
+- any records which have been "deleted" should not have the record value included
+- any records which have been "updated" should include the new value, and should not include the previous version
+- if a record value has been deleted from one path and created (or updated) at a new path in the same diff (eg, was "moved"), it should be included
+- parsing implementation must be tolerant of additional unexpected blocks in the diff, which they should ignore
+  - note that unreasonable quantities of unnecessary block data may be considered a form of resource abuse
 
-The diff is a partial Merkle tree, including a signed commit, and can be partially verified. This means that an observer which has successfully resolved the identity of the relevant account (including cryptographic public keys) can verify certain aspects of the data. The diff is a reliable "proof chain" for creation and updates of records: an observer can verify that the new or updated records have the specific record values in the overall repo as of the commit revision. If the observer knows of specific records (by repo path, or by full AT-URI) that have been deleted, they can verify that those records no longer exist in the repo as of the final commit revision.
+The diff is a partial Merkle tree, including a signed commit, and can be partially verified in isolation. For example, the diff contains a "proof chain" to verify any created or updated records. If both metadata about the previous state of the repository and a complete set of record operations are available, then it becomes possible to fully verify the integrity of the diff.
 
-However, an observer which does not know the full state of the repository at the "older" revision *can not* reliably enumerate all of the records that have been removed from the repository. Such an observer also can not see the previous values of deleted or updated records, either as full values or by CID. Note that the later is an intentional design goal for the diff concept: it is desired that content deletion happen rapidly and not "draw attention" to the content which has been deleted. It is technically possible for "archival" observers to track deletion events and lookup the previous content value, but this requires additional resources and effort.
+The sync "firehose" mechanism uses a process called "operation inversion" to validate a list of record operations against a diff. In this process, the diff is parsed as a partial MST, and then each operation is applied in reverse: a "create" is applied as a "delete", etc. After all operations have been applied, the root CID (hash) of the MST is recomputed, and should match the `data` field of the previous revision of the repository. If the list of record operations is inaccurate or incomplete, the inverted MST will not match.
 
-Sometimes repo diffs are generated automatically. For example, every commit to a repo can result in a diff against the immediately preceding commit. In other contexts, diffs are generated on demand: a diff can be requested "since" an arbitrary previous revision. It is not expected that repo hosts support generating diffs between two arbitrary revisions, only "from" an arbitrary older revision and the current revision. Repo hosts are not required to maintain a complete history of prior commits/revisions, and in some cases (such as account migration) may never have had prior repo history. Some details about how to interpret and service requests for diffs "since" a prior revision:
+In some cases the inversion process requires the inclusion of contextual MST nodes in the diff, which would not otherwise need to be included. For example, MST nodes that reference record paths directly adjacent (in sorted order) to those mutated in the diff. The definition of which nodes need to be included in the diff is ultimately tautological: those MST nodes which are necessary for the inversion process. A set of test vectors is included in the [atproto test case git repository](https://github.com/bluesky-social/atproto-interop-tests).
 
-- it is helpful to track internally the commit revision when a block (record or MST node) was created or re-created. This enables querying blocks "since" a point in time
-- "since" revisions are not expected to be an exact match
-    - for example, if a repo had a sequence of commits "333", "666", "999", and a "since" value of "444" was requested, the changes in "666" and "999" should be included, as if the "since" parameter was "666"..
-- a host is allowed to include additional history, but is encouraged to return the minimal or most granular requested data
-    - for example, a host may have "compacted" repo rev history to a smaller number of commits. If a repo had commit history "288", "300", "320", "340", "400", and got a request "since" 340, it might return all changes since 300. Hosts are encouraged to return the smallest diff when possible (eg, “since” 340), but clients should be resilient.
-- if a host receives a “since” request earlier than the oldest available revision for a repository, it should return the full repository. This may happen if the host does not have the complete history of the repository.
-    - for example, if a repository had revisions "140", "150", and "160", then migrated to a new PDS and revisions continued "161" and "170", if the new PDS is asked for a diff "since" 150, the new PDS would probably need to return the full repository, because the earliest revision it would be aware of was "160" or "161" (depending on how migration was implemented).
-
-In the specific case of chained commit-to-commit diffs which appear on the firehose, diffs should be "minimal": they should not contain additional records or additional history.
 
 ## Security Considerations
 
@@ -2902,7 +2911,7 @@ Repositories are untrusted input: accounts have full control over repository con
 
 Generic precautions should be followed with CBOR decoding: a maximum serialized object size, a maximum recursion depth for nested fields, maximum memory budget for deserialized data, etc. Some CBOR libraries include these precautions by default, but others do not.
 
-The efficiency of the MST data structure depends on key hashes being relatively randomly dispersed. Because accounts have control over Record Keys, they can mine for sets of record keys with particular depths and sorting order, which result in inefficient tree shapes, which can cause both large storage overhead, and network amplification in the context of federation streams. To protect against these attacks, implementations should limit the number of TreeEntries per Node to a statistically unlikely maximum length. It may also be necessary to limit the overall depth of the repo, or other parameters, to prevent more sophisticated key mining attacks.
+The efficiency of the MST data structure depends on key hashes being relatively randomly dispersed. Because accounts have control over record keys, they can mine for sets of record keys with particular depths and sorting order, which result in inefficient tree shapes, which can cause both large storage overhead, and network amplification in the context of firehose event streams. To protect against these attacks, implementations should limit the number of TreeEntries per Node to a statistically unlikely maximum length. It may also be necessary to limit the overall depth of the repo, or other parameters, to prevent more sophisticated key mining attacks.
 
 When importing CAR files, the completeness of the repository structure should be verified. Additional unrelated blocks might be included in the CAR structure; care should be taken when injecting CAR contents directly in to backend block storage, to ensure resources are not wasted on un-referenced blocks. There may also be issues with cross-account contamination from CAR imports, for example previously-deleted records re-appearing via CAR import from an unrelated account.
 
@@ -2911,19 +2920,13 @@ When importing CAR files, the completeness of the repository structure should be
 
 An optional in-repo mechanism for storing multiple versions of the same record (by path) may be implemented. Eg, adding additional path field to indicate the version by CID, timestamp, or monotonically increasing version integer.
 
-Mechanisms for storing metadata associated with each record are being considered, for example, generic label, re-use rights, or hashtag metadata. This would allow mutating the metadata without mutating the record itself, and make some metadata generic across lexicons.
-
 Repo path restrictions may be relaxed in other ways, including fewer or additional path segments, more allowed characters (including non-ASCII), etc. Paths will always be valid Unicode strings, mapped to MST keys (byte arrays) by UTF-8 encoding.
 
-At the overall atproto specification level, additional "blessed" cryptographic algorithms may be added over time. Likewise, additional CID formats to reference records and blobs may be added. Internal CID format changes would require a repo format version bump.
+At the overall atproto specification level, additional "blessed" cryptographic algorithms may be added over time. Likewise, additional CID formats for referencing blobs and records may be added. MST node CID format changes would require a repo format version bump.
 
-Repository CAR exports may include linked "blobs" (larger binary files). This might become the default, or a configurable option, or some another mechanism for blob export might be chosen (eg, `.tar` or `.zip` export).
+Repository CAR exports could include linked "blobs" (larger binary files). This might become the default, or a configurable option, or some another mechanism for blob export might be chosen (eg, `.tar` or `.zip` export).
 
 Record content could conceivably be something other than CBOR some day. This would probably be a repo format version bump. Note that it is possible to efficiently wrap other data formats in a CBOR wrapper (via a byte array field), or to have a small CBOR record type that links to a blob in arbitrary format.
-
-Repository CAR exports may end up with a preferred block ordering scheme specified.
-
-The CARv2 file format, which includes optimizations for some use cases, may be adopted in some form.
 
 Adding optional fields to commit and MST node objects may or may not result in a repo format version change. Changing the MST fanout, or any changes to the current MST fields, would be a full repo version change.
 
@@ -3155,9 +3158,9 @@ export const header = {
 
 # Timestamp Identifiers (TIDs)
 
-A TID ("timestamp identifier") is a compact string identifier based on an integer timestamp. They are sortable, appropriate for use in web URLs, and useful as a "logical clock" in networked systems. TIDs are currently used in atproto as record keys and for repository commit "revision" numbers.
+A Timestamp Identifier (TID) is a compact string identifier, based on a 64-bit integer, which can also be interpreted as a timestamp. An example TID is `3jzfcijpj2z2a`. They are sortable, appropriate for use in web URLs, and useful as a "logical clock" in networked systems. TIDs are currently used in atproto as record keys and for repository commit "revision" numbers. {{ className: 'lead' }}
 
-Note: There are similarities to ["snowflake identifiers"](https://en.wikipedia.org/wiki/Snowflake_ID). In the decentralized context of atproto, the global uniqueness of TIDs can not be guaranteed, and an antagonistic repo controller could trivially create records re-using known TIDs.
+TIDs have some similarities to ["snowflake identifiers"](https://en.wikipedia.org/wiki/Snowflake_ID), which are designed for global uniqueness. But because atproto is an open network, uniqueness of TIDs can not be guaranteed. An adversarial party can easily create new records reusing known TIDs.
 
 ## TID Structure
 
@@ -3354,16 +3357,16 @@ export const header = {
 
 # Namespaced Identifiers (NSIDs)
 
-Namespaced Identifiers (NSIDs) are used to reference Lexicon schemas for records, XRPC endpoints, and more. {{ className: 'lead' }}
+Namespaced Identifiers (NSIDs) are used to reference Lexicon schemas for records, XRPC endpoints, and more. For example, `com.atproto.sync.getRecord`. {{ className: 'lead' }}
 
-The basic structure and semantics of an NSID are a fully-qualified hostname in Reverse Domain-Name Order, followed by a simple name. The hostname part is the **domain authority,** and the final segment is the **name**. {{ className: 'lead' }}
+The basic structure and semantics of an NSID are a fully-qualified hostname in reverse domain-name order, followed by an additional name segment. The hostname part is the **domain authority,** and the final segment is the **name**. {{ className: 'lead' }}
 
 
 ### NSID Syntax
 
 Lexicon string type: `nsid`
 
-The domain authority part of an NSID must be a valid handle with the order of segments reversed. That is followed by a name segment which must be an ASCII camel-case string.
+The domain authority part of an NSID must be a valid [handle](/specs/handle) (hostname) with the order of segments reversed. That is followed by a name segment that must be an ASCII camel-case string.
 
 For example, `com.example.fooBar` is a syntactically valid NSID, where `com.example` is the domain authority, and `fooBar` is the name segment.
 
@@ -3429,7 +3432,7 @@ A **strongly-encouraged** best practice is to use authority domains with only AS
 
 The overall NSID is case-sensitive for display, storage, and validation. However, having multiple NSIDs that differ only by casing is not allowed. Namespace authorities are responsible for preventing duplication and confusion. Implementations should not force-lowercase NSIDs.
 
-It is common to use "subdomains" as part of the "domain authority" to organize related NSIDs. For example, the NSID `com.atproto.sync.getHead` uses the `sync` segment. Note that this requires control of the full domain `sync.atproto.com`, in addition to the domain `atproto.com`.
+It is common to use "subdomains" as part of the "domain authority" to organize related NSIDs. For example, the NSID `com.atproto.sync.getRecord` uses the `sync` segment. Note that this requires control of the full domain `sync.atproto.com`, in addition to the domain `atproto.com`.
 
 Lexicon language documentation will provide style guidelines on choosing and organizing NSIDs for both record types and XRPC methods. In short, records are usually single nouns, not pluralized. XRPC methods are usually in "verbNoun" form.
 
@@ -3524,7 +3527,7 @@ com.example
 
 전체 NSID는 표시, 저장, 검증에 있어서 대소문자를 구분합니다. 그러나 대소문자만 다른 여러 NSID를 허용해서는 안 됩니다. 네임스페이스 권한은 중복과 혼란을 방지할 책임이 있습니다. 구현체는 NSID를 강제로 소문자로 변환해서는 안 됩니다.
 
-관련 NSID를 체계적으로 구성하기 위해 도메인 권한의 일부로 "서브도메인"을 사용하는 것이 일반적입니다. 예를 들어, NSID `com.atproto.sync.getHead`는 `sync` 세그먼트를 사용합니다. 이는 `atproto.com` 도메인뿐만 아니라 `sync.atproto.com` 전체 도메인에 대한 제어 권한이 필요함을 의미합니다.
+관련 NSID를 체계적으로 구성하기 위해 도메인 권한의 일부로 "서브도메인"을 사용하는 것이 일반적입니다. 예를 들어, NSID `com.atproto.sync.getRecord`는 `sync` 세그먼트를 사용합니다. 이는 `atproto.com` 도메인뿐만 아니라 `sync.atproto.com` 전체 도메인에 대한 제어 권한이 필요함을 의미합니다.
 
 Lexicon 언어 문서에는 레코드 유형 및 XRPC 메서드에 대해 NSID를 선택하고 구성하는 스타일 가이드라인이 제공될 것입니다. 요약하면, 레코드는 보통 복수형이 아닌 단수 명사이며, XRPC 메서드는 보통 "동사명사(verbNoun)" 형태를 취합니다.
 
@@ -3569,11 +3572,11 @@ export const header = {
     'A specification for human-friendly account identifiers.',
 }
 
-# Handle
+# Handles
 
-DIDs are the long-term persistent identifiers for accounts in atproto, but they can be opaque and unfriendly for human use. Handles are a less-permanent identifier for accounts. The mechanism for verifying the link between an account handle and an account DID relies on DNS, and possibly connections to a network host, so every handle must be a valid network hostname. *Almost* every valid "hostname" is also a valid handle, though there are a small number of exceptions. {{ className: 'lead' }}
+DIDs are the long-term persistent identifiers for accounts in atproto, but they can be opaque and unfriendly for human use. **Handles** are mutable and human-friendly account usernames, in the form of a DNS hostname. For example, `user.example.com`. Handles must be bi-directionally linked to a DID: the DID document must claim the handle, and the handle must resolve to the DID identifier. Two methods of resolving handles to DID are supported: one using TXT DNS records, and the other using an HTTPS `/.well-known/` URL path. {{ className: 'lead' }}
 
-The definition "hostnames" (as a subset of all possible "DNS names") has evolved over time and across several RFCs. Some relevant documents are [RFC-1035](https://www.rfc-editor.org/rfc/rfc1035), [RFC-3696](https://www.rfc-editor.org/rfc/rfc3696) section 2, and [RFC-3986](https://www.rfc-editor.org/rfc/rfc3986) section 3. {{ className: 'lead' }}
+The definition of "hostnames" (as a subset of all possible "DNS names") has evolved over time and across several IETF RFCs. Some relevant documents are [RFC-1035](https://www.rfc-editor.org/rfc/rfc1035), [RFC-3696](https://www.rfc-editor.org/rfc/rfc3696) section 2, and [RFC-3986](https://www.rfc-editor.org/rfc/rfc3986) section 3. Almost every valid "hostname" is also a valid handle, though there are a small number of exceptions (described below). {{ className: 'lead' }}
 
 ## Handle Identifier Syntax
 
@@ -3664,7 +3667,7 @@ blah.arpa
 
 ## Handle Resolution
 
-Handles have a limited role in atproto, and need to be resolved to a DID in almost all situations. Resolution mechanisms must demonstrate a reasonable degree of authority over the domain name at a point in time, and need to be relatively efficient to look up. There are currently two supported resolution mechanisms, one using a TXT DNS record containing the DID, and another over HTTPS at a special `/.well-known/` URL.
+Handles have a limited role in atproto, and need to be resolved to a DID in almost all situations. Resolution mechanisms must demonstrate a reasonable degree of authority over the domain name at a point in time, and need to be relatively efficient to look up. There are currently two supported resolution mechanisms: one using a TXT DNS record containing the DID, and another over HTTPS at a special `/.well-known/` URL.
 
 Clients can rely on network services (eg, their PDS) to resolve handles for them, using the `com.atproto.identity.resolveHandle` endpoint, and don't usually need to implement resolution directly themselves.
 
@@ -3676,7 +3679,7 @@ Handles should not be trusted or considered valid until the DID is also resolved
 
 For this resolution method, a DNS TXT record is registered for the `_atproto` sub-domain under the handle hostname. The record value should have the prefix `did=`, followed by the full DID. This method aligns with [RFC-1464](https://www.rfc-editor.org/rfc/rfc1464.html), "Using the Domain Name System To Store Arbitrary String Attributes".
 
-For example, the handle `bsky.app` would have a TXT record on the name `_atproto.bsky.app`, and the value would look like `did=did:plc:z72i7hdynmk6r22z27h6tvur`.
+For example, the handle `user.example.com` would have a TXT record on the name `_atproto.user.example.com`, and the value would look like `did=did:plc:ewvi7nxzyoun6zhxrhs64oiz`.
 
 Any TXT records with values not starting with `did=` should be ignored. Only a single valid record should exist at any point in time. If multiple valid records with different DIDs are present, resolution should fail. In this case resolution can be re-tried after a delay, or using a recursive resolver.
 
@@ -3688,7 +3691,7 @@ DNSSEC is not required.
 
 For this resolution method, a web server at the handle domain implements a special well-known endpoint at the path `/.well-known/atproto-did`. A valid HTTP response will have an HTTP success status (2xx), `Content-Type` header set to `text/plain`, and include the DID as the HTTP body with no prefix or wrapper formatting.
 
-For example, the handle `bsky.app` would be resolved by an GET request to `https://bsky.app/.well-known/atproto-did`, and a valid response would look like:
+For example, the handle `user.example.app` would be resolved by an GET request to `https://user.example.app/.well-known/atproto-did`, and a valid response would look like:
 
 ```
 HTTP/1.1 200 OK
@@ -3696,15 +3699,14 @@ Content-Length: 33
 Content-Type: text/plain
 Date: Wed, 14 Jun 2023 00:47:21 GMT
 
-did:plc:z72i7hdynmk6r22z27h6tvur
-
+did:plc:ewvi7nxzyoun6zhxrhs64oiz
 ```
 
 The response `Content-Type` header does not need to be strictly verified.
 
 The web server's response body should not contain any prefix or suffix whitespace, but clients should strip small amounts of prefix or suffix whitespace from the response body before attempting to parse as a DID.
 
-Secure HTTPS on the default port (443) is required for all real-world handle resolutions. HTTP should only be used for local development and testing.
+Secure HTTPS on the default port (443) is required for all real-world handle resolutions. Unsecured HTTP can only be used for local development and testing.
 
 HTTP redirects (eg, 301, 302) are allowed, up to a reasonable number of redirect hops.
 
@@ -3725,7 +3727,7 @@ With both techniques, it is beneficial to initiate resolution requests from a re
 
 ## Usage and Implementation Guidelines
 
-Handles may be prefixed with the "at" symbol (like `@jay.bsky.team`) in user interfaces, but this is not a valid syntax for a handle in records, APIs, and other back-end contexts.
+Handles may be prefixed with the "at" symbol (like `@user.example.com`) in user interfaces, but this is not a valid syntax for a handle in records, APIs, and other back-end contexts.
 
 Internationalized Domain Names ("IDN", or "punycode") are not directly relevant to the low-level handle syntax. In their encoded form, IDNs are already valid hostnames, and thus valid handles. Such handles must be stored and transmitted in encoded ASCII form. Handles that "look like" IDNs, but do not parse as valid IDNs, are valid handles, just as they are valid hostnames. Applications may, optionally, parse and display IDN handles as Unicode.
 
@@ -3735,7 +3737,7 @@ Very long handles are known to present user interface challenges, but they are a
 
 Handles which look similar to a well-known domain present security and impersonation challenges. For example, handles like `paypa1.com` or `paypal.cc` being confused for `paypal.com`. Very long handles can result in similar issues when truncated at the start or end (`paypal.com…`).
 
-Handles should generally not be truncated to local context. For example, the handle `@jay.bsky.social` should not be displayed as `@jay`, even in the local context of a `bsky.social` service.
+Handles should generally not be truncated to local context. For example, the handle `@alice.example.com` should not be displayed as `@alice`, even in the local context of an `example.com` service.
 
 Providers of handle "namespaces" (eg, as subdomains on a registered domain) may impose any additional limits on handles that they wish. It is recommended to constrain the allowed segment length to something reasonable, and to reserve a common set of segment strings like `www`, `admin`, `mail`, etc. There are multiple public lists of "commonly disallowed usernames" that can be used as a starting point.
 
@@ -3973,7 +3975,7 @@ export const header = {
 
 # HTTP API (XRPC)
 
-HTTP APIs for client-server and server-server requests in atproto use a set of common conventions called "Lexicon RPC", or XRPC for short. Endpoint path names include an NSID indicating the [Lexicon](/specs/lexicon) specifying the request and response schemas, usually with JSON content type. {{ className: 'lead' }}
+HTTP APIs for client-server and server-server requests in atproto use a set of common conventions called "Lexicon RPC", or XRPC for short. Endpoint path names include an [NSID](/specs/nsid) indicating the [Lexicon](/specs/lexicon) specifying the request and response schemas, usually with JSON content type. {{ className: 'lead' }}
 
 ## Lexicon HTTP Endpoints
 
@@ -5081,13 +5083,13 @@ export const header = {
 
 # Blobs
 
-"Blobs" are media files stored alongside an account's repository. They include images, video, and audio, but could also include any other file format. Blobs are referenced by individual records by the `blob` lexicon datatype, which includes a content hash (CID) for the blob.
+**Blobs** are media files stored alongside an account's repository. They include images, video, and audio, but could also include any other file format. Blobs are referenced by individual records by the `blob` lexicon datatype, which includes a content hash (CID) for the blob. {{ className: 'lead' }}
 
-Blob files are uploaded and distributed separately from records. Blobs are authoritatively stored by the account's PDS instance, but views are commonly served by CDNs associated with individual applications ("AppViews"), to reduce traffic on the PDS. CDNs may serve transformed (resized, transcoded, etc) versions of the original blob.
+Blob files are uploaded and distributed separately from records. Blobs are authoritatively stored by the account's PDS instance, but views are commonly served by CDNs associated with individual applications ("AppViews"), to reduce traffic on the PDS. CDNs may serve transformed (resized, transcoded, etc) versions of the original blob. {{ className: 'lead' }}
 
 While blobs are universally content addressed (by CID), they are always referenced and managed in the context of an individual account (DID).
 
-The empty blob (zero bytes) is valid in general, though it may be disallowed by individual Lexicons/applications.
+The empty blob (zero bytes) is generally valid, though it may be disallowed by individual Lexicons/applications.
 
 ## Blob Metadata
 
@@ -5274,23 +5276,34 @@ export const header = {
 
 # AT Protocol DIDs
 
-The AT Protocol uses [Decentralized Identifiers](https://en.wikipedia.org/wiki/Decentralized_identifier) (DIDs) as persistent, long-term account identifiers. DID is a W3C standard, with many standardized and proposed DID method implementations. {{ className: 'lead' }}
+AT Protocol uses [Decentralized Identifiers](https://en.wikipedia.org/wiki/Decentralized_identifier) (DIDs) as persistent account identifiers. The core DID standard was developed by the W3C, and describes a framework for compliant identifier systems ("DID methods"), of which several exist. To ensure broad interoperation across the ecosystem, atproto only supports a small number of "blessed" DID methods. {{ className: 'lead' }}
+
+An example DID is `did:plc:ewvi7nxzyoun6zhxrhs64oiz`.
+
 
 ## Blessed DID Methods
 
 Currently, atproto supports two DID methods:
 
-- `did:web`, which is a W3C standard based on HTTPS (and DNS). The identifier section is a hostname. This method is supported in atproto to provide an independent alternative to `did:plc`. The method is inherently tied to the domain name used, and does not provide a mechanism for migration or recovering from loss of control of the domain name. In the context of atproto, only hostname-level `did:web` DIDs are supported: path-based DIDs are not supported. The same restrictions on top-level domains that apply to handles (eg, no `.arpa`) also apply to `did:web` domains. The special `localhost` hostname is allowed, but only in testing and development environments. Port numbers (with separating colon hex-encoded) are only allowed for `localhost`, and only in testing and development.
-- `did:plc`, which is a novel DID method developed by Bluesky. See the [did-method-plc](https://github.com/did-method-plc/did-method-plc) GitHub repository for details.
+- `did:plc`: a self-authenticating DID method developed specifically for use with atproto. See the [DID PLC website](https://web.plc.directory) for more details.
+- `did:web`: a [W3C community draft](https://w3c-ccg.github.io/did-method-web/) based on HTTPS (and DNS). The identifier section is a hostname. This method is supported in atproto to provide an independent alternative to `did:plc`. See usage details below
 
-In the future, a small number of additional methods may be supported. It is not the intention to support all or even many DID methods, even with the existence of universal resolver software.
+It is possible that other methods will be supported in the future, but the intention is to keep the "blessed" set as small as possible. It is certainly not the intention to support all or even a significant fraction of all DID methods.
+
+### `did:web` in AT Protocol
+
+The [DID Web method](https://w3c-ccg.github.io/did-method-web/) is inherently tied to the domain name used, and does not provide a mechanism for migration or recovering from loss of control of the domain name.
+
+In the context of atproto, only hostname-level `did:web` DIDs are supported: path-based DIDs are not supported. The same restrictions on top-level domains that apply to handles (eg, no `.arpa`) also apply to `did:web` domains. The special `localhost` hostname is allowed, but only in testing and development environments. Port numbers (with separating colon hex-encoded) are only allowed for `localhost`, and only in testing and development.
 
 
-## AT Protocol DID Identifier Syntax
+## DID Identifier Syntax
 
 Lexicon string format type: `did`
 
-The DID Core specification constraints on DID identifier syntax, regardless of the method used. A summary of those syntax constraints, which may be used to validate DID generically in atproto are:
+The DID Core specification places syntax restrictions on all DID identifiers, and individual DID methods might have their own more specific syntax. While atproto supports only a small set of DID methods today, it still makes sense to consider the general DID syntax in many parsing and validation contexts.
+
+The general syntax constraints used to validate generic DID identifiers in atproto are:
 
 - The entire URI is made up of a subset of ASCII, containing letters (`A-Z`, `a-z`), digits (`0-9`), period, underscore, colon, percent sign, or hyphen (`._:%-`)
 - The URI is case-sensitive
@@ -5301,7 +5314,7 @@ The DID Core specification constraints on DID identifier syntax, regardless of t
 - Percent-sign (`%`) is used for "percent encoding" in the identifier section, and must always be followed by two hex characters
 - Query (`?`) and fragment (`#`) sections are allowed in DID URIs, but not in DID identifiers. In the context of atproto, the query and fragment parts are not allowed.
 
-DID identifiers do not generally have a maximum length restriction, but in the context of atproto, there is an initial hard limit of 2048 characters.
+DID identifiers do not generally have a maximum length restriction, but in the context of atproto, there is a current hard limit of 2048 characters.
 
 In the context of atproto, implementations do not need to validate percent encoding. The percent symbol is allowed in DID identifier segments, but the identifier should not end in a percent symbol. A DID containing invalid percent encoding *should* fail any attempt at registration, resolution, etc.
 
@@ -5318,8 +5331,8 @@ A reasonable starting-point regex for DIDs in the context of atproto is:
 Valid DIDs for use in atproto (correct syntax, and supported method):
 
 ```
-did:plc:z72i7hdynmk6r22z27h6tvur
-did:web:blueskyweb.xyz
+did:plc:ewvi7nxzyoun6zhxrhs64oiz
+did:web:user.example.com
 ```
 
 Valid DID syntax (would pass Lexicon syntax validation), but unsupported DID method:
@@ -5344,25 +5357,32 @@ did:method:val?two
 did:method:val#two
 ```
 
+
 ## DID Documents
 
 After a DID document has been resolved, atproto-specific information needs to be extracted. This parsing process is agnostic to the DID method used to resolve the document.
 
-The current **handle** for the DID is found in the `alsoKnownAs` array. Each element of this array is a URI. Handles will have the URI scheme `at://`, followed by the handle, with no path or other URI parts. The current primary handle is the first valid handle URI found in the ordered list. Any other handle URIs should be ignored.
+The DID declared in the document (in the `id` field) should always be verified against what was expected (eg, used for resolution).
 
-It is crucial to validate the handle bidirectionally, by resolving the handle to a DID and checking that it matches the current DID document.
+The [handle](/specs/handle) claimed by the DID is found in the `alsoKnownAs` array. Each element of this array is a URI string. Handles will have the URI prefix `at://`, followed by the handle hostname, with no other URI parts or trailing characters. The first syntaxtually valid handle found in the ordered list is treated as the claimed handle, even if it fails to resolve bi-directionally. Any other handle URIs should be ignored.
 
-The DID is the primary account identifier, and an account whose DID document does not contain a valid and confirmed handle can still, in theory, participate in the atproto ecosystem. Software should be careful to either not display any handle for such account, or obviously indicate that any handle associated with it is invalid.
+It is crucial to validate the handle bidirectionally, by resolving the handle to a DID and checking that it matches the current DID document. See the [handle specification](/specs/handle) for details.
 
-The public **signing key** for the account is found under the `verificationMethod` array, in an object with `id` ending `#atproto`, the `controller` matching the DID itself, and `type` matching the fixed string `"Multikey"`. The first valid atproto signing key in the array should be used, and any others ignored. The `publicKeyMultibase` field will be the public key in multibase encoding. A legacy format exists with slightly different requirements. See below for details about parsing fields for both formats.
+The DID is the primary account identifier in atproto, and an account whose DID document does not contain a valid and confirmed handle can still participate in the atproto ecosystem. Software should be careful to either not display any handle for such account, or obviously indicate that any handle associated with it is invalid.
 
-A valid signing key is required for atproto functionality, and an account with no valid key in their DID document is broken.
+The public **atproto signing key** for the account is found under the `verificationMethod` array, in an object with `id` ending `#atproto`, the `controller` matching the DID itself, and `type` matching the fixed string `Multikey`. The first valid atproto signing key in the array should be used, and any others ignored. The `publicKeyMultibase` field will be the public key in multibase encoding. A legacy format exists with slightly different requirements. See below for details about parsing fields for both formats.
+
+A valid signing key is required for most atproto functionality. An account with no valid key in their DID document is likely broken.
 
 The **PDS service network location** for the account is found under the `service` array, with `id` ending `#atproto_pds`, and `type` matching `AtprotoPersonalDataServer`. The first matching entry in the array should be used, and any others ignored. The `serviceEndpoint` field must contain an HTTPS URL of server. It should contain only the URI scheme (`http` or `https`), hostname, and optional port number, not any "userinfo", path prefix, or other components.
 
-A working PDS is required for atproto account functionality, and an account with no valid PDS location in their DID document is broken.
+A working PDS is required for most atproto account functionality. An account with no valid PDS location in their DID document is likely broken.
 
 Note that a valid URL doesn't mean the the PDS itself is currently functional or hosting content for the account. During account migrations or server downtime there may be windows when the PDS is not accessible, but this does not mean the account should immediately be considered broken or invalid.
+
+Other protocol and application features may make use of `verificationMethod` keys and `service` entries. For example, [labeling](/specs/label) uses an additional key type, and application-specific "AppView" instances use bespoke service entries.
+
+When parsing the `id` field in object elements of the `service` and `verificationMethod` arrays, implementations should support both relative fragment syntax (eg, `"id": "#atproto_pds"`) and fully-qualified syntax (eg, `"id": "did:web:example.com#atproto_pds"`).
 
 
 ## Representation of Public Keys
@@ -5374,7 +5394,7 @@ Public keys in DID documents under `verificationMethod`, including atproto signi
 - `id` (string, required): the DID followed by an identifying fragment. Use `#atproto` as the fragment for atproto signing keys
 - `type` (string, required): the fixed string `Multikey`
 - `controller` (string, required): DID controlling the key, which in the current version of atproto must match the account DID itself
-- `publicKeyMultibase` (string, required): the public key itself, encoded in multibase format (with multicodec type indicator, and "compressed" key bytes)
+- `publicKeyMultibase` (string, required): the public key itself, encoded in "multikey" format
 
 The `publicKeyMultibase` format for `Multikey` is the same encoding scheme as used with `did:key`, but without the `did:key:` prefix. See [Cryptography](/specs/cryptography) for details.
 
@@ -5442,7 +5462,7 @@ Interop test vectors are available from the [atproto-interop-tests](https://gith
 
 The hard maximum DID length limit may be reduced, at the protocol syntax level. We are not aware of any DID methods that we would consider supporting which have identifiers longer than, say, 256 characters.
 
-There is a good chance that the set of "blessed" DID methods will slowly expand over time.
+There is a chance that the set of "blessed" DID methods will slowly expand over time.
 
 
 ---
@@ -5654,7 +5674,7 @@ Labels primarily consist of a source (DID), a subject (URI), and value. The valu
 
 The label concept and protocol primitive is flexible in scope, use cases, and data transport. One of the original design motivations was to enable some forms of composable moderation, with labels generated by moderation services. But labels are not moderation-exclusive, and may be reused freely for other purposes in atproto applications. {{ className: 'lead' }}
 
-The core label schema is versioned, and this document describes labels version `1`. {{ className: 'lead' }}
+The core label schema is versioned, and this document describes labels version `1`.
 
 ## Schema and Data Model
 
@@ -5714,7 +5734,7 @@ Labels are generally broadcast and persisted internally by receiving services. S
 
 When hydrating labels, services should generally only include "active" and relevant labels.
 
-If the authoritative creator of a label wishes to retract or remove the label, they do so by publishing a new label with the same source, subject, and value, but with the negated field (`neg`) set to true, and a current timestamp (later than any previous timestamps). A negation label does not mean that the inverse of the label is “true”, only that the previous label has been retracted. For example, a label with value `spam` and `neg` true does not mean the subject is *not* spam, only that a previous `spam` label should be disregarded.
+If the authoritative creator of a label wishes to retract or remove the label, they do so by publishing a new label with the same source, subject, and value, but with the negated field (`neg`) set to true, and a current timestamp (later than any previous timestamps). A negation label does not mean that the inverse of the label is "true", only that the previous label has been retracted. For example, a label with value `spam` and `neg` true does not mean the subject is *not* spam, only that a previous `spam` label should be disregarded.
 
 Receiving services that encounter a valid negation label may store the negation internally, and may re-broadcast the negation, but should not hydrate the negated label in API responses.
 
@@ -5764,13 +5784,13 @@ Labeler services each have a service identity, meaning a DID document. This is t
 
 The DID document will also have a key used for signing labels (with ID `#atproto_label`; see above for signature details), and a service endpoint (with ID `#atproto_labeler` and type `AtprotoLabeler`) which indicates the server URL (the URL includes method, hostname, and optional port, but no path segment at this time). Note that in real world use-cases, use of HTTPS on the default port (443) is strongly recommended and may be required by service operators.
 
-Depending on the application, the identity may also have an atproto repository containing a “declaration record” which describes application-specific context about the labeler. This may be required for integration with a specific application, client, or AppView, but is not a requirement at the base atproto level.
+Depending on the application, the identity may also have an atproto repository containing a "declaration record" which describes application-specific context about the labeler. This may be required for integration with a specific application, client, or AppView, but is not a requirement at the base atproto level.
 
 ## Label Distribution Endpoints
 
 Two Lexicon endpoints are defined for labeler services to distribute labels:
 
-`com.atproto.label.subscribeLabels`: an event stream (WebSocket) endpoint, which broadcasts new labels. Implements the `seq` backfill mechanism, similar to repository event stream, but with some small differences: the “backfill” period may extend to `cursor=0` (meaning that the full history of labels is available via the stream). Labels which have been redacted have the original label removed from the stream, but the negation remains.
+`com.atproto.label.subscribeLabels`: an event stream (WebSocket) endpoint, which broadcasts new labels. Implements the `seq` backfill mechanism, similar to repository event stream, but with some small differences: the "backfill" period may extend to `cursor=0` (meaning that the full history of labels is available via the stream). Labels which have been redacted have the original label removed from the stream, but the negation remains.
 
 `com.atproto.label.queryLabels`: a flexible query endpoint. Can be used to scroll over all labels (using a cursor parameter), or can filter to labels relating to a specific subject. 
 
@@ -5778,13 +5798,13 @@ Note that unlike public repository content, labels are not *required* to be publ
 
 ## Labeler HTTP Headers
 
-Labels are often “hydrated” in to HTTP API responses by atproto services, such as AppViews. To give clients control over which label sources they want included, two special HTTP headers are used, which PDS implementations are expected to pass-through when proxying requests:
+Labels are often "hydrated" in to HTTP API responses by atproto services, such as AppViews. To give clients control over which label sources they want included, two special HTTP headers are used, which PDS implementations are expected to pass-through when proxying requests:
 
 `atproto-accept-labelers`: used in requests. A list of labeler service DIDs, with optional per-DID flags.
 
 `atproto-content-labelers`: used in responses. Same content, syntax, and semantics as the `accept` header, but indicates which labelers could actually be queried. Presence in this header doesn’t mean that any labels from a given DID were actually included, only that it they would have been if such labels existed.
 
-The syntax of these headers follows IETF RFC-8941 (”Structured Field Values for HTTP”), section 3.1.2 (”Parameters”). Values are separated by comma (ASCII `,` character), and values from repeated declaration of the header should be merged in to a single list. One or more optional parameters may follow the item value (the DID), separated by a semicolon (ASCII `;` character). For boolean parameters, the full RFC syntax (just as `param=?0` for false) is not currently supported. Instead, the presence of the parameter indicates it is “true”, and the absence indicates “false”. No other parameter values types (such as integers or strings) are supported at this time. 
+The syntax of these headers follows IETF RFC-8941 ("Structured Field Values for HTTP"), section 3.1.2 ("Parameters"). Values are separated by comma (ASCII `,` character), and values from repeated declaration of the header should be merged in to a single list. One or more optional parameters may follow the item value (the DID), separated by a semicolon (ASCII `;` character). For boolean parameters, the full RFC syntax (just as `param=?0` for false) is not currently supported. Instead, the presence of the parameter indicates it is "true", and the absence indicates "false". No other parameter values types (such as integers or strings) are supported at this time. 
 
 The only currently supported parameter is the boolean parameter `redact`. This flag indicates that the service hydrating labels should handle the special protocol-level label values `!takedown` and `!suspend` by entirely redacting content from the API response, instead of simply labeling it. This may result in an application-specific tombstone entry, which might indicate the Labeler responsible for the redaction, or could result in the content being removed without a tombstone.
 
@@ -5814,7 +5834,7 @@ Note that there is no "domain differentiation" of the signature, meaning that th
 
 ## Usage and Implementation Guidelines
 
-It is strongly recommended to stick to the “recommended string syntax” for label values at this time.
+It is strongly recommended to stick to the "recommended string syntax" for label values at this time.
 
 ## Possible Future Changes
 
@@ -6037,50 +6057,48 @@ export const header = {
 
 # AT Protocol
 
-The Authenticated Transfer Protocol (AT Protocol or atproto) is a generic federated protocol for building open social media applications. Some recurring themes and features are: {{ className: 'lead' }}
+The Authenticated Transfer Protocol ("AT Protocol" or "atproto") is a network protocol for building open social web applications. {{ className: 'lead' }}
+
+Some of the main protocol features and design themes include: {{ className: 'lead' }}
 
 - Self-authenticating data and identity, allowing seamless account migrations and redistribution of content {{ className: 'lead' }}
 - Design for "big world" use cases, scaling to billions of accounts {{ className: 'lead' }}
 - Delegated authority over application-layer schemas and aggregation infrastructure {{ className: 'lead' }}
-- Re-use of existing data models from the dweb protocol family and network primitives from the web platform {{ className: 'lead' }}
+- Re-use of content-addressed data models from prior P2P protocols, and networking primitives from the web platform {{ className: 'lead' }}
 
 ## Protocol Structure
 
-**Identity:** account control is rooted in stable [DID](/specs/did) identifiers, which can be rapidly resolved to determine the current service provider location and [Cryptographic keys](/specs/cryptography) associated with the account. [Handles](/specs/handle) provide a more human-recognizable and mutable identifier for accounts.
+**Identity:** account control is rooted in persistent [DID](/specs/did) identifiers (like `did:plc:ewvi7nxzyoun6zhxrhs64oiz`). These can be universally resolved to determine the current service provider location and [cryptographic keys](/specs/cryptography) associated with the account. [Handles](/specs/handle) complement DIDs and provide mutable and human-meaninful usernames in the form of DNS hostnames (eg, `user.example.com`).
 
-**Data:** public content is stored in content-addressed and cryptographically verifiable [Repositories](/specs/repository). Data records and network messages all conform to a unified [Data Model](/specs/data-model) (with [CBOR](https://en.wikipedia.org/wiki/CBOR) and JSON representations). [Labels](/specs/label) are a separate lightweight form of metadata, individually signed and distributed outside repositories.
+**Data:** public content is stored in content-addressed and cryptographically verifiable [repositories](/specs/repository). Data records and network messages all conform to a unified [data model](/specs/data-model) with both [CBOR](https://en.wikipedia.org/wiki/CBOR) and JSON representations. [Labels](/specs/label) are a separate form of lightweight metadata, individually signed and distributed outside repositories, which can be used for moderation and badging.
 
-**Network:** HTTP client-server and server-server [APIs](/specs/xrpc) are described with Lexicons, as are WebSocket [Event Streams](/specs/event-stream). Individual records can be referenced across the network by [AT URI](/specs/at-uri-scheme). A [Personal Data Server (PDS)](/specs/account) acts as an account's trusted agent in the network, routes client network requests, and hosts repositories. A relay crawls many repositories and outputs a unified event [Firehose](/specs/sync).
+**Network:** client-server and server-server HTTP APIs are described with lexicon schemas ([XRPC](/specs/xrpc)), as are WebSocket [event streams](/specs/event-stream). Individual records can be globally referenced with [AT-URIs](/specs/at-uri-scheme). [Personal Data Servers (PDS)](/specs/account) host accounts, handle key management, manage repositories, provide authentication, and proxy client HTTP requests. Relays aggregate from many PDS hosts and output a unified full-network [firehose](/specs/sync).
 
-**Application:** APIs and record schemas for applications built on atproto are specified in [Lexicons](/specs/lexicon), which are referenced by [Namespaced Identifiers](/specs/nsid) (NSIDs). Application-specific aggregations (such as search) are provided by an Application View (App View) service. Clients can include mobile apps, desktop software, or web interfaces.
+**Application:** APIs and record schemas for applications built on atproto are specified in [Lexicons](/specs/lexicon), which are referenced by [Namespaced Identifiers (NSIDs)](/specs/nsid). Application-specific aggregations (like search) are provided by Application View (App View) services. Clients can include mobile apps, desktop software, or web interfaces. Clients are authorized using [OAuth](/specs/oauth), and [permissions](/specs/permission) are used to grant access to users' protocol resources.
 
-The AT Protocol itself does not specify common social media conventions like follows or avatars, leaving these to application-level Lexicons. The `com.atproto.*` Lexicons provide common APIs for things like account signup and login. These could be considered part of AT Protocol itself, though they can also be extended or replaced over time as needed. Bluesky is a microblogging social app built on top of AT Protocol, with lexicons under the `app.bsky.*` namespace.
+AT Protocol itself does not specify how common social web conventions like follows or avatars should work, and instead leaves them to application designers. Applications interoperate by reading and writing user data records following published Lexicon schemas.
+
+The `com.atproto.*` Lexicons provide common APIs for things like account management and record creation. These could be considered part of AT Protocol itself, though they may also be extended or replaced over time as needed.
 
 
 ## Protocol Extension and Applications
 
-AT Protocol was designed from the beginning to balance stability and interoperation against flexibility for third-party application development.
+AT Protocol was designed to provide stability and interoperation within mature network ecosystems, while at the same time allowing product designers to rapidly ship differentiating features and novel application experiences.
 
-The core protocol extension mechanism is development of new Lexicons under independent namespaces. Lexicons can declare new repository record schemas (stored in collections by NSID), new HTTP API endpoints, and new event stream endpoints and message types. It is also expected that new applications might require new network aggregation services ("AppViews") and client apps (eg, mobile apps or web interfaces).
+The core application development and extension mechanism is to design and publish new Lexicon schemas under independent NSID hierarchies. Lexicon schemas can define new data record schemas, new HTTP API endpoints, and new event stream message types. New applications often require new network aggregation services ("AppViews") and client app support (eg, mobile apps or web interfaces).
 
-It is expected that third parties will reuse Lexicons and record data across namespaces. For example, new applications are welcome to build on top of the social graph records specified in the `app.bsky.*` Lexicons, as long as they comply with the schemas controlled by the `bsky.app` authority.
+It is expected that competing developers will reuse Lexicon schemas and public data records across organizational boundaries. For example, applications developers can reuse and contribute to the existing public social graph data described by the `app.bsky.*` Lexicon schemas. They can extend with new data types by publishing Lexicon schemas under their own namespace. That data becomes part of the common pool of public data that any other developer can integrate and build with.
 
 Governance structures for individual Lexicon namespaces are flexible. They could be developed and maintained by volunteer communities, corporations, consortia, academic researchers, funded non-profits, etc.
 
-## What Is Missing?
 
-These specifications cover most details as implemented in Bluesky's reference implementation. A few important pieces have not been finalized, both in that reference implementation and in these specifications.
+## What is Missing?
 
-**Moderation Primitives:** The `com.atproto.admin.*` routes for handling moderation reports and doing infrastructure-level take-downs is specified in Lexicons but should also be described in more detail.
+**Non-Public Data:** mechanisms for personal and group data sharing are planned, and should support a wide variety of application functionality. These will be large additions to the protocol framework. We recommend against simply "bolting on" encryption or private content using the existing protocol primitives.
 
-## Future Work
+**Protocol Governance and Formal Standards Process:** once the basic protocol framework has been shown to work between multiple interoperating organizations, the plan is to bring the protocol specifications to an existing standards body (like the IETF) for revision and independent review.
 
-Smaller changes are described in individual specification documents, but a few large changes span the entire protocol.
-
-**Non-Public Content:** mechanisms for private group and one-to-one communication will be an entire second phase of protocol development. This encompasses primitives like "private accounts", direct messages, encrypted data, and more. We recommend against simply "bolting on" encryption or private content using the existing protocol primitives.
-
-**Protocol Governance and Formal Standards Process:** The current development focus is to demonstrate all the core protocol features via the reference implementation, including open federation. After that milestone, the intent is to stabilize the lower-level protocol and submit the specification for independent review and revision through a standards body such as the IETF or the W3C.
-
+Possible future changes and extensions to the protocol are described in the individual specification documents.
 
 
 ---
@@ -6177,13 +6195,13 @@ export const header = {
 
 In addition to regular [HTTP API](/specs/xrpc) endpoints, atproto supports continuous event streams. Message schemas and endpoint names are transport-agnostic and defined in [Lexicons](/specs/lexicon). The initial encoding and transport scheme uses binary [DRISL-CBOR encoding](/specs/data-model) over [WebSockets](https://en.wikipedia.org/wiki/WebSocket). {{ className: 'lead' }}
 
-The Lexicon type for streams is `subscription`. The schema includes an identifier (`id`) for the endpoint, a `message` schema (usually a union, allowing multiple message types), and a list of error types (`errors`).
+The Lexicon type for streams is `subscription`. The schema includes an identifier (`id`) for the endpoint, a `message` schema (a union, allowing multiple message types), and a list of error types (`errors`).
 
-Clients subscribe to a specific stream by initiating a connection at the indicated endpoint. Streams are currently one-way, with messages flowing from the server to the client. Clients may provide query parameters to configure the stream when opening the connection.
+Clients subscribe to a specific stream by initiating a WebSocket connection at the indicated endpoint. Streams are currently one-way, with messages flowing from the server to the client. Clients may provide query parameters to configure the stream when opening the connection.
 
 A **backfill window** mechanism allows clients to catch up with stream messages they may have missed. At a high level, this works by assigning monotonically increasing sequence numbers to stream events, and allowing clients to specify an initial sequence number when initiating a connection. The intent of this mechanism is to ensure reliable delivery of events following disruptions during a reasonable time window (eg, hours or days). It is not to enable clients to roll all the way back to the beginning of the stream.
 
-All of the initial subscription Lexicons in the `com.atproto` namespace use the backfill mechanism. However, a backfill mechanism (and even cursors, which we define below) is not _required_ for streams. Subscription endpoints which do not require reliable delivery do not need to implement a backfill mechanism or use sequence numbers.
+All of the initial subscription Lexicons in the `com.atproto` namespace use the backfill mechanism. However, a backfill mechanism (and even cursors, which we define below) is not *required* for streams. Subscription endpoints which do not require reliable delivery do not need to implement a backfill mechanism or use sequence numbers.
 
 The initial subscription endpoints are also public and do not require authentication or prior permission to subscribe (though resource limits may be imposed on client). But subscription endpoints may require authentication at connection time, using the existing HTTP API (XRPC) authentication methods.
 
@@ -6282,8 +6300,6 @@ As mentioned in the "Connection" section, only `wss://` (SSL) should be used for
 Most HTTP XRPC endpoints work with content in JSON form, while stream endpoints work directly with CBOR objects as untrusted input. Precautions must be taken against hostile data encoding and data structure manipulation. Specific issues are discussed in the [Data Model](/specs/data-model) and [Repository](/specs/repository) specifications.
 
 ## Possible Future Changes
-
-Event Streams are one of the newest components of the AT Protocol, and the details are more likely to be iterated on compared to other components.
 
 The sequence number scheme may be tweaked to better support sharded streams. The motivation would be handle higher data throughputs over the public internet by splitting across multiple connections.
 
@@ -6540,7 +6556,7 @@ References to "blobs" (arbitrary files) have a consistent format in atproto, and
 Blob nodes are maps with following fields:
 
 - `$type` (string, required): fixed value `blob`. Note that this is not a valid NSID.
-- `ref` (link, required): CID reference to blob, with multicodec type `raw`. In JSON, encoded as a `$link` object as usual
+- `ref` (link, required): CID reference to blob, with codec type `raw`. In JSON, encoded as a `$link` object as usual
 - `mimeType` (string, required, not empty): content type of blob. `application/octet-stream` if not known
 - `size` (integer, required, positive, non-zero): length of blob in bytes
 
@@ -6827,31 +6843,44 @@ export const header = {
 
 # Data Synchronization
 
-One of the main design goals of atproto (the "Authenticated Transfer Protocol") is to reliably distribute public content between independent network services. This data transfer should be trustworthy (cryptographicly authenticated) and relatively low-latency even at large scale. It is also important that new participants can join the network at any time and “backfill” prior content.
+Synchronization of public data between independent network participants is one of the defining features of atproto (which is named for "Authenticated Transfer"). Data redistibution is trustworthy, low-latency, and resource efficient at large scale. {{ className: 'lead' }}
 
-This section describes the major data synchronization features in atproto. The primary real-time data synchronization mechanism is repository event streams, commonly referred to as "firehoses". The primary batch data transfer mechanism is repository exports as CAR files. These two mechanisms can be combined in a "bootstrapping" process which result in a live-synchronized copy of the network.
+There are two main data synchronization mechanisms in atproto. Batch data transfer is supported using full-repository exports as CAR files over HTTP. Real-time synchronization can be provided by a repository event stream (over WebSocket), commonly referred to as a "firehose". Used together, they enable a complete, live-updated, and authenticated copy of network data. {{ className: 'lead' }}
 
-<Note>
-An updated version of the Synchronization protocol is being rolled out to the live network in early 2025. There is a ["Sync v1.1" proposal document](https://github.com/bluesky-social/proposals/tree/main/0006-sync-iteration) and an [update blog post](https://docs.bsky.app/blog/relay-sync-updates) with deployment details. The written specifications will be updated soon.
-</Note>
 
-## Synchronization Primitives
+## Repository Revisions
 
-As described in the repository spec, each commit to a repository has a *revision* number, in TID syntax. The revision number must always increase between commits for the same account, even if the account is migrated between hosts or has a period of inactivity in the network. Revision numbers can be used as a logical clock to aid synchronization of individual accounts. To keep this simple, it is recommended to use the current time as a TID for each commit, including the initial commit when creating a new account. Services should reject or ignore revision numbers corresponding to future timestamps (beyond a short fuzzy time drift window). Network services can track the commit revision for every account they have seen, and use this to verify synchronization progress. Services which synchronize data can include the most-recently-processed revision in HTTP responses to API requests from the account in question, in the `Atproto-Repo-Rev` HTTP response header. This allows clients (and users) to detect if the response is up-to-date with the actual repository, and detect any problems with synchronization.
+As described in the [Repository specification](/specs/repo), each commit to a repository has a *revision* value, encoding as a [TID](/specs/tid) string. Revisions function as a logical clock to track synchronization status individual repositories. The revision must always increase between commits for the same repository, even if the account migrates between hosts or has an extended period of inactivity. To simplify revision management, PDS implementations should use the current wall time (converted to TID) as the revision for every commit. When using wall time, it is still important to check that the new revision is higher than the previous revision, to account for clock drift or concurrent updates.
 
-## Firehose
+Synchronizing services should reject or ignore repository updates with revision values corresponding to future timestamps (beyond a short fuzzy time drift window). Services can track the commit revision for every account they have seen, and use this to verify synchronization status.
 
-The repository event stream (`com.atproto.sync.subscribeRepos`, also called the "firehose") is an [Event Stream](/specs/event-stream) which broadcasts updates to repositories (`#commit` events), handles and DID documents (`#identity`), and account hosting status (`#account`). PDS hosts provide a single stream with updates for all locally-hosted accounts. "Relays" are network services which subscribe to one or more repo streams (eg, multiple PDS instances) and aggregate them in to a single combined repo stream. The combined stream has the same structure and event types. A Relay which aggregates nearly all accounts from nearly all PDS instances in the network (possibly through intermediate relays) outputs a “full-network” firehose.  Relays often mirror and can re-distribute the repository contents, though their core functionality is to verify content and output a unified firehose.
+Clients making API requests to a service may want to know if that service has synchronized and indexed recent updates to the authenticated account's repository. For example, if a client updates a profile record for their account (by writing to the PDS), and then immediately requests an updated view of their profile from a separate service, the client would want to know if the record update was applied. Services can indicate synchronization status using the `Atproto-Repo-Rev` HTTP response header, which should contain a single commit revision (TID) of the account making the API request.
 
-In most cases the repository data synchronized over the firehose is self-certifying (contains verifiable signatures), and consumers can verify content without making additional requests directly to account PDS instances. It is possible for services to redact events from the firehose, such that downstream services would not be aware of new content.
 
-Identity and account information is *not* self-certifying, and services may need need to verify independently. This usually means independent DID and [handle resolution](/specs/handle). Account hosting status might also be checked at account PDS hosts, to disambiguate hosting status at different pieces of infrastructure.
+## Repository Exports
 
-The event message types are declared in the `com.atproto.sync.subscribeRepos` Lexicon schema, and are summarized below. A few fields are the same for all event types (except for `repo` vs `did` for `#commit` events):
+Full repository exports can be fetched from the account's PDS host using the `com.atproto.sync.getRepo` XRPC endpoint (HTTP GET). This endpoint is not authenticated, and returns all repo records, MST nodes, and the current signed commit object, all in a single CAR file.
+
+Other servers may provide cached or mirrored copies of full repository CAR files. It is important for such mirrors to respect repository updates (eg, record deletion) and account status changes (eg, account deactivation or deletion) in a timely manner (within seconds or minutes). This generally means that static repository snapshots should not be redistributed publicly in bulk form (eg, archival datasets or torrent files).
+
+
+## Repository Event Stream
+
+A repository event stream ("firehose") provides real-time updates about changes to repository state (`#commit` and `#sync` events), DID documents and handles (`#identity` events), and account hosting status (`#account` events). The wire format is WebSockets with CBOR-encoded messages and sequence-based resumption cursors, as described in the [Event Stream specification](/specs/event-stream).
+
+Multiple network services provide firehose endpoints under the same `com.atproto.sync.subscribeRepos` stream endpoint, with compatible message types and semantics. PDS hosts provide a firehose that includes updates for all hosted accounts. **Relays** are network services which subscribe to multiple upstream firehoses (eg, multiple PDS hosts) and aggregate them in to a single combined event stream. A relay which attempts to aggregate accounts from all PDS instances in the network outputs a "full-network" firehose.
+
+Repository data synchronized over a firehose is self-certifying and contains verifiable signatures. Consuming services can verify synchronized data without making additional requests to the account's PDS host. Missing updates to a single repository are detectable as gaps in the stream of `#commit` messages. However, if an intermediary service were to filter all messages pertaining to repository, that would not necessarily be detectable by consuming services.
+
+Identity and account information is *not* self-certifying, and consuming services are responsible for verifying it. This usually means independent [DID resolution](/specs/did) and [handle resolution](/specs/handle). [Account hosting status](/specs/account) can be checked against the account's PDS host, though it is legitimate for intermediary services to apply takedowns.
+
+The event message types are specified below, and are also declared in the `com.atproto.sync.subscribeRepos` lexicon schema. A few fields are the same for all event types:
 
 - `seq` (integer, required): used to ensure reliable consumption, as described in Event Streams
-- `did` / `repo`(string with DID syntax, required): the account/identity associated with the event
-- `time` (string with datetime syntax, required): an informal and non-authoritative estimate of when event was received. Intermediate services may decide to pass this field through as-is, or update to the current time
+- `did` (string with DID syntax, required): the account associated with the event. The `#commit` message is inconsistent and uses `repo` as the field name
+- `time` (string with datetime syntax, required): an informal and non-authoritative estimate of when event was received. Intermediary services may decide to pass this field through as-is, or update to the current time
+
+Firehose event stream messages have a hard maximum size limit of 5 MBytes, measured as WebSocket frames. This is inclusive of all encoding and nesting overhead, and rules out some messages which would not otherwise exceed lexicon schema limits. Messages are generally expected to be well below this hard size limit. This limit may evolve over time.
 
 ### `#identity` Events
 
@@ -6870,7 +6899,7 @@ The semantics and expected behavior are that downstream services should update a
 
 Identity events are emitted on a "best-effort" basis. It is possible for the DID document or handle resolution status to change without any atproto service detecting the change, in which case an event would not be emitted. It is also possible for the event to be emitted redundantly, when nothing has actually changed.
 
-Intermediate services (eg, relays) may chose to modify or pass through identity events:
+Intermediary services (eg, relays) may chose to modify or pass through identity events:
 
 - they may replace the handle with the result of their own resolution; or always remove the handle field; or always pass it through unaltered
 - they may filter out identity events if they observe that identity has not actually changed
@@ -6894,13 +6923,11 @@ Event Fields:
 
 When coming from any service which redistributes account data, the event describes what the new status is *at that service*, and is authoritative in that context. In other words, the event is hop-by-hop for repository hosts and mirrors.
 
-See the Account Hosting specification for more details.
+See the [Account Hosting specification](/specs/account) for more context.
 
 ### `#commit` Events
 
 This event indicates that there has been a new repository commit for the indicated account. The event usually contains the "diff" of repository data, in the form of a CAR slice. See the [Repository specification](/specs/repository) for details on "diffs" and the CAR file format.
-
-See the Repository specification for more details around repo diffs.
 
 Event Fields:
 
@@ -6910,80 +6937,130 @@ Event Fields:
 - `rev` (string with TID syntax, required): the revision of the commit. Must match the `rev` in the commit block itself.
 - `since` (string with TID syntax, nullable): indicates the `rev` of a preceding commit, which the the repo diff contains differences from
 - `commit` (cid-link, required): CID of the commit object (in `blocks`)
-- `tooBig` (boolean, required): if true, indicates that the repo diff was too large, and that `blocks`, `ops`, and complete `blobs` are not all included
-- `blocks` (bytes, required): CAR "slice" for the corresponding repo diff. The commit object must always be included.
-- `ops` (array of objects, required): list of record-level operations in this commit: specific records created, updated, deleted
-- `blobs` (array of cid-link, required): set of new blobs (by CID) referenced by records in this commit
+- `tooBig` (boolean, required): this field is deprecated, but still technically required. Producers should always set it to `false`, and consumers should ignore it.
+- `blocks` (bytes, required): CAR "slice" for the corresponding repo diff. The commit object must always be included, and the CAR header must indicate the commit block as the first "root". See size limit note below.
+- `ops` (array of objects, required): list of record-level operations in this commit: specific records created, updated, deleted. See length limitation below.
+- `blobs` (array of cid-link, required): this field is deprecated, but still technically required. Producers should set it to an empty array, and consumers should ignore it.
+- `prevData` (cid-link, semi-optional): the root CID of the MST tree for the last commit of this repository. Similar to the "since" field, which indicates the previous "rev". Effectively required for MST inversion, despite being marked "optional".
 
-Commit events are broadcast when the account repository changes. Commits can be "empty", meaning no actual record content changed, and only the `rev` was incremented. They can contain a single record update, or multiple updates. Only the commit object, record blocks, and MST tree nodes are authenticated (signed): the `since`, `ops`, `blobs`, and `tooBig` fields are not self-certifying, and could in theory be manipulated, or otherwise be incorrect or incomplete.
+`ops` object fields:
 
-If `since` is not included, the commit should include the full repo tree, or set the `tooBig` flag.
+- `action` (string, required): indicates the operation type. One of: 'create', 'update', or 'delete'.
+- `path` (string, required): record path within the repository (collection and record key)
+- `cid` (cid-link, required, nullable): indicates new version of record, or `null` if record has been deleted
+- `prev` (cid-link, optional): indicates previous version of record (for 'update' and 'delete'), or not defined (for 'create')
 
-If the `tooBig` flag is set, then the amount of updated data was too much to be serialized in a single stream event message. Downstream services which want to maintain complete synchronized copies for the repo need to fetch the diff separately, as discussed below.
+Commit events are broadcast when the account repository changes. Commits can be "empty", meaning no actual record content changed, and only the `rev` was incremented. They can contain a single record update, or multiple updates.
 
-### Firehose Validation Best Practices
+Commit events have the following size limits:
 
-A service which does full validation of upstream events has a number of properties to track and check. For example, Relay instances should fully validate content from PDS instances before re-broadcasting.
+- the `blocks` bytes field has a hard size limit of 2 million bytes
+- individual record blocks within the `blocks` field have a hard limit of one million bytes
+- at most 200 record operations can be included in a commit
+
+As an example, a single commit can not contain 50 record operations each including 60 KBytes: the limits on number of operations and per-record size would be met, but the `blocks` field size would be too large.
+
+### `#sync` Events
+
+This event asserts the current status of an account's repository. This may be a confirmation or clarification of the state (if nothing changed), or may reset the repository to a new state.
+
+Event Fields:
+
+- `seq` (integer, required): same for all event types
+- `did` (string with DID syntax, required): same for all event types
+- `time` (string with datetime syntax, required): same for all event types
+- `rev` (string with TID syntax, required): the revision of the commit. Must match the `rev` in the commit block itself.
+- `blocks` (bytes, required): CAR slice containing the current commit block. The CAR header must indicate the commit block as the first "root".
+
+Sync events are broadcast when the account repository state has been reset to a new state, or in situations where there might be ambiguity about the current state of the repository. For example, a `#sync` event could be emitted for an account reactivating after data corruption.
+
+Note that the repository *contents* are not included in the sync event: the `blocks` field only contains the repo commit object. Downstream services would need to fetch the full repo CAR file to re-synchronize.
+
+### Reliable Repository Synchronization
+
+If a service receives and processes every `#commit` message from a repository, it should have a complete and coherent view of all records in the repository. If messages are missing or mangled, the receiving service might have an incomplete or incorrect view of some records. How can a service be confident it has successfully synchronized a complete repository?
+
+If the receiving service maintained a full copy of the repository data structure (MST), it could apply the diff from each `#commit` and verify the integrity of the complete tree structure. But this process is resource intensive in both compute and storage, and unrealisticly expensive at scale.
+
+Instead, receiving services can verify that each `#commit` diff is consistent with the previous state of the repository, creating a chain of verification. Only a small amount of state needs to be stored for each repository.
+
+The trick to this process is record operation inversion, as described the [Repository specification](/specs/repo). `#commit` messages contain both a repo diff (CAR slice), and an array of record operations. The operations can be applied in reverse against a copy of the partial repo tree contained in the diff blocks. If the list of operations is complete, the root of the tree should be exactly that of the previous commit object of the repository. Note that the tree root (`data` field) is different from the hash of the signed commit object itself. The `#commit` message contains both a reference to the previous repo revision (in the `since` field), and a copy of the previous root tree hash (in the `prevData` field). Those fields are neither authenticated (signed) nor self-certifying, but they can be used to check the consistency of the `#commit` message in isolation.
+
+To check that the "chain" of messages is consistent, receiving services should track the repo revision and tree root (`data`) for each repository. If a `#commit` message is received which is internally consistent, but the `since` and `prevData` references do not match the previous state of the repository, then something has gone wrong.
+
+If the chain of `#commit` messages is found to have broken, or a `#sync` message indicates that the repository state has changed, then the service will need to re-synchronize the repository. This often means fetching the full repo CAR export.
+
+If many services attempt to re-synchronize a repository at the same time, the upstream PDS host may be overwhelmed with a "thundering herd" of requests. To mitigate this, receiving services should first attempt to fetch the repo CAR file from their direct upstream (often a relay instance). That gives the upstream an opportunity to coalesce and cache the repository export, which distributes load. The upstream may instead simply use an HTTP redirect to the PDS instance.
+
+The "Record-Level Synchronization" section below describes a design pattern for tracking record state and handling re-synchronization incidents.
+
+### Message Validation Checklist
+
+Services consuming firehose event streams may have different validation and verification needs. Intermediary services (like public relays) may do some checks to reduce network abuse, but ultimately consuming services are responsible for validating message structure and verifying authenticity.
 
 Here is a summary of validation rules and behaviors:
 
-- services should independently resolve identity data for each DID. They should ignore `#commit` events for accounts which do not have a functioning atproto identity (eg, lacking a signing key, or lacking a PDS service entry, or for which the DID has been tombstoned)
-- services which subscribe directly to PDS instances should keep track of which PDS is authoritative for each DID. They should remember the host each subscription (WebSocket) is connected to, and reject `#commit` events for accounts if they come from a stream which does not correspond to the current account for that DID
-- services should track account hosting status for each DID, and ignore `#commit` events for events which are not `active`
-- services should verify commit signatures for each `#commit` event, using the current identity data. If the signature initially fails to verify, the service should refresh the identity metadata in case it had recently changed. Events with conclusively invalid signatures should be rejected.
-- services should reject any event messages which exceed reasonable limits. A reasonable upper bound for producers is 5 MBytes (for any event stream message type). The `subscribeRepos` Lexicon also limits `blocks` to one million bytes, and `ops` to 200 entries. Commits with too much data must use the `tooBig` mechanism, though such commits should generally be avoided in the first place by breaking them up in to multiple smaller commits.
+- services should independently resolve identity data for each DID. They should ignore `#commit` and `#sync` events for accounts which do not have a functioning atproto identity (eg, lacking a signing key, or lacking a PDS service entry, or for which the DID has been tombstoned)
+- services which subscribe directly to PDS instances should keep track of which PDS is authoritative for each DID. They should remember the host each subscription (WebSocket) is connected to, and reject `#commit` and `#sync` events for accounts if they come from a stream which does not correspond to the current account for that DID
+- services should track account hosting status for each DID, and ignore `#commit` and `#sync` events for events which are not `active`
+- services should verify commit signatures for each `#commit` and `#sync` event, using the current identity data. If the signature initially fails to verify, the service should refresh the identity metadata in case it had recently changed. Events with conclusively invalid signatures should be rejected.
+- services should verify `#commit` and `#sync` message fields against the actual signed commit object (within the `blocks` CAR slice), and reject messages with mismatching values
+- services should verify `#commit` message `blocks` field (CAR diff) against the `ops` list and `prevData` field, using record operation MST inversion
+- services should reject any event messages which exceed reasonable size limits.
 - services should verify that repository data structures are valid against the specification. Missing fields, incorrect MST structure, or other protocol-layer violations should result in events being rejected.
-- services may apply rate-limits to identity, account, and commit events, and suspend accounts or upstream services which violate those limits. Rate limits might also be applied to recovery modes such as invalid signatures resulting in an identity refresh, `tooBig` events, missing or out-of-order commits, etc.
-- services should ignore commit events with a `rev` lower or equal to the most recent processed `rev` for that DID, and should reject commit events with a `rev` corresponding to a future timestamp (beyond a clock drift window of a few minutes)
-- services should check the `since` value in commit events, and if it is not consistent with the previous seen `rev` for that DID (see discussion in "Reliable Synchronization"), mark the repo as out-of-sync (similar to a `tooBig` commit event)
-- data limits on records specifically should be verified. Events containing corrupt or entirely invalid records may be rejected. for example, a record not being CBOR at all, or exceeding normal data size limits.
-- more subtle data validation of records may be enforced, or may be ignored, depending on the service. For example, unsupported CID hash types embedded in records should probably be ignored by Relays (even if they violate the atproto data model), but may result in the record or commit event being rejected by an AppView
-- mirroring services, which retain a full copy of repository data, should verify that commit diffs leave the MST tree in a complete and valid state (eg, no missing records, no invalid MST nodes, commit CID would be reproducible if the MST structure was re-generated from scratch)
-- Relays (specifically) should not validate records against Lexicons
+- services may apply rate-limits to identity, account, commit, and sync events, and throttle accounts or upstream services which violate those limits. Rate limits might also be applied to recovery modes such as invalid signatures resulting in an identity refresh, missing or out-of-order commits, etc.
+- services should ignore `#commit` and `#sync` events with a `rev` lower or equal to the most recent successfully processed `rev` for that DID, and should reject commit events with a `rev` corresponding to a future timestamp (beyond a clock drift window of a few minutes)
+- services should check the `since` value in `#commit` events, and if it is not consistent with the most recent `rev` for that DID, mark the repo as out-of-sync
+- similarly, services should check `#commit` message `prevData` values against the most recent commit object `data` field
+- data limits on records specifically should be verified. Events containing corrupt or entirely invalid records may be rejected. for example, a record not being CBOR at all, or exceeding normal data size limits (eg, one million byte limit on record size).
+- more subtle data validation of records may be enforced, or may be ignored, depending on the service. For example, unsupported CID hash types embedded in records should probably be ignored by relays (even if they violate the atproto data model), but may result in the record or commit event being rejected by an AppView
+- relays (specifically) should not validate records against lexicons
 
-## Reliable Synchronization
+## Record-Level Synchronization
 
-This section describes some details on how to reliably subscribe to the firehose and maintain an existing synchronized mirror of the network.
+Indexing services often care about processing all records of specific collections, across all accounts in the network. This section describes a design pattern for services to bootstrap existing accounts and records, and then maintain record-granularity synchronization, including re-synchronization incidents.
 
-Services should generally maintain a few pieces of state for all accounts they are tracking data from:
+The service should track the usual account-level state:
 
-- track the most recent commit `rev` they have successfully processed
-- keep cached identity data, and use cache expiration to ensure periodic re-validation of that data
-- track account status
+- identity resolution cache: DID document and handle
+- account hosting status: both "upstream" and "local" (to support local takedowns)
+- repo sync metadata: last revision and commit `data` field
+- repo sync status
 
-Identity caches should be purged any time an `#identity` event is received. Additionally, identity resolution should be refreshed if a commit signature fails to verify, in case the signing key was updated but the identity cache has not been updated yet.
+The repo sync status field tracks overall processing status:
 
-When `tooBig` events are emitted on the firehose, downstream services will need to fetch the diff out-of-band. This usually means an API request to the `com.atproto.sync.getRepo` endpoint on the current PDS host for the account, with the `since` field included. The `since` value should be the most recently processed `rev` value for the account, which may or may not match the `since` field in the commit event message.
+- `desynchronized` (default): out-of-sync with current revision, and re-synchronization is needed
+- `in-progress`: the service is actively re-synchronizing the repo
+- `synchronized`: all records have been processed for the current repository revision
 
-If a `#commit` is received with a `since` that does not match the most recently processed `rev` for the account, and is “later” (higher value) than the most recent commit `rev` the service has processed for that account, the service may need to do the same kind of out-of-band fetch as for a `tooBig` event.
+The service also tracks record-level state for records in all relevant repositories and collections in a sorted table:
 
-Services should keep track of the `seq` number of their upstream subscriptions. This should be stored separately per-upstream, even if there is only a single Relay connection, in case a different Relay is subscribed to in the future (which will have different `seq` numbers).
+- repository account DID
+- record path (collection and record key)
+- record version (CID)
 
-Events can be processed concurrently, but they should be processed sequentially in-order for any given account. This can be accomplished by partitioning multiple workers using the repo DID as a partitioning key.
+The service consumes from a full-network relay firehose. When `#identity` events are received, it updates resolution caches as usual. When `#account` events are received, it updates the "upstream" part of account hosting status. Processing of `#commit` and `#sync` events depends on the repo sync status.
 
-Services can confirm that they are consuming content reliably by fetching a snapshot of repository DIDs and `rev` numbers from other services, including PDS hosts and Relay instances. After a short delay, these can be compared against the current state of the service to identify any accounts which have lower than expected `rev` numbers. These repos can then be updated out-of-band.
+When a valid `#commit` is received for a synchronized account, the service processes all of the record operations, and updates the record state table. For example, created records are inserted into the table, deleted records are removed from the table, and updated records have the version field updated.
 
-## Bootstrapping a Live Mirror
+If a `#sync` message is received that matches the current repo status, the message is ignored. If an authenticated `#sync` or `#commit` message is received that indicates the chain of commit synchronization messages has been broken for a repository, the repo sync state is updated to `desynchronized`.
 
-The firehose can be used to follow new data updates, and repo exports can be used for snapshots. Actually combining the two to bootstrap a complete live-updating mirror can be a bit tricky. One approach is described below.
+Any `#commit` or `#sync` messages received for a repo which is in `desynchronized` state are ignored (dropped). Any events for a repository in `in-progress` state are enqueued for processing (eg, in a database).
 
-Keep a sync status table for all accounts (DIDs) encountered. The status can be:
+The service runs a pool of re-synchronization workers. These check for repositories in the `desynchronized` state, and mark them as `in-progress` when they start work. The resync process is to fetch the account's full repository CAR file. The worker then "walks" all records from the parsed repo tree, and scans the sorted record-level state table for the repository, and compares record states. If a a record exists in the CAR file but not the record table, that is treated as a creation. If the record versions mismatch, that is processed as an update. If a record is in the table, but not the CAR file, that is treated as a deletion. The table is updated as records are processed. Once the CAR processing is complete, the repo sync metadata is updated, and then any enqueued `#commit` and `#sync` messages for that repository are processed. If those are successful, the repo sync status is updated to `synchronized`, and the worker returns to the pool.
 
-- `dirty`: there is either no local repo data for this account, or it has gotten out of sync
-- `in-process`: the repo is "dirty", but there is a background task in process to update it
-- `synchronized`: a complete copy of the repository has been processed
+The service may want to filter records to only relevant collections. Only those records need to be tracked in the record state table. Every `#commit` message for in-scope accounts does need to be fully validated and have the repo sync table updated, even if that commit does not contain any in-scope records. This is to maintain the chain of validated repos states.
 
-Start by subscribing to the full firehose. If there is no existing repository data for the account, mark the account as "dirty". When new events come in for a repo, the behavior depends on the repo state. If it is "dirty", the event is ignored. If the state is "synchronized", the event is immediately processed as an update to the repo. If the state is "in-process", the event is enqueued locally.
+Discovering accounts from a full-network firehose will result in data from currently-active accounts getting processed. This is a good place to start for many services, but it is usually desirable to also backfill previously-active accounts as well, which can be done by inserting them in to the repository state stable with status `desynchronized`. The `com.atproto.sync.listReposByCollection` XRPC endpoint can be used to get a list of accounts (by DID) which have records in a specific collection (lexicon schema).
 
-Have a set of background workers start processing "dirty" repos. First they mark the status as `in-process`, so that new events are enqueued locally. Then the full repo export (CAR file) is fetched from the PDS and processed in full. The commit `rev` of the repo export is noted. When the full repo import is complete, the worker can start processing any enqueued events, in order, skipping any with a `rev` lower than the existing repo processed `rev` (as is the usual behavior). When the queue for the account is fully processed, the state can be flipped to `synchronized`, and the worker can move on.
-
-After some time, most of the known accounts will be marked as `synchronized`, though this will only represent the most recently active accounts in the network. Next a more complete set of repositories in the network can be fetched, for example using an API query against an existing large service. Any new identified accounts can be marked as `dirty` in the service, and the background workers can start processing them.
-
-When all of the accounts are `synchronized`, the process is complete. At large scale it may be hard to get perfect synchronization: PDS instances may be down at various times, identities may fail to resolve, or invalid events, data, or signatures may end up in the network.
 
 ## Usage and Implementation Guidelines
 
-Guidelines for specific firehose event sequencing during different account events are described in an [Account Lifecycle Best Practices guide](/guides/account-lifecycle).
+The [Account Lifecycle Best Practices](/guides/account-lifecycle) document provides guidance on the sequence of messages to emit during different scenarios, including account creation and account migration between PDS hosts.
+
+Stream events can be processed concurrently across accounts, but they should be processed sequentially in-order for any given account.
+
+Event stream consumers need to track and persist the sequence number of events they have successfully processed, to be used as a cursor value when reconnecting. They may want to separately track the "last received" sequence (for re-connections when messages are still being processed) from "high water mark" (taking in to account messages which are received but still being processed). Note that relay instances generally have distinct sequencing offsets and message ordering, and that connection-level sequences are distinct from repository-level revision numbers.
 
 ## Security Concerns
 
@@ -6995,9 +7072,11 @@ To prevent traffic amplification attacks, outbound network requests should be ra
 
 ## Future Work
 
-The `subscribeRepos` Lexicon is likely to be tweaked, with deprecated fields removed, even if this breaks Lexicon evolution rules.
+The `subscribeRepos` lexicon is likely to be tweaked, with deprecated fields removed, even if this breaks lexicon evolution rules.
 
-The event stream sequence/cursor scheme may be iterated on to support sharding, timestamp-based resumption, and easier failover between independent instances.
+The repository export mechanism is likely to support partial synchronization of repository subsets. For example, sub-tree CAR files covering specific collections or repo path ranges.
+
+The firehose event stream sequence/cursor scheme may be iterated on to support sharding, timestamp-based resumption, and easier failover between servers with different sequences.
 
 Alternatives to the full authenticated firehose may be added to the protocol. For example, simple JSON serialization, filtering by record collection type, omitting MST nodes, and other changes which would simplify development and reduce resource consumption for use-cases where full authentication is not necessary or desired.
 
