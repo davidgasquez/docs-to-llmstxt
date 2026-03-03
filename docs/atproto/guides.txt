@@ -286,6 +286,8 @@ When a repo is added, tap provides:
 
 We also provide a [TypeScript library](https://www.npmjs.com/package/@atproto/tap) for working with Tap. For more information, refer to [The AT Stack](/guides/the-at-stack#tap) and the [tap repository](https://github.com/bluesky-social/indigo/tree/main/cmd/tap). If you are backfilling a large number of records with Tap and need a scalable database service, we've had good experiences with [ClickHouse](https://clickhouse.com/).
 
+You can backfill from individual PDSes or from a Relay — they implement the same endpoints. For a list of available Relays, see [The AT Stack](/guides/the-at-stack#relays).
+
 ## How backfilling works
 
 If you are implementing backfilling on your own, the general process is:
@@ -4647,6 +4649,8 @@ One of the most powerful ways to get social graph data from AT Protocol is throu
 
 [Microcosm](https://constellation.microcosm.blue) provides a set of resources for working with backlinks. Because all AT Protocol records are openly available and addressible via an `at://` URI, this makes it possible to encode nested API queries into individual URLs. Microcosm [does this](https://constellation.microcosm.blue/xrpc/blue.microcosm.links.getBacklinks?subject=at%3A%2F%2Fdid%3Aplc%3Aa4pqq234yw7fqbddawjo7y35%2Fapp.bsky.feed.post%2F3m237ilwc372e&source=app.bsky.feed.like%3Asubject.uri&limit=16), for example.
 
+For Claude code plugins that implement backlinks, see [protopack](https://tangled.org/zzstoatzz.io/protopack.git).
+
 ## Further Reading and Resources
 
 - [Reads and Writes](/guides/reads-and-writes)
@@ -5683,6 +5687,8 @@ You can migrate an individual account's data repository freely from one PDS to a
 - https://pdsmoover.com/, a collection of tools for PDS migration
 - https://boat.kelinci.net/, a set of interfaces for repository import and export
 - https://github.com/bluesky-social/goat, our Go AT command-line tool.
+
+PDSs implement many AT endpoints, and by default will proxy requests to other services. Caching, CDNs, and so on are typically implemented at the [App View](#app-views) layer. Most other components of the AT stack are designed to direct load *away* from a PDS, so that hosting user data remains economical.
 
 ## Relays
 
