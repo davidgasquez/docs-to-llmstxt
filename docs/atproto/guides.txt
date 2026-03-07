@@ -4272,14 +4272,12 @@ Some API endpoints can be accessed without authentication. You can create an una
     import (
         "context"
         appbsky "github.com/bluesky-social/indigo/api/bsky"
-        "github.com/bluesky-social/indigo/xrpc"
+        "github.com/bluesky-social/indigo/atproto/atclient"
     )
 
     ctx := context.Background()
 
-    client := &xrpc.Client{
-        Host: "https://public.api.bsky.app", // public API endpoint
-    }
+    client := atclient.NewAPIClient("https://public.api.bsky.app")
     ```
 
     As with an authenticated client, you can `.get()` any public records, like a user's profile:
@@ -4361,8 +4359,8 @@ After [authenticating](/guides/sdk-auth#creating-a-client), you'll be able to ma
       "context"
       appbsky "github.com/bluesky-social/indigo/api/bsky"
       comatproto "github.com/bluesky-social/indigo/api/atproto"
+      "github.com/bluesky-social/indigo/atproto/atclient"
       lexutil "github.com/bluesky-social/indigo/lex/util"
-      "github.com/bluesky-social/indigo/xrpc"
     )
 
     ctx := context.Background()
@@ -4472,15 +4470,11 @@ If you are using password auth, you should generate an [app password](/specs/xrp
     ```tsx
     import { PasswordSession } from '@atproto/lex-password-session'
 
-    const result = await PasswordSession.login({
+    const session = await PasswordSession.login({
       service: 'https://bsky.social', // or your PDS host
       identifier: 'your-handle.bsky.social',
       password: 'your-app-password',
     })
-
-    if (result.success) {
-        const session = result.value
-    }
     ```
 
     Applications with an end user login flow should use [OAuth](/guides/oauth-cli-tutorial) authentication rather than app password sessions. Password auth is acceptable for bots and command line tools.
@@ -4488,26 +4482,24 @@ If you are using password auth, you should generate an [app password](/specs/xrp
     Both methods will produce the same authenticated `session`.
     </TabPanel>
     <TabPanel value="go">
-    Start by importing the `atproto` and `xrpc` libraries, creating an `&xrpc.Client{}`, and providing credentials to call `ServerCreateSession()`:
+    Start by importing the `atclient` library and calling `LoginWithPasswordHost()`:
 
     ```go
     import (
       "context"
-      comatproto "github.com/bluesky-social/indigo/api/atproto"
-      "github.com/bluesky-social/indigo/xrpc"
+      "github.com/bluesky-social/indigo/atproto/atclient"
     )
 
     func main() {
       ctx := context.Background()
 
-      client := &xrpc.Client{
-        Host: "https://bsky.social", // or your PDS host
-      }
-
-      session, _ := comatproto.ServerCreateSession(ctx, client, &comatproto.ServerCreateSession_Input{
-        Identifier: "your-handle.bsky.social",
-        Password:   "your-app-password",
-      })
+      client, _ := atclient.LoginWithPasswordHost(ctx,
+        "https://bsky.social",       // or your PDS host
+        "your-handle.bsky.social",   // identifier
+        "your-app-password",         // password
+        "",                          // authToken (optional 2FA token)
+        nil,                         // refresh callback (optional)
+      )
     }
     ```
 
@@ -4536,19 +4528,7 @@ If you are using password auth, you should generate an [app password](/specs/xrp
     ```
     </TabPanel>
     <TabPanel value="go">
-    Once you have an authed `client`, you can store auth info and make API calls:
-
-    ```go
-    // Store auth info on the client for subsequent requests
-    client.Auth = &xrpc.AuthInfo{
-      AccessJwt:  session.AccessJwt,
-      RefreshJwt: session.RefreshJwt,
-      Handle:     session.Handle,
-      Did:        session.Did,
-    }
-
-    fmt.Printf("Logged in as: %s (%s)\n", session.Handle, session.Did)
-    ```
+    The `client` returned by `LoginWithPasswordHost()` is authenticated and ready to make API calls.
     </TabPanel>
   </TabPanels>
 </TabGroup>
@@ -6142,8 +6122,8 @@ post := &appbsky.FeedPost{
 }
 
 resp, _ := comatproto.RepoCreateRecord(ctx, client, &comatproto.RepoCreateRecord_Input{
-    Repo:       client.Auth.Did,         // handle or DID
-    Collection: "app.bsky.feed.post",    // lexicon
+    Repo:       client.AccountDID.String(), // handle or DID
+    Collection: "app.bsky.feed.post",       // lexicon
     Record:     &lexutil.LexiconTypeDecoder{Val: post},
 })
 ```
@@ -6218,7 +6198,7 @@ newProfile := &appbsky.ActorProfile{
 }
 
 resp, _ := comatproto.RepoPutRecord(ctx, client, &comatproto.RepoPutRecord_Input{
-  Repo:       client.Auth.Did,                // handle or DID
+  Repo:       client.AccountDID.String(),     // handle or DID
   Collection: "app.bsky.actor.profile",       // lexicon
   Rkey:       "self",                         // rkey
   Record:     &lexutil.LexiconTypeDecoder{Val: newProfile},
@@ -6260,9 +6240,9 @@ await client.delete(app.bsky.feed.post, {
     To delete a record, like an individual post, use `RepoDeleteRecord():`
 ```go
 comatproto.RepoDeleteRecord(ctx, client, &comatproto.RepoDeleteRecord_Input{
-    Repo:       client.Auth.Did,      // handle or DID
-    Collection: "app.bsky.feed.post", // lexicon
-    Rkey:       "3mbl5xdw4yk2r",      // rkey
+    Repo:       client.AccountDID.String(), // handle or DID
+    Collection: "app.bsky.feed.post",       // lexicon
+    Rkey:       "3mbl5xdw4yk2r",             // rkey
 })
 ```
     </TabPanel>
