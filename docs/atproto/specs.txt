@@ -4723,7 +4723,7 @@ atproto/src/app/[locale]/specs/permission/ko.mdx
 ---
 import {Heading} from '@/components/Heading'
 
-export const metadata = {
+export const header = {
   title: '권한',
   description:
     '계정 리소스에 대한 인증 권한.',
