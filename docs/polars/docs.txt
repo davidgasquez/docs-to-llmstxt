@@ -9113,6 +9113,11 @@ define a compute context.
 ```python
 query.remote().sink_parquet(...)
 ```
+!!! note "Ephemeral compute"
+Each `ComputeContext` creates a new, ephemeral compute cluster. If you re-run your script,
+a new cluster will be started instead of reusing an existing one. To reuse a running cluster,
+either [reference it by name](reconnect.md#reconnect-with-a-manifest-recommended) using a
+manifest, or [reconnect to an existing cluster](reconnect.md).
 ---
 polars/docs/source/polars-cloud/context/plugins.md
 ---
