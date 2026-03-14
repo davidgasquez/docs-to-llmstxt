@@ -158,6 +158,8 @@ It will still be possible to login and authenticate with the old PDS. The user m
 atproto/src/app/[locale]/guides/auth/en.mdx
 ---
 import {Container} from "@/components/Container"
+import NpmInstall from './_snippets/npm-install.mdx'
+import GoGet from './_snippets/go-get.mdx'
 
 export const header = {
   title: 'Auth',
@@ -177,18 +179,14 @@ export const header = {
 
     Begin by installing the atproto packages:
 
-    ```bash
-    npm install @atproto/lex @atproto/lex-password-session
-    ```
+    <NpmInstall />
     </TabPanel>
     <TabPanel value="go">
     You can log in using any [OAuth](/guides/go-oauth-cli-tutorial) provider, or with password authentication from our SDK.
 
     Begin by installing the atproto packages:
 
-    ```bash
-    go get github.com/bluesky-social/indigo
-    ```
+    <GoGet />
     </TabPanel>
   </TabPanels>
 </TabGroup>
@@ -240,9 +238,12 @@ Begin by reading [SDK authentication](/guides/sdk-auth). To implement OAuth in y
 - [OAuth spec](/specs/oauth)
 - [Permissions spec](/specs/permission)
 
+
 ---
 atproto/src/app/[locale]/guides/backfilling/en.mdx
 ---
+import TapRun from './_snippets/tap-run.mdx'
+
 export const header = {
   title: 'Backfilling',
   description: 'Replicating the network',
@@ -262,19 +263,7 @@ When backfilling, you generally need to maintain 'up to date' replica of the dat
 
 Tap can be run from the command line:
 
-```shell
-# Run tap
-go run ./cmd/tap run --disable-acks=true
-# By default, the service uses SQLite at `./tap.db` and binds to port `:2480`.
-
-# In a separate terminal, connect to receive events:
-websocat ws://localhost:2480/channel
-
-#  Add a repo to track
-curl -X POST http://localhost:2480/repos/add \
-  -H "Content-Type: application/json" \
-  -d '{"dids": ["did:plc:ewvi7nxzyoun6zhxrhs64oiz"]}' # @atproto.com repo
-```
+<TapRun />
 
 When a repo is added, tap provides:
 
@@ -313,9 +302,12 @@ Do the above process for each repo and you will end up with a complete replica o
 - [Sync spec](/specs/sync)
 - The [Microcosm](https://www.microcosm.blue/) community project maintains tools for working with AT records at scale without local mirroring.
 
+
 ---
 atproto/src/app/[locale]/guides/blob-lifecycle/en.mdx
 ---
+import UploadBlobTs from './_snippets/upload-blob-ts.mdx'
+
 export const header = {
   title: 'Blob Lifecycle',
   description: 'How blobs are uploaded, referenced, and deleted',
@@ -327,12 +319,7 @@ Blobs must be uploaded to the PDS before a record can be created referencing tha
 
 Clients use the **`com.atproto.repo.uploadBlob`** endpoint on their PDS, which will return verified metadata in the form of a Lexicon blob object. Clients should set the HTTP **`Content-Type`** header and should set the **`Content-Length`** headers on the upload request. SDKs can handle this automatically:
 
-```typescript
-const image = 'data:image/png;base64,...'
-const { data } = await agent.uploadBlob(convertDataURIToUint8Array(image), {
-  encoding,
-})
-```
+<UploadBlobTs />
 
 This `data` object could then be referenced in another record, e.g. as an `embed`.
 
@@ -374,9 +361,12 @@ Some applications may have a long delay between blob upload and reference from a
 - [Blob Specs](/specs/blob)
 - [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on atproto.
 
+
 ---
 atproto/src/app/[locale]/guides/blob-security/en.mdx
 ---
+import CspHeaders from './_snippets/csp-headers.mdx'
+
 export const header = {
   title: 'Blob Security',
   description: 'Security considerations when serving blobs',
@@ -388,10 +378,7 @@ Serving arbitrary user-uploaded files from a web server raises many content secu
 
 An example set of content security headers for this endpoint is:
 
-```jsx
-Content-Security-Policy: default-src 'none'; sandbox
-X-Content-Type-Options: nosniff
-```
+<CspHeaders />
 
 ## Metadata
 
@@ -413,9 +400,26 @@ Servers may need to take measures to prevent malicious resource consumption. For
 - [Blob Specs](/specs/blob)
 - [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on atproto.
 
+
 ---
 atproto/src/app/[locale]/guides/bot-tutorial/en.mdx
 ---
+import S01 from './_snippets/01-install-node.mdx'
+import S02 from './_snippets/02-install-lex.mdx'
+import S03 from './_snippets/03-init-project.mdx'
+import S04 from './_snippets/04-lex-install-post.mdx'
+import S05 from './_snippets/05-lex-build.mdx'
+import S06 from './_snippets/06-login-function.mdx'
+import S07 from './_snippets/07-make-post.mdx'
+import S08 from './_snippets/08-cron-main.mdx'
+import S09 from './_snippets/09-env-file.mdx'
+import S10 from './_snippets/10-run-bot.mdx'
+import S11 from './_snippets/11-install-ai.mdx'
+import S12 from './_snippets/12-env-with-ai-key.mdx'
+import S13 from './_snippets/13-lex-install-notifications.mdx'
+import S14 from './_snippets/14-import-generate-text.mdx'
+import S15 from './_snippets/15-full-agent-code.mdx'
+
 export const header = {
   title: 'Build an Agent',
   description: 'Create a bot that automatically posts on Bluesky',
@@ -434,41 +438,27 @@ You should have installed:
 
 On platforms supported by [homebrew](https://brew.sh/), you can install it with:
 
-```bash
-brew install node
-```
+<S01 />
 
 You should also have our `lex` CLI tool installed globally:
 
-```bash
-npm install -g @atproto/lex
-```
+<S02 />
 
 Now, create a new TypeScript project directory and initialize your project:
 
-```bash
-mkdir my-agent
-cd my-agent
-npm init -y
-npm i -D typescript ts-node @types/node dotenv cron @atproto/lex @atproto/lex-password-session
-npx tsc --init --verbatimModuleSyntax false
-```
+<S03 />
 
 If you aren't using an existing account to post from, you should [create a new account](https://bsky.app/) for your bot. You should also generate an [app password](/guides/sdk-auth) for that account.
 
-## Part 1: Lexicons 
+## Part 1: Lexicons
 
 [Lexicons](/guides/lexicon) define atproto records. Your bot will create Bluesky posts, using the [app.bsky.feed.post](https://lexicon.garden/lexicon/did:plc:4v4y5r3lwsbtmsxhile2ljac/app.bsky.feed.post) Lexicon. You can use `lex` to download and build this Lexicon into your project:
 
-```bash
-lex install app.bsky.feed.post
-```
+<S04 />
 
 If you want, you can view the downloaded Lexicon file at `lib/lexicons/app.bsky.post.json`. From here, you can run `lex build` to generate TypeScript types for all of your installed Lexicons:
 
-```bash
-lex build
-```
+<S05 />
 
 The generated code will live in `src/lexicons`. Now you can create your bot script.
 
@@ -478,64 +468,15 @@ Create a new file at `src/index.ts`. This file will contain the code for your bo
 
 First, add the imports that you'll need, and a call to `PasswordSession.create()` to authenticate your bot using an app password:
 
-```ts
-import { Client } from '@atproto/lex'
-import { PasswordSession } from '@atproto/lex-password-session'
-import * as dotenv from 'dotenv'
-import { CronJob } from 'cron'
-import * as process from 'process'
-import * as app from './lexicons/app.js'
-
-dotenv.config()
-
-// Create a session
-async function login() {
-    const service = process.env.BOT_PDS!
-    const identifier = process.env.BOT_HANDLE!
-    const password = process.env.BOT_PASSWORD!
-    const session = await PasswordSession.login({
-        service, // eg 'https://bsky.social'
-        identifier, // eg 'alice.bsky.social'
-        password,
-    })
-
-    return session
-}
-```
+<S06 />
 
 Next, add a function that posts. This will instantiate a new `Client` using the authenticated session, and use it to create a post. The `app.bsky.feed.post` Lexicon requires two parameters: the text of a post — you'll use "🙂" — and a timestamp.
 
-```ts
-// Posting logic
-async function makePost(session: PasswordSession) {
-    const client = new Client(session)
-    await client.create(app.bsky.feed.post, {
-        text: '🙂',
-        createdAt: new Date().toISOString(),
-    })
-    console.log('Just posted!')
-}
-
-async function main() {
-    const session = await login()
-    await makePost(session)
-}
-
-main().catch(console.error)
-```
+<S07 />
 
 Finally, add another code block inside of `main()` using the `cron` package to schedule your bot to post every three hours:
 
-```ts
-async function main() {
-    const session = await login()
-    await makePost(session)
-    // Run this on a cron job
-    const scheduleExpression = '0 */3 * * *'
-    const job = new CronJob(scheduleExpression, () => makePost(session))
-    job.start()
-}
-```
+<S08 />
 
 That's all the code you need for your bot! Next, you'll test it out.
 
@@ -543,21 +484,15 @@ That's all the code you need for your bot! Next, you'll test it out.
 
 Save your bot's host (PDS), username, and password to an `.env` file.
 
-```bash
-BOT_PDS= # eg 'https://bsky.social' if you aren't self-hosting your PDS
-BOT_HANDLE= # eg 'alice.bsky.social'
-BOT_PASSWORD=
-```
+<S09 />
 
 Now you can test the bot using `ts-node`.
 
-```bash
-ts-node src/index.ts
-```
+<S10 />
 
 You can run this bot on your own machine, or deploy it on a platform like [Fly.io](http://fly.io/).
 
-Keep in mind that bots should respect the network's rate limits. For instance, [Bluesky has its own set of rate limits](https://docs.bsky.app/docs/advanced-guides/rate-limits). 
+Keep in mind that bots should respect the network's rate limits. For instance, [Bluesky has its own set of rate limits](https://docs.bsky.app/docs/advanced-guides/rate-limits).
 
 ## Part 4: From Bot to Agent
 
@@ -567,87 +502,23 @@ In this section, you'll use the [Vercel AI SDK](https://www.npmjs.com/package/ai
 
 Once you've got an API key, add the AI SDK to your project:
 
-```bash
-npm i ai
-```
+<S11 />
 
 Then, add another environment variable to your `.env` file:
 
-```bash
-BOT_PDS=
-BOT_HANDLE=
-BOT_PASSWORD=
-AI_GATEWAY_API_KEY=xxxxxxxxx
-```
+<S12 />
 
 Finally, you'll need to install some additional Lexicons to get mentions. Run the following command to install and build the necessary Lexicons:
 
-```bash
-lex install app.bsky.notification.listNotifications app.bsky.feed.getPostThread
-lex build --override
-```
+<S13 />
 
 Almost there. Add the `ai` import to your `src/index.ts` file:
 
-```ts
-import { generateText } from 'ai'
-```
+<S14 />
 
 Now you can replace everything after the `login` function in your script with new logic that uses the AI SDK to generate replies:
 
-```ts
-async function generateReply(mentionText: string): Promise<string> {
-  const { text } = await generateText({
-    model: 'anthropic/claude-sonnet-4-5',
-    system: 'You are a mystical fortune teller bot on Bluesky named "The Oracle". Speak in a dramatic, mysterious tone with occasional emoji (🔮 ✨ 🌙 ⭐). If someone asks a yes/no question, give a cryptic but leaning answer. If they ask for general guidance, offer a brief horoscope-style prediction. Keep responses under 280 characters. Never break character.',
-    prompt: mentionText,
-  })
-  return text
-}
-
-// Check for new mentions and reply
-async function checkMentions(session: PasswordSession) {
-  const client = new Client(session)
-  const notifications = await client.call(app.bsky.notification.listNotifications, {
-    limit: 20,
-  })
-
-  for (const notif of notifications.notifications) {
-    // Only process unread mentions
-    if (notif.reason !== 'mention' || notif.isRead) continue
-
-    // Get the post that mentioned us
-    const post = await client.call(app.bsky.feed.getPostThread, {
-      uri: notif.uri,
-    })
-
-    const mentionText = post.thread.post.record.text
-    const reply = await generateReply(mentionText)
-
-    // Reply to the post
-    await client.create(app.bsky.feed.post, {
-      text: reply,
-      createdAt: new Date().toISOString(),
-      reply: {
-        root: { uri: notif.uri, cid: post.thread.post.cid },
-        parent: { uri: notif.uri, cid: post.thread.post.cid },
-      },
-    })
-
-    console.log(`Replied to mention: ${mentionText}`)
-  }
-}
-
-async function main() {
-    const session = await login()
-    const job = new CronJob('*/1 * * * *', () => checkMentions(session))
-    job.start()
-
-    console.log('Agent is running...')
-}
-
-main().catch(console.error)
-```
+<S15 />
 
 There are a few new concepts here. You'll recognize the `app.bsky.feed.post` logic, and now you'll also implement `app.bsky.notification.listNotifications` and `app.bsky.feed.getPostThread`. The first Lexicon is used to get a list of notifications for, and the second fetches the full thread for a given post URI.
 
@@ -665,11 +536,13 @@ You've now built an automated atproto app that creates records on the network!
 
 You can find more guides and tutorials in our [Guides](/guides) section, and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
 
+
 ---
 atproto/src/app/[locale]/guides/creating-a-labeler/en.mdx
 ---
 import {Container} from "@/components/Container"
 import ozone from "./ozone.png"
+import LabelerServiceRecord from './_snippets/labeler-service-record.mdx'
 
 export const header = {
   title: 'Creating a Labeler',
@@ -680,29 +553,7 @@ export const header = {
 
 Labelers publish an `/app.bsky.labeler.service/self` record to declare that they are a labeler and publish their policies. That record looks like this:
 
-```json
-{
-  "$type": "app.bsky.labeler.service",
-  "policies": {
-    "labelValues": ["porn", "spider"],
-    "labelValueDefinitions": [
-      {
-        "identifier": "spider",
-        "severity": "alert",
-        "blurs": "media",
-        "defaultSetting": "warn",
-        "locales": [
-          {"lang": "en", "name": "Spider Warning", "description": "Spider!!!"}
-        ]
-      }
-    ]
-  },
-  "subjectTypes": ["record"],
-  "subjectCollections": ["app.bsky.feed.post", "app.bsky.actor.profile"],
-  "reasonTypes": ["com.atproto.moderation.defs#reasonOther"],
-  "createdAt": "2024-03-03T05:31:08.938Z"
-}
-```
+<LabelerServiceRecord />
 
 The `labelValues` declares what to expect from the Labeler. It may include global and custom label values.
 
@@ -718,7 +569,7 @@ The `labelValueDefinitions` defines the custom labels. It includes the `locales`
   <Image src={ozone} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-Self-hosting Ozone enables you to participate as a labeler in the AT stackable moderation architecture. The Ozone service consists of a web UI, a backend, and a Postgres database. 
+Self-hosting Ozone enables you to participate as a labeler in the AT stackable moderation architecture. The Ozone service consists of a web UI, a backend, and a Postgres database.
 
 Before setting up your Ozone service you should create a *new* account on the network, separate from your main account. This is the account that subscribers to your labeler will interact with: accounts for labelers will appear differently in app interfaces than normal accounts. Refer to the [Ozone User Guide](https://github.com/bluesky-social/ozone/blob/main/docs/userguide.md) for more.
 
@@ -730,11 +581,26 @@ Before setting up your Ozone service you should create a *new* account on the ne
 - [Using Ozone](/guides/using-ozone)
 - [Label Specs](/specs/label)
 
+
 ---
 atproto/src/app/[locale]/guides/custom-feed-tutorial/en.mdx
 ---
 import {Container} from "@/components/Container"
 import bsky from "./feeds-bsky.png"
+import S01 from './_snippets/01-install-deps.mdx'
+import S02 from './_snippets/02-install-lex.mdx'
+import S03 from './_snippets/03-install-tap.mdx'
+import S04 from './_snippets/04-project-setup.mdx'
+import S05 from './_snippets/05-lex-install.mdx'
+import S06 from './_snippets/06-lex-build.mdx'
+import S07 from './_snippets/07-tap-run.mdx'
+import S08 from './_snippets/08-config-and-imports.mdx'
+import S09 from './_snippets/09-post-index-and-indexer.mdx'
+import S10 from './_snippets/10-xrpc-routes.mdx'
+import S11 from './_snippets/11-feed-server.mdx'
+import S12 from './_snippets/12-start-block.mdx'
+import S13 from './_snippets/13-terminal-output.mdx'
+import S14 from './_snippets/14-tap-signal-collection.mdx'
 
 export const header = {
   title: 'Write a Custom Feed',
@@ -755,31 +621,19 @@ You should have installed:
 
 On platforms supported by [homebrew](https://brew.sh/), you can install them with:
 
-```bash
-brew install node go
-```
+<S01 />
 
 You should also have our `lex` CLI tool installed globally:
 
-```bash
-npm install -g @atproto/lex
-```
+<S02 />
 
-You'll also need to install [`tap`](/guides/the-at-stack#tap) to consume the firehose of posts from the network. 
+You'll also need to install [`tap`](/guides/the-at-stack#tap) to consume the firehose of posts from the network.
 
-```bash
-go install github.com/bluesky-social/indigo/cmd/tap
-```
+<S03 />
 
 Now, create a new TypeScript project directory and initialize your project:
 
-```bash
-mkdir my-agent
-cd my-agent
-npm init -y
-npm i -D typescript ts-node @types/node dotenv @atproto/lex @atproto/lex-server @atproto/tap
-npx tsc --init --verbatimModuleSyntax false
-```
+<S04 />
 
 You'll begin by adding Lexicons to your project.
 
@@ -787,23 +641,17 @@ You'll begin by adding Lexicons to your project.
 
 [Lexicons](/guides/lexicon) define atproto records. A baseline feed generator requires the `app.bsky.feed.describeFeedGenerator` and `app.bsky.feed.getFeedSkeleton` Lexicons. You can use `lex` to download and build these Lexicons into your project:
 
-```bash
-lex install app.bsky.feed.describeFeedGenerator app.bsky.feed.getFeedSkeleton
-```
+<S05 />
 
 From here, you can run `lex build` to generate TypeScript types for all of your installed Lexicons:
 
-```bash
-lex build
-```
+<S06 />
 
 The generated code will live in `src/lexicons`.
 
 You'll also need to run `tap` in a separate terminal to index posts from the network. Start `tap` with:
 
-```bash
-tap run --disable-acks=true
-```
+<S07 />
 
 Now you can start building your feed generator.
 
@@ -822,43 +670,7 @@ You'll start by capturing some configuration from environment variables. Much of
 
 For this example, you'll be creating our entire app in a single file at `src/index.ts`. Create that file now, and add these imports and config lines:
 
-```ts
-import { AtUriString, DidString, asDidString } from '@atproto/lex'
-import { LexError, LexRouter, serviceAuth } from '@atproto/lex-server'
-import { serve } from '@atproto/lex-server/nodejs'
-import { Tap, SimpleIndexer } from '@atproto/tap'
-import * as app from './lexicons/app.js'
-
-// =============================================================================
-// Configuration
-// =============================================================================
-
-interface FeedConfig {
-    publisherDid: DidString
-    feedName: string
-    searchTerms: string[]
-    maxPosts: number
-    port: number
-    tapUrl: string
-    tapPassword: string
-    initialRepos: string[]
-}
-
-const DEFAULT_REPO = 'did:plc:ragtjsm2j2vknwkz3zp4oxrd' // pfrazee.com
-
-const config: FeedConfig = {
-    publisherDid: asDidString(process.env.FEED_PUBLISHER_DID || 'did:example:alice'),
-    feedName: process.env.FEED_NAME || 'whats-alf',
-    searchTerms: (process.env.FEED_SEARCH_TERMS || 'alf').split(',').map(s => s.trim()),
-    maxPosts: parseInt(process.env.FEED_MAX_POSTS || '1000', 10),
-    port: parseInt(process.env.FEED_PORT || '3000', 10),
-    tapUrl: process.env.TAP_URL || 'http://localhost:2480',
-    tapPassword: process.env.TAP_PASSWORD || 'secret',
-    initialRepos: (process.env.FEED_INITIAL_REPOS || DEFAULT_REPO).split(',').map(s => s.trim()),
-}
-
-const FEED_URI: AtUriString = `at://${config.publisherDid}/app.bsky.feed.generator/${config.feedName}` as AtUriString
-```
+<S08 />
 
 There are a few things to note here. You've supplied a `DEFAULT_REPO` to fetch with `tap`. In this case, you're following a single user, [`pfrazee.com`](https://bsky.app/profile/pfrazee.com). This will keep the tutorial example manageable.
 
@@ -872,71 +684,7 @@ You'll store the posts you want to serve in an array.
 
 As `tap` discovers posts from the network, this feed server will search their text for our configured search terms. If it finds a match, it'll add the post to your array. Add the following contents to `src/index.ts`:
 
-```ts
-// =============================================================================
-// Post Index
-// =============================================================================
-
-interface IndexedPost {
-    uri: AtUriString
-    indexedAt: number
-}
-
-const postIndex: IndexedPost[] = []
-
-// =============================================================================
-// Tap Indexer
-// =============================================================================
-
-const tap = new Tap(config.tapUrl, { adminPassword: config.tapPassword })
-const indexer = new SimpleIndexer()
-
-const searchPattern = new RegExp(
-    `\\b(${config.searchTerms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
-    'i'
-)
-
-indexer.record(async (evt) => {
-    if (evt.collection !== 'app.bsky.feed.post') return
-
-    const uri = `at://${evt.did}/${evt.collection}/${evt.rkey}` as AtUriString
-
-    if (evt.action === 'delete') {
-        const idx = postIndex.findIndex(p => p.uri === uri)
-        if (idx !== -1) {
-            postIndex.splice(idx, 1)
-            console.log(`DELETE ${uri}`)
-        }
-        return
-    }
-
-    const text = (evt.record?.text as string) || ''
-    if (!searchPattern.test(text)) return
-    if (postIndex.some(p => p.uri === uri)) return
-
-    postIndex.unshift({ uri, indexedAt: Date.now() })
-    if (postIndex.length > config.maxPosts) postIndex.pop()
-
-    const preview = text.substring(0, 60).replace(/\n/g, ' ')
-    console.log(`${evt.action.toUpperCase()} ${uri}`)
-    console.log(`  "${preview}${text.length > 60 ? '...' : ''}"`)
-    console.log(`  ⭐ Added to index (${postIndex.length} total)`)
-})
-
-indexer.identity(async (evt) => {
-    if (evt.status === 'active') return
-    // Remove posts from disabled/deleted identities
-    const removed = postIndex.filter(p => p.uri.includes(evt.did)).length
-    if (removed > 0) {
-        postIndex.splice(0, postIndex.length, ...postIndex.filter(p => !p.uri.includes(evt.did)))
-        console.log(`Identity ${evt.did} (${evt.status}): removed ${removed} posts`)
-    }
-})
-
-indexer.error((err) => console.error('Indexer error:', err))
-
-const channel = tap.channel(indexer)
-```
+<S09 />
 
 Here, you connect to `tap`, and use the `SimpleIndexer` function provided by the `@atproto/tap` library to process incoming records from the `app.bsky.feed.post` Lexicon — i.e., Bluesky posts.
 
@@ -948,73 +696,11 @@ Essentially, you're building an in-memory search index of posts that match your 
 
 Now, you'll add [XRPC](/guides/lexicon#http-api-methods) routes to serve our feed. Your server will be handling two kinds of requests:
 
-```
-GET /xrpc/app.bsky.feed.describeFeedGenerator
-GET /xrpc/app.bsky.feed.getFeedSkeleton
-```
+<S10 />
 
 Add the Feed Generator server logic to `src/index.ts`:
 
-```ts
-// =============================================================================
-// Feed Generator Server
-// =============================================================================
-
-// Auth is optional for this demo since we only log the requester's DID.
-// In production, you may want to use credentials to personalize the feed.
-const auth = serviceAuth({
-    audience: config.publisherDid,
-    unique: async () => true,
-})
-
-const router = new LexRouter()
-
-router.add(app.bsky.feed.describeFeedGenerator, {
-    auth,
-    handler: (ctx) => {
-        console.log('describeFeedGenerator from', ctx.credentials?.did)
-        return {
-            body: {
-                did: config.publisherDid,
-                feeds: [app.bsky.feed.describeFeedGenerator.feed.$build({ uri: FEED_URI })],
-                links: {
-                    privacyPolicy: 'https://example.com/privacy',
-                    termsOfService: 'https://example.com/tos',
-                },
-            },
-        }
-    },
-})
-
-router.add(app.bsky.feed.getFeedSkeleton, {
-    auth,
-    handler: (ctx) => {
-        if (ctx.params.feed !== FEED_URI) {
-            throw new LexError('InvalidRequest', 'Feed not found')
-        }
-        console.log('getFeedSkeleton from', ctx.credentials?.did)
-
-        const limit = Math.min(ctx.params.limit ?? 50, 100)
-        const cursor = ctx.params.cursor as string | undefined
-
-        let startIdx = 0
-        if (cursor) {
-            const cursorTime = parseInt(cursor, 10)
-            startIdx = postIndex.findIndex(p => p.indexedAt < cursorTime)
-            if (startIdx === -1) startIdx = postIndex.length
-        }
-
-        const slice = postIndex.slice(startIdx, startIdx + limit)
-        const feed = slice.map(p => app.bsky.feed.defs.skeletonFeedPost.$build({ post: p.uri }))
-        const lastPost = slice.at(-1)
-        const nextCursor = lastPost && slice.length === limit && startIdx + limit < postIndex.length
-            ? lastPost.indexedAt.toString()
-            : undefined
-
-        return { body: { feed, cursor: nextCursor } }
-    },
-})
-```
+<S11 />
 
 Here, you're using `LexRouter` from the `@atproto/lex-server` package to define your XRPC routes. You'll notice that the `getFeedSkeleton` method returns a `cursor` in its response and takes a `cursor` param as input. This allows clients to paginate through your feed.
 
@@ -1029,93 +715,18 @@ Finally, you'll add the runtime logic to start the server.
 
 You'll connect to tap with `channel.start()` then initiate your server. Add the runtime logic to `src/index.ts`:
 
-```ts
-// =============================================================================
-// Start
-// =============================================================================
-
-channel.start()
-console.log('Indexer connected to Tap server')
-
-if (config.initialRepos.length > 0) {
-    tap.addRepos(config.initialRepos).then(() => {
-        console.log(`Added ${config.initialRepos.length} repo(s) to follow\n`)
-    })
-}
-
-serve(router, { port: config.port }).then((server) => {
-    const feedParam = encodeURIComponent(FEED_URI)
-
-    console.log(`
-Feed Generator Running
-
-Server: http://localhost:${config.port}
-Feed: ${config.feedName}
-Terms: ${config.searchTerms.join(', ')}
-Tap: ${config.tapUrl}
-Repos: ${config.initialRepos.length}
-
-To test (generate a JWT with goat):
-goat account service-auth --aud ${config.publisherDid}
-
-Then:
-curl -H "Authorization: Bearer <jwt>" "http://localhost:${config.port}/xrpc/app.bsky.feed.getFeedSkeleton?feed=${feedParam}"
-
-Listening for posts matching: ${config.searchTerms.join(', ')}
-`)
-
-    const shutdown = async () => {
-        console.log('Shutting down...')
-        await channel.destroy()
-        await server.terminate()
-        process.exit(0)
-    }
-
-    process.on('SIGINT', shutdown)
-    process.on('SIGTERM', shutdown)
-})
-```
+<S12 />
 
 This kicks off both your connection to `tap` (your feed input) and your XRPC server (your feed output). It also provides some logging to help you test your feed generator.
 
 Run it with `ts-node src/index.ts`. You should see some initial posts being indexed:
 
-```
-Indexer connected to Tap server
-
-Feed Generator Running
-
-Server: http://localhost:3000
-Feed: whats-alf
-Terms: alf
-Tap: http://localhost:2480
-Repos: 1
-
-To test (generate a JWT with goat):
-goat account service-auth --aud did:example:alice
-
-Then:
-curl -H "Authorization: Bearer <jwt>" "http://localhost:3000/xrpc/app.bsky.feed.getFeedSkeleton?feed=at%3A%2F%2Fdid%3Aexample%3Aalice%2Fapp.bsky.feed.generator%2Fwhats-alf"
-
-Listening for posts matching: alf
-
-Added 1 repo(s) to follow
-
-CREATE at://did:plc:ragtjsm2j2vknwkz3zp4oxrd/app.bsky.feed.post/3jux6xlrdb42v
-  "Run?? Alf was the date I struck out with ☹️"
-  ⭐ Added to index (1 total)
-CREATE at://did:plc:ragtjsm2j2vknwkz3zp4oxrd/app.bsky.feed.post/3jux7x2uvip2v
-  "god is that okay? I'm really confused right now, Alf broke m..."
-  ⭐ Added to index (2 total)
-```
+<S13 />
 
 <Note>
 Remember that this example fetches only a single user's data repository. To fetch the entire network, stop and re-run `tap` with the `--signal-collection` flag:
 
-```bash
-tap run --collection-filters=app.bsky.feed.post \
-  --signal-collection=app.bsky.feed.post
-```
+<S14 />
 </Note>
 
 ## Conclusion
@@ -1132,10 +743,13 @@ After that, you can clone down our original [feed-generator repo](https://github
 
 You can find more guides and tutorials in our [Guides](/guides) section, and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
 
+
 ---
 atproto/src/app/[locale]/guides/data-repos/en.mdx
 ---
 import {DescriptionList, Description} from '@/components/DescriptionList'
+import RepoLayout from './_snippets/repo-layout.mdx'
+import AtUriStructure from './_snippets/at-uri-structure.mdx'
 
 export const header = {
   title: 'Personal Data Repositories',
@@ -1153,42 +767,27 @@ They are described in more depth in the [Repository specification](/specs/reposi
 
 The content of a repository is laid out in a [Merkle Search Tree (MST)](https://hal.inria.fr/hal-02303490/document) which reduces the state to a single root hash. It can be visualized as the following layout:
 
-```
-┌────────────────┐
-│     Commit     │  (Signed Root)
-└───────┬────────┘
-        ↓
-┌────────────────┐
-│   Tree Nodes   │
-└───────┬────────┘
-        ↓
-┌────────────────┐
-│     Record     │
-└────────────────┘
-```
+<RepoLayout />
 
 Every node is an [IPLD](https://ipld.io/) object ([dag-cbor](https://ipld.io/docs/codecs/known/dag-cbor/)) which is referenced by a [CID](https://github.com/multiformats/cid) hash. The arrows in the diagram above represent a CID reference.
 
 This layout is reflected in the [AT URIs](/specs/at-uri-scheme):
 
-```
-Root       | at://alice.com
-Collection | at://alice.com/app.bsky.feed.post
-Record     | at://alice.com/app.bsky.feed.post/1234
-```
+<AtUriStructure />
 
-A “commit” to a data repository is simply a keypair signature over a Root node’s CID. Each mutation to the repository produces a new Commit node.
+A "commit" to a data repository is simply a keypair signature over a Root node's CID. Each mutation to the repository produces a new Commit node.
 
 ## Identifier Types
 
 Multiple types of identifiers are used within a Personal Data Repository.
 
 <DescriptionList>
-  <Description title="DIDs">[Decentralized IDs (DIDs)](https://w3c.github.io/did/) identify data repositories. They are broadly used as user IDs, but since every user has one data repository then a DID can be considered a reference to a data repository. The format of a DID varies by the “DID method” used but all DIDs ultimately resolve to a keypair and a list of service providers. This keypair can sign commits to the data repository.</Description>
-  <Description title="CIDs">[Content IDs (CIDs)](https://github.com/multiformats/cid) identify content using a fingerprint hash. They are used throughout the repository to reference the objects (nodes) within it. When a node in the repository changes, its CID also changes. Parents which reference the node must then update their reference, which in turn changes the parent’s CID as well. This chains all the way to the Commit node, which is then signed.</Description>
+  <Description title="DIDs">[Decentralized IDs (DIDs)](https://w3c.github.io/did/) identify data repositories. They are broadly used as user IDs, but since every user has one data repository then a DID can be considered a reference to a data repository. The format of a DID varies by the "DID method" used but all DIDs ultimately resolve to a keypair and a list of service providers. This keypair can sign commits to the data repository.</Description>
+  <Description title="CIDs">[Content IDs (CIDs)](https://github.com/multiformats/cid) identify content using a fingerprint hash. They are used throughout the repository to reference the objects (nodes) within it. When a node in the repository changes, its CID also changes. Parents which reference the node must then update their reference, which in turn changes the parent's CID as well. This chains all the way to the Commit node, which is then signed.</Description>
   <Description title="NSIDs">[Namespaced Identifiers (NSIDs)](/specs/nsid) identify the Lexicon type for groups of records within a repository.</Description>
   <Description title="rkey">[Record Keys ("rkeys")](/specs/record-key) identify individual records within a collection in a given repository. The format is specified by the collection Lexicon, with some collections having only a single record with a key like "self", and other collections having many records, with keys using a base32-encoded timestamp called a Timestamp Identifier (TID).</Description>
 </DescriptionList>
+
 
 ---
 atproto/src/app/[locale]/guides/data-validation/en.mdx
@@ -1252,6 +851,9 @@ Here are some guidelines, by data type:
 ---
 atproto/src/app/[locale]/guides/faq/en.mdx
 ---
+import ListRecordsCallTs from './_snippets/list-records-call-ts.mdx'
+import ListRecordsHttp from './_snippets/list-records-http.mdx'
+
 export const header = {
   title: 'FAQ',
   description:
@@ -1286,33 +888,29 @@ We want engineers to feel comfortable using and creating new schemas, and we wan
 
 We looked very closely at using RDF but just didn't love the developer experience (DX) or the tooling it offered.
 
-## What is “XRPC,” and why not use ___?
+## What is "XRPC," and why not use ___?
 
 [XRPC](/specs/xrpc) is HTTP with some added conventions.
 
 XRPC uses [Lexicons](/guides/lexicon) to describe HTTP calls and maps them to `/xrpc/{methodId}`. For example, this API call:
 
-```typescript
-await api.com.atproto.repo.listRecords({
-  user: 'alice.com',
-  collection: 'app.bsky.feed.post'
-})
-```
+<ListRecordsCallTs />
 
 ...maps to:
 
-```text
-GET /xrpc/com.atproto.repo.listRecords
-  ?user=alice.com
-  &collection=app.bsky.feed.post
-```
+<ListRecordsHttp />
 
 Lexicons establish shared method id (`com.atproto.repo.listRecords`) and the expected query params, input body, and output body. By using Lexicons we get runtime checks on the inputs and outputs of the call, and can generate typed code like the API call example above.
+
 
 ---
 atproto/src/app/[locale]/guides/feeds/en.mdx
 ---
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@/components/mdx'
+import InstallLexServer from './_snippets/install-lex-server.mdx'
+import LexRouterTs from './_snippets/lex-router-ts.mdx'
+import FeedInterfaceGo from './_snippets/feed-interface-go.mdx'
+
 export const header = {
   title: 'Feeds',
   description: 'Creating and consuming custom feed generators',
@@ -1335,41 +933,14 @@ Because Feeds will provide their own XRPC endpoints, they should use the server 
     <TabPanel value="ts">
       Use the [lex-server](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex-server) package:
 
-      ```bash
-      npm install @atproto/lex-server
-      lex install app.bsky.feed.getFeed ...
-      lex build
-      ```
+      <InstallLexServer />
 
-      ```ts
-      import { LexRouter, LexError } from '@atproto/lex-server'
-      import { serve, upgradeWebSocket } from '@atproto/lex-server/nodejs'
-      import * as app from './lexicons/app.js'
-
-      const router = new LexRouter({ upgradeWebSocket })
-
-      // Add handlers here
-
-      const server = await serve(router, { port: 3000 })
-      console.log('Server listening on port 3000')
-      ```
+      <LexRouterTs />
     </TabPanel>
     <TabPanel value="go">
       In Go, you can implement HTTP endpoints manually:
 
-      ```go
-      type Feed interface {
-          GetPage(ctx context.Context, feed string, userDID string, limit int64, cursor string) (
-              feedPosts []*appbsky.FeedDefs_SkeletonFeedPost, newCursor *string, err error)
-          Describe(ctx context.Context) ([]appbsky.FeedDescribeFeedGenerator_Feed, error)
-      }
-
-      ...
-
-      router.GET("/.well-known/did.json", GetWellKnownDID)
-      router.GET("/xrpc/app.bsky.feed.getFeedSkeleton", GetFeedSkeleton)
-      router.GET("/xrpc/app.bsky.feed.describeFeedGenerator", DescribeFeeds)
-      ```
+      <FeedInterfaceGo />
 
       Refer to [https://github.com/jazware/go-bsky-feed-generator](https://github.com/jazware/go-bsky-feed-generator) for a community example.
     </TabPanel>
@@ -1392,7 +963,7 @@ For users, this should feel like visiting a page in the app. Once they subscribe
 
 ## Feed Generator Templates
 
-We maintain a Feed Generator example in TypeScript. Refer to the [tutorial](/guides/custom-feed-tutorial) to get started. 
+We maintain a Feed Generator example in TypeScript. Refer to the [tutorial](/guides/custom-feed-tutorial) to get started.
 
 There are also community-maintained implementations in [Python](https://github.com/MarshalX/bluesky-feed-generator) and [Ruby](https://github.com/mackuba/bluesky-feeds-rb).
 
@@ -1432,6 +1003,7 @@ Implementing Feed Feedback is optional, but can help improve user experience.
 - [Event Stream spec](/specs/event-stream)
 - [Sync spec](/specs/sync)
 - The [Microcosm](https://www.microcosm.blue/) community project maintains tools for working with AT records at scale without local mirroring.
+
 
 ---
 atproto/src/app/[locale]/guides/glossary/en.mdx
@@ -1559,6 +1131,16 @@ XRPC is [atproto's](#at-protocol) HTTP API. It stands for "Cross-organizational 
 ---
 atproto/src/app/[locale]/guides/go-oauth-cli-tutorial/en.mdx
 ---
+import S01 from './_snippets/01-install-go.mdx'
+import S02 from './_snippets/02-project-setup.mdx'
+import S03 from './_snippets/03-package-main.mdx'
+import S04 from './_snippets/04-run-part1-callback-client.mdx'
+import S05 from './_snippets/05-run-part2-login-flow.mdx'
+import S06 from './_snippets/06-run-part3-use-session.mdx'
+import S07 from './_snippets/07-helper-functions.mdx'
+import S08 from './_snippets/08-run-command.mdx'
+import S09 from './_snippets/09-output-example.mdx'
+
 export const header = {
   title: 'OAuth with Go Tutorial',
   description: 'Authenticate with atproto OAuth from a Go app',
@@ -1577,9 +1159,7 @@ You should have installed:
 
 On platforms supported by [homebrew](https://brew.sh/), you can install it with:
 
-```bash
-brew install go
-```
+<S01 />
 
 You should also have an atproto handle to test with.
 
@@ -1587,12 +1167,7 @@ You should also have an atproto handle to test with.
 
 Create a new Go module and install the [Go SDK](https://github.com/bluesky-social/indigo):
 
-```bash
-mkdir go-oauth-cli
-cd go-oauth-cli
-go mod init go-oauth-cli
-go get github.com/bluesky-social/indigo/atproto/auth/oauth
-```
+<S02 />
 
 That's it — the Go SDK includes everything you need for OAuth, including an in-memory session store for development.
 
@@ -1600,57 +1175,11 @@ That's it — the Go SDK includes everything you need for OAuth, including an in
 
 Create `main.go`. Start with the imports and the OAuth client setup:
 
-```go
-package main
-
-import (
-	"context"
-	"errors"
-	"fmt"
-	"log"
-	"net"
-	"net/http"
-	"net/url"
-	"os"
-	"os/exec"
-	"runtime"
-	"strings"
-
-	"github.com/bluesky-social/indigo/atproto/auth/oauth"
-)
-
-func main() {
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "Usage: go run main.go <your-handle>")
-		os.Exit(1)
-	}
-	handle := os.Args[1]
-
-	if err := run(context.Background(), handle); err != nil {
-		log.Fatal(err)
-	}
-}
-```
+<S03 />
 
 Now add the `run` function. First, set up a callback server on a random port, then configure the OAuth client:
 
-```go
-func run(ctx context.Context, handle string) error {
-	// Start the callback server on a random available port
-	callbackCh := make(chan url.Values, 1)
-	port, server, err := listenForCallback(ctx, callbackCh)
-	if err != nil {
-		return err
-	}
-	defer server.Close()
-
-	callbackURL := fmt.Sprintf("http://127.0.0.1:%d/callback", port)
-
-	// Create an OAuth client with localhost config and in-memory storage
-	config := oauth.NewLocalhostConfig(callbackURL, []string{"atproto"})
-	store := oauth.NewMemStore()
-	oauthClient := oauth.NewClientApp(&config, store)
-```
+<S04 />
 
 `NewLocalhostConfig` sets up a loopback client.
 
@@ -1664,27 +1193,7 @@ OAuth loopback works by using a special redirect URI (like `http://127.0.0.1:POR
 
 Continue the `run` function with the login flow. This resolves the handle, opens the browser, and waits for the callback:
 
-```go
-	// Start the OAuth flow
-	fmt.Printf("Logging in as %s...\n", handle)
-	authURL, err := oauthClient.StartAuthFlow(ctx, handle)
-	if err != nil {
-		return fmt.Errorf("starting auth flow: %w", err)
-	}
-
-	// Open the browser to the authorization URL
-	fmt.Printf("Opening browser...\n")
-	if !strings.HasPrefix(authURL, "https://") {
-		return fmt.Errorf("unexpected non-https auth URL")
-	}
-	if err := openBrowser(authURL); err != nil {
-		fmt.Printf("Could not open browser automatically.\nPlease visit: %s\n", authURL)
-	}
-
-	// Wait for the OAuth callback
-	fmt.Println("Waiting for authorization...")
-	params := <-callbackCh
-```
+<S05 />
 
 The flow works like this:
 
@@ -1696,38 +1205,7 @@ The flow works like this:
 
 Complete the `run` function by exchanging the callback for a session and making an authenticated API call:
 
-```go
-	// Exchange the authorization code for a session
-	sessData, err := oauthClient.ProcessCallback(ctx, params)
-	if err != nil {
-		return fmt.Errorf("processing callback: %w", err)
-	}
-	fmt.Printf("Logged in! DID: %s\n", sessData.AccountDID)
-
-	// Resume the session to get an API client
-	session, err := oauthClient.ResumeSession(ctx, sessData.AccountDID, sessData.SessionID)
-	if err != nil {
-		return fmt.Errorf("resuming session: %w", err)
-	}
-
-	// Fetch the user's session info to prove it works
-	client := session.APIClient()
-	var resp struct {
-		DID    string `json:"did"`
-		Handle string `json:"handle"`
-	}
-	if err := client.Get(ctx, "com.atproto.server.getSession", nil, &resp); err != nil {
-		return fmt.Errorf("fetching session: %w", err)
-	}
-
-	fmt.Printf("\nSession:\n")
-	fmt.Printf("  Handle: %s\n", resp.Handle)
-	fmt.Printf("  DID:    %s\n", resp.DID)
-	fmt.Printf("  Host:   %s\n", sessData.HostURL)
-
-	return nil
-}
-```
+<S06 />
 
 `ProcessCallback` exchanges the authorization code for tokens. `ResumeSession` wraps those tokens in a session that handles DPoP signing and token refresh automatically. `APIClient()` returns an HTTP client pre-configured with the user's credentials — you can use it to make any [XRPC](/specs/xrpc) call.
 
@@ -1735,44 +1213,7 @@ Complete the `run` function by exchanging the callback for a session and making 
 
 Add the callback server and browser-opening helpers:
 
-```go
-func listenForCallback(ctx context.Context, res chan url.Values) (int, *http.Server, error) {
-	listener, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		return 0, nil, err
-	}
-
-	mux := http.NewServeMux()
-	server := &http.Server{Handler: mux}
-
-	mux.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
-		res <- r.URL.Query()
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(200)
-		w.Write([]byte("<h1>Authorized! You can close this tab.</h1>"))
-		go server.Shutdown(ctx)
-	})
-
-	go func() {
-		if err := server.Serve(listener); !errors.Is(err, http.ErrServerClosed) {
-			log.Fatal(err)
-		}
-	}()
-
-	return listener.Addr().(*net.TCPAddr).Port, server, nil
-}
-
-func openBrowser(url string) error {
-	switch runtime.GOOS {
-	case "darwin":
-		return exec.Command("open", url).Run()
-	case "windows":
-		return exec.Command("cmd", "/c", "start", url).Run()
-	default:
-		return exec.Command("xdg-open", url).Run()
-	}
-}
-```
+<S07 />
 
 The callback server listens on `127.0.0.1:0`, which tells the OS to assign any available port. When the callback arrives, it sends the query parameters through a channel back to the main flow and shuts itself down.
 
@@ -1780,23 +1221,11 @@ The callback server listens on `127.0.0.1:0`, which tells the OS to assign any a
 
 Run your CLI tool, passing your handle as an argument:
 
-```bash
-go run main.go your-handle.bsky.social
-```
+<S08 />
 
 Your browser should open to a consent screen. After you approve, the CLI will print your session info:
 
-```
-Logging in as your-handle.bsky.social...
-Opening browser...
-Waiting for authorization...
-Logged in! DID: did:plc:xxxxx
-
-Session:
-  Handle: your-handle.bsky.social
-  DID:    did:plc:xxxxx
-  Host:   https://shimeji.us-east.host.bsky.network
-```
+<S09 />
 
 ## Conclusion
 
@@ -1890,6 +1319,10 @@ You should generally run separate Ozone instances for moderating the PDS (since 
 atproto/src/app/[locale]/guides/identity/en.mdx
 ---
 import {DescriptionList, Description} from '@/components/DescriptionList'
+import ValidIdentifiers from './_snippets/valid-identifiers.mdx'
+import DidResolutionDiagram from './_snippets/did-resolution-diagram.mdx'
+import ResolvePlcTs from './_snippets/resolve-plc-ts.mdx'
+import ResolveWebTs from './_snippets/resolve-web-ts.mdx'
 
 export const header = {
   title: 'Identity',
@@ -1914,28 +1347,11 @@ We use two interrelated forms of identifiers: _handles_ and _DIDs_. Handles are 
 
 The following are all valid user identifiers:
 
-```
-alice.host.com
-at://alice.host.com
-did:plc:bv6ggog3tya2z3vxsub7hnal
-```
+<ValidIdentifiers />
 
 The relationship between them can be visualized as:
 
-```
-┌──────────────────┐                 ┌───────────────┐
-│ DNS name         ├──resolves to──→ │ DID           │
-│ (alice.host.com) │                 │ (did:plc:...) │
-└──────────────────┘                 └─────┬─────────┘
-       ↑                                   │
-       │                               resolves to
-       │                                   │
-       │                                   ↓
-       │                            ┌───────────────┐
-       └───────────references───────┤ DID Document  │
-                                    │ {"id":"..."}  │
-                                    └───────────────┘
-```
+<DidResolutionDiagram />
 
 The DNS handle is a user-facing identifier — it should be displayed in user interfaces and promoted as a way to find users. Applications resolve handles to DIDs and then use the DID as the canonical identifier for accounts. Any DID can be rapidly resolved to a DID document which includes public keys and user services.
 
@@ -1947,7 +1363,7 @@ The DNS handle is a user-facing identifier — it should be displayed in user in
     <ul>
       <li>The handle associated with the DID.</li>
       <li>The signing key.</li>
-      <li>The URL of the user’s PDS.</li>
+      <li>The URL of the user's PDS.</li>
     </ul>
   </Description>
 </DescriptionList>
@@ -1986,14 +1402,7 @@ At first, all we know is `alice.pds.com`, so we look up the DNS TXT record `_atp
 
 Next we query the PLC directory for the DID, so that we can learn the hosting service's endpoint and the user's key material.
 
-```typescript
-await didPlc.resolve('did:plc:12345') /* => {
-  id: 'did:plc:12345',
-  alsoKnownAs: `https://alice.pds.com`,
-  verificationMethod: [...],
-  service: [{serviceEndpoint: 'https://pds.com', ...}]
-}*/
-```
+<ResolvePlcTs />
 
 We can now communicate with `https://pds.com` to access Alice's data.
 
@@ -2015,19 +1424,20 @@ We can resolve the handle the same way, resolving `_atproto.alice.com`, which re
 
 Which we then resolve:
 
-```typescript
-await didWeb.resolve('did:web:alice.com') /* => {
-  id: 'did:web:alice.com',
-  alsoKnownAs: `https://alice.com`,
-  verificationMethod: [...],
-  service: [{serviceEndpoint: 'https://alice.com', ...}]
-}*/
-```
+<ResolveWebTs />
 
 
 ---
 atproto/src/app/[locale]/guides/images-and-video/en.mdx
 ---
+import UploadBlobTs from './_snippets/upload-blob-ts.mdx'
+import UploadBlobResponseTs from './_snippets/upload-blob-response-ts.mdx'
+import PostWithEmbedTs from './_snippets/post-with-embed-ts.mdx'
+import UploadBlobGo from './_snippets/upload-blob-go.mdx'
+import UploadBlobResponseGo from './_snippets/upload-blob-response-go.mdx'
+import PostWithEmbedGo from './_snippets/post-with-embed-go.mdx'
+import CdnUrlExample from './_snippets/cdn-url-example.mdx'
+
 export const header = {
   title: 'Images and Video',
   description: 'Working with image and video blobs',
@@ -2044,102 +1454,22 @@ export const header = {
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-    ```typescript
-    const imageBytes = fs.readFileSync('./photo.jpg')
+    <UploadBlobTs />
 
-    const uploadRes = await client.call(com.atproto.repo.uploadBlob, {
-      encoding: 'image/jpeg',
-      data: imageBytes,
-    })
-
-    const blob = uploadRes.data.blob
-    console.log(JSON.stringify(blob, null, 2))
-    ```
-
-    ```
-    {
-      "$type": "blob",
-      "ref": {
-        "$link": "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku"
-      },
-      "mimeType": "image/jpeg",
-      "size": 354028
-    }
-    ```
+    <UploadBlobResponseTs />
 
     Blob files are uploaded and distributed separately from records:
 
-    ```typescript
-    await client.create(app.bsky.feed.post, {
-      text: 'Using a previously uploaded image',
-      createdAt: new Date().toISOString(),
-      embed: {
-        $type: 'app.bsky.embed.images',
-        images: [
-          {
-            alt: 'A photo uploaded earlier',
-            image: blobRef,
-            aspectRatio: { width: 1200, height: 800 },
-          },
-        ],
-      },
-    })
-    ```
+    <PostWithEmbedTs />
     </TabPanel>
     <TabPanel value="go">
-    ```go
-    imgBytes, err := os.ReadFile("./photo.jpg")
-    if err != nil {
-      panic(err)
-    }
+    <UploadBlobGo />
 
-    uploadResp, err := comatproto.RepoUploadBlob(ctx, xrpcc, bytes.NewReader(imgBytes))
-    if err != nil {
-      panic(err)
-    }
-
-    fmt.Println(string(json.MarshalIndent(uploadResp, "", "  ")))
-    ```
-
-    ```
-    {
-      "blob": {
-        "$type": "blob",
-        "ref": {
-          "$link": "bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetojuzjevtenxquvyku"
-        },
-        "mimeType": "image/jpeg",
-        "size": 354028
-      }
-    }
-    ```
+    <UploadBlobResponseGo />
 
     Blob files are uploaded and distributed separately from records:
 
-    ```go
-    post := &bsky.FeedPost{
-        Text:      "Using a previously uploaded image",
-        CreatedAt: time.Now().UTC().Format(time.RFC3339),
-        Embed: &bsky.FeedPost_Embed{
-          EmbedImages: &bsky.EmbedImages{
-            Images: []*bsky.EmbedImages_Image{
-              {
-                Alt: "A photo uploaded earlier",
-                Image: &lexutil.LexBlob{
-                  Ref:      uploadResp.Blob.Ref,
-                  MimeType: http.DetectContentType(imgBytes),
-                  Size:     uploadResp.Blob.Size,
-                },
-                AspectRatio: &bsky.EmbedDefs_AspectRatio{
-                  Width:  1200,
-                  Height: 800,
-                },
-              },
-            },
-          },
-        },
-      }
-    ```
+    <PostWithEmbedGo />
     </TabPanel>
   </TabPanels>
 </TabGroup>
@@ -2150,9 +1480,7 @@ You can see what an existing Blob record looks like in [atproto.at](https://atpr
 
 And here's what the URL to that beautiful blob looks like when served from a CDN:
 
-```
-https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:ewvi7nxzyoun6zhxrhs64oiz/bafkreiebtvblnu4jwu66y57kakido7uhiigenznxdlh6r6wiswblv5m4py
-```
+<CdnUrlExample />
 
 Note the URL structure: the blob is served from the CDN, but the path includes the DID of the account that uploaded it, as well as the CID of the blob itself.
 
@@ -2176,9 +1504,15 @@ It is generally recommended to use an object storage implementation for working 
 - [Blob Specs](/specs/blob)
 - [Streamplace](https://stream.place/docs/) provides an implementation and related Lexicon for video streaming on atproto.
 
+
 ---
 atproto/src/app/[locale]/guides/installing-lexicons/en.mdx
 ---
+import NpmInstall from './_snippets/npm-install.mdx'
+import LexInstallLexicons from './_snippets/lex-install-lexicons.mdx'
+import LexBuild from './_snippets/lex-build.mdx'
+import ClientUsageTs from './_snippets/client-usage-ts.mdx'
+
 export const header = {
   title: 'Installing Lexicons',
   description: 'Using Lexicons in your dev environment',
@@ -2192,15 +1526,11 @@ Lexicon schemas enable code generation with types and validation. Our SDKs each 
 
 First, install the `@atproto/lex` package:
 
-```bash
-npm install -g @atproto/lex
-```
+<NpmInstall />
 
 This provides the `lex` command, which you can use to install Lexicons into a local project:
 
-```bash
-lex install app.bsky.feed.post app.bsky.feed.like
-```
+<LexInstallLexicons />
 
 This creates:
 
@@ -2209,24 +1539,11 @@ This creates:
 
 Finally, generate TypeScript schemas from the installed Lexicons:
 
-```bash
-lex build
-```
+<LexBuild />
 
 This generates TypeScript files in `./src/lexicons`. Now, you'll have these functions available to use in your code:
 
-```tsx
-import { Client } from '@atproto/lex'
-import * as app from './lexicons/app.js'
-
-// Create an unauthenticated client instance
-const client = new Client('https://public.api.bsky.app')
-
-// Start making requests using generated schemas
-const response = await client.call(app.bsky.actor.getProfile, {
-  actor: 'pfrazee.com',
-})
-```
+<ClientUsageTs />
 
 For more guidance on working with `lex`, refer to the [readme](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex#lexicon-schemas).
 
@@ -2236,10 +1553,11 @@ For more guidance on working with `lex`, refer to the [readme](https://github.co
 - [Lexicon Style Guide](/guides/lexicon-style-guide)
 - [Lexicon Specs](/specs/lexicon)
 
+
 ---
 atproto/src/app/[locale]/guides/labels/en.mdx
 ---
-import {Container} from "@/components/Container"
+import LabelObject from './_snippets/label-object.mdx'
 
 export const header = {
   title: 'Labels',
@@ -2260,23 +1578,7 @@ Developers building client applications should understand how to apply labels an
 
 A label is published with the following information:
 
-```markdown
-{
-  /** DID of the actor who created this label. */
-  src: string
-  /** AT URI of the record, repository (account), or other resource that this label applies to. */
-  uri: string
-  /** Optionally, CID specifying the specific version of 'uri' resource this label applies to. */
-  cid?: string
-  /** The short string name of the value or type of this label. */
-  val: string
-  /** If true, this is a negation label, overwriting a previous label. */
-  neg?: boolean
-  /** Timestamp when this label was created. */
-  cts: string
-}
-
-```
+<LabelObject />
 
 ## **Label values**
 
@@ -2354,6 +1656,7 @@ For more information, see the [Labels](/specs/label) spec.
 - [Creating a labeler](/guides/creating-a-labeler)
 - [Using Ozone](/guides/using-ozone)
 - [Label Specs](/specs/label)
+
 
 ---
 atproto/src/app/[locale]/guides/lexicon-style-guide/en.mdx
@@ -2489,6 +1792,15 @@ Design recommendations to make schemas flexible to future evolution and extensio
 ---
 atproto/src/app/[locale]/guides/lexicon/en.mdx
 ---
+import NsidApiExamples from './_snippets/nsid-api-examples.mdx'
+import NsidRecordExamples from './_snippets/nsid-record-examples.mdx'
+import SdkCallTs from './_snippets/sdk-call-ts.mdx'
+import HttpGetExample from './_snippets/http-get-example.mdx'
+import SchemaQueryExample from './_snippets/schema-query-example.mdx'
+import FollowRecordExample from './_snippets/follow-record-example.mdx'
+import FollowUrlExample from './_snippets/follow-url-example.mdx'
+import FollowSchemaExample from './_snippets/follow-schema-example.mdx'
+
 export const header = {
   title: 'Lexicons',
   description: 'A schema-driven interoperability framework',
@@ -2502,21 +1814,11 @@ Lexicon is a schema system used to define RPC methods and record types. Every Le
 
 The schemas are identified using [NSIDs](/specs/nsid), a reverse-DNS format. Here are some example API endpoints:
 
-```
-com.atproto.repo.getRecord
-com.atproto.identity.resolveHandle
-app.bsky.feed.getPostThread
-app.bsky.notification.listNotifications
-```
+<NsidApiExamples />
 
 And here are some example record types:
 
-```
-app.bsky.feed.post
-app.bsky.feed.like
-app.bsky.actor.profile
-app.bsky.graph.follow
-```
+<NsidRecordExamples />
 
 The schema types, definition language, and validation constraints are described in the [Lexicon specification](/specs/lexicon), and representations in JSON and CBOR are described in the [Data Model specification](/specs/data-model).
 
@@ -2524,90 +1826,31 @@ The schema types, definition language, and validation constraints are described 
 
 Atproto HTTP API methods each scope and implement a particular set of Lexicons. The AT Protocol's API system, [XRPC](/specs/xrpc), is essentially a thin wrapper around HTTPS. For example, a call to:
 
-```tsx
-client.call(app.bsky.actor.getProfile, {})
-```
+<SdkCallTs />
 
 is actually just an HTTP request:
 
-```
-GET /xrpc/com.example.getProfile
-```
+<HttpGetExample />
 
 The schemas establish valid query parameters, request bodies, and response bodies.
 
-```json
-{
-  "lexicon": 1,
-  "id": "com.example.getProfile",
-  "defs": {
-    "main": {
-      "type": "query",
-      "parameters": {
-        "type": "params",
-        "required": ["user"],
-        "properties": { "user": { "type": "string" } }
-      },
-      "output": {
-        "encoding": "application/json",
-        "schema": {
-          "type": "object",
-          "required": ["did", "name"],
-          "properties": {
-            "did": { "type": "string" },
-            "name": { "type": "string" },
-            "displayName": { "type": "string", "maxLength": 64 },
-            "description": { "type": "string", "maxLength": 256 }
-          }
-        }
-      }
-    }
-  }
-}
-```
+<SchemaQueryExample />
 
 ## Record types
 
-Schemas define the possible values of a record. Every record has a “type” which maps to a schema and also establishes the URL of a record.
+Schemas define the possible values of a record. Every record has a "type" which maps to a schema and also establishes the URL of a record.
 
-For instance, this “follow” record:
+For instance, this "follow" record:
 
-```json
-{
-  "$type": "com.example.follow",
-  "subject": "at://did:plc:12345",
-  "createdAt": "2022-10-09T17:51:55.043Z"
-}
-```
+<FollowRecordExample />
 
 …would have a URL like:
 
-```
-at://bob.com/com.example.follow/12345
-```
+<FollowUrlExample />
 
 …and a schema like:
 
-```json
-{
-  "lexicon": 1,
-  "id": "com.example.follow",
-  "defs": {
-    "main": {
-      "type": "record",
-      "description": "A social follow",
-      "record": {
-        "type": "object",
-        "required": ["subject", "createdAt"],
-        "properties": {
-          "subject": { "type": "string" },
-          "createdAt": { "type": "string", "format": "datetime" }
-        }
-      }
-    }
-  }
-}
-```
+<FollowSchemaExample />
 
 ## Versioning
 
@@ -2623,6 +1866,7 @@ Lexicons can be [installed locally](/guides/installing-lexicons) for each of our
 - [Publishing Lexicons](/guides/publishing-lexicons)
 - [Lexicon Style Guide](/guides/lexicon-style-guide)
 - [Lexicon Specs](/specs/lexicon)
+
 
 ---
 atproto/src/app/[locale]/guides/moderation/en.mdx
@@ -2668,6 +1912,15 @@ Learn all about the types and format of moderation [labels](/guides/labels). The
 ---
 atproto/src/app/[locale]/guides/oauth-cli-tutorial/en.mdx
 ---
+import S01 from './_snippets/01-install-node.mdx'
+import S02 from './_snippets/02-project-setup.mdx'
+import S03 from './_snippets/03-lex-install.mdx'
+import S04 from './_snippets/04-oauth-client-setup.mdx'
+import S05 from './_snippets/05-login-function.mdx'
+import S06 from './_snippets/06-main-function.mdx'
+import S07 from './_snippets/07-run-cli.mdx'
+import S08 from './_snippets/08-output-example.mdx'
+
 export const header = {
   title: 'OAuth with Node Tutorial',
   description: 'Authenticate with atproto OAuth from Node.js',
@@ -2686,9 +1939,7 @@ You should have installed:
 
 On platforms supported by [homebrew](https://brew.sh/), you can install it with:
 
-```bash
-brew install node
-```
+<S01 />
 
 You should also have an atproto handle to test with.
 
@@ -2696,21 +1947,11 @@ You should also have an atproto handle to test with.
 
 Create a new project directory and install the [SDK](https://www.npmjs.com/package/@atproto/lex) and other project dependencies:
 
-```bash
-mkdir oauth-cli
-cd oauth-cli
-npm init -y
-npm i -D typescript @types/node @atproto/oauth-client-node @atproto/lex open
-npx tsc --init --target ES2022 --module NodeNext --moduleResolution NodeNext --types node --strict --esModuleInterop --skipLibCheck --verbatimModuleSyntax false
-```
+<S02 />
 
 You'll also need the `lex` CLI tool installed globally, and the `app.bsky.actor.profile` Lexicon installed in this project to fetch the user's profile:
 
-```bash
-npm i -g @atproto/lex
-lex install app.bsky.actor.profile
-lex build
-```
+<S03 />
 
 This generates TypeScript types for the Lexicon in your project, which you'll use later to read the authenticated user's profile.
 
@@ -2720,34 +1961,7 @@ Create a new file at `src/index.ts`. This file will contain all of the code for 
 
 Start by importing the packages you'll need, and setting up the OAuth client:
 
-```ts
-import http from 'node:http'
-import { NodeOAuthClient, buildAtprotoLoopbackClientMetadata } from '@atproto/oauth-client-node'
-import type { NodeSavedSession, NodeSavedState } from '@atproto/oauth-client-node'
-import { Client } from '@atproto/lex'
-import open from 'open'
-import * as app from './lexicons/app.js'
-
-const stateStore = new Map<string, NodeSavedState>()
-const sessionStore = new Map<string, NodeSavedSession>()
-
-const oauthClient = new NodeOAuthClient({
-  clientMetadata: buildAtprotoLoopbackClientMetadata({
-    scope: 'atproto',
-    redirect_uris: ['http://127.0.0.1:3000/callback'],
-  }),
-  stateStore: {
-    async get(key: string) { return stateStore.get(key) },
-    async set(key: string, value: NodeSavedState) { stateStore.set(key, value) },
-    async del(key: string) { stateStore.delete(key) },
-  },
-  sessionStore: {
-    async get(key: string) { return sessionStore.get(key) },
-    async set(key: string, value: NodeSavedSession) { sessionStore.set(key, value) },
-    async del(key: string) { sessionStore.delete(key) },
-  },
-})
-```
+<S04 />
 
 The `NodeOAuthClient` manages the OAuth flow. `buildAtprotoLoopbackClientMetadata` configures it for local development using loopback.
 
@@ -2761,35 +1975,7 @@ The `stateStore` and `sessionStore` are in-memory Maps. The state store holds te
 
 Now add the login flow. You'll start a temporary HTTP server to receive the OAuth callback, then open the user's browser to authorize the app:
 
-```ts
-async function login(handle: string) {
-  // Start the OAuth flow — this resolves the handle, finds their auth
-  // server (PDS), and returns a URL to redirect the user to
-  const authUrl = await oauthClient.authorize(handle, { scope: 'atproto' })
-
-  // Wait for the callback from the authorization server
-  const params = await new Promise<URLSearchParams>((resolve, reject) => {
-    const server = http.createServer((req, res) => {
-      const url = new URL(req.url!, 'http://127.0.0.1:3000')
-      if (url.pathname === '/callback') {
-        res.writeHead(200, { 'Content-Type': 'text/html' })
-        res.end('<h1>Authorized! You can close this tab.</h1>')
-        resolve(url.searchParams)
-        server.close()
-      }
-    })
-    server.listen(3000, '127.0.0.1', () => {
-      console.log('Listening on http://127.0.0.1:3000/callback for OAuth redirect...')
-      open(authUrl.toString())
-    })
-    server.on('error', reject)
-  })
-
-  // Exchange the authorization code for a session
-  const { session } = await oauthClient.callback(params)
-  return session
-}
-```
+<S05 />
 
 The flow works like this:
 
@@ -2802,38 +1988,7 @@ The flow works like this:
 
 With the session in hand, you can create a lex `Client` to interact with the AT Protocol. Add a `main()` function that ties it all together:
 
-```ts
-async function main() {
-  const handle = process.argv[2]
-  if (!handle) {
-    console.error('Usage: npx tsx src/index.ts <your-handle>')
-    process.exit(1)
-  }
-
-  console.log(`Logging in as ${handle}...`)
-  const session = await login(handle)
-  console.log(`Logged in! DID: ${session.did}`)
-
-  // Create a lex Client with the authenticated session
-  const client = new Client(session)
-
-  // Fetch the user's profile
-  const profile = await client.get(app.bsky.actor.profile, {
-    repo: session.did,
-  })
-
-  console.log('\nProfile:')
-  console.log(`  Handle: ${handle}`)
-  console.log(`  DID: ${session.did}`)
-  console.log(`  Display name: ${profile.value?.displayName ?? '(not set)'}`)
-  console.log(`  Description: ${profile.value?.description ?? '(not set)'}`)
-}
-
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
-```
+<S06 />
 
 The `Client` from `@atproto/lex` accepts the OAuth session directly — the same way it accepts a `PasswordSession` in the [Build an Agent tutorial](/guides/bot-tutorial). From here you can `.get()`, `.list()`, `.create()`, and `.call()` any installed Lexicon.
 
@@ -2841,23 +1996,11 @@ The `Client` from `@atproto/lex` accepts the OAuth session directly — the same
 
 Run your CLI tool with `npx tsx`, passing your handle as an argument:
 
-```bash
-npx tsx src/index.ts your-handle.bsky.social
-```
+<S07 />
 
 Your browser should open to a consent screen. After you approve, the CLI will print your profile:
 
-```
-Logging in as your-handle.bsky.social...
-Listening on http://127.0.0.1:3000/callback for OAuth redirect...
-Logged in! DID: did:plc:xxxxx
-
-Profile:
-  Handle: your-handle.bsky.social
-  DID: did:plc:xxxxx
-  Display name: Your Name
-  Description: Your bio here
-```
+<S08 />
 
 ## Conclusion
 
@@ -2962,6 +2105,33 @@ import {Container} from "@/components/Container"
 import workingauth from "./authentication-working.png"
 import starter from "./nextjs-starter.png"
 import metadata from "./client-metadata.png"
+import S01 from './_snippets/01-install-brew.mdx'
+import S02 from './_snippets/02-create-next-app.mdx'
+import S03 from './_snippets/03-pnpm-add-oauth-client.mdx'
+import S04 from './_snippets/04-pnpm-dev.mdx'
+import S05 from './_snippets/05-lib-auth-client.mdx'
+import S06 from './_snippets/06-lib-auth-session.mdx'
+import S07 from './_snippets/07-oauth-login-route.mdx'
+import S08 from './_snippets/08-oauth-callback-route.mdx'
+import S09 from './_snippets/09-oauth-logout-route.mdx'
+import S10 from './_snippets/10-oauth-client-metadata-route.mdx'
+import S11 from './_snippets/11-login-form.mdx'
+import S12 from './_snippets/12-logout-button.mdx'
+import S13 from './_snippets/13-app-page.mdx'
+import S14 from './_snippets/14-pnpm-workspace-yaml.mdx'
+import S15 from './_snippets/15-pnpm-add-sqlite.mdx'
+import S16 from './_snippets/16-next-config.mdx'
+import S17 from './_snippets/17-lib-db-index.mdx'
+import S18 from './_snippets/18-lib-db-migrations.mdx'
+import S19 from './_snippets/19-scripts-migrate.mdx'
+import S20 from './_snippets/20-package-json-migrate.mdx'
+import S21 from './_snippets/21-client-ts-db-stores.mdx'
+import S22 from './_snippets/22-jwks-route.mdx'
+import S23 from './_snippets/23-client-ts-production.mdx'
+import S24 from './_snippets/24-scripts-gen-key.mdx'
+import S25 from './_snippets/25-package-json-gen-key.mdx'
+import S26 from './_snippets/26-env-vars.mdx'
+import S27 from './_snippets/27-scope-constant.mdx'
 
 export const header = {
   title: 'OAuth with NextJS Tutorial',
@@ -2984,30 +2154,21 @@ You should have installed:
 
 On platforms supported by [homebrew](https://brew.sh/), you can install these with:
 
-```bash
-brew install node pnpm
-```
+<S01 />
 
 ## Part 1: Project Setup
 
 You'll start by creating a new Next.js project using the `create-next-app` command.
 
-```bash
-npx create-next-app@latest my-app --yes
-cd my-app
-```
+<S02 />
 
 Next, add the `oauth-client-node` package from the atproto ecosystem, which provides OAuth client functionality.
 
-```bash
-pnpm add @atproto/oauth-client-node
-```
+<S03 />
 
 That's all you need to get started! You can now run the development server with:
 
-```bash
-pnpm dev
-```
+<S04 />
 
 Navigate to your app in a browser at [http://127.0.0.1:3000](http://127.0.0.1:3000).
 
@@ -3033,65 +2194,7 @@ To do this, you'll implement a [confidential client](/specs/oauth#types-of-clien
 
 First, create `lib/auth/client.ts`:
 
-```typescript
-import {
-  NodeOAuthClient,
-  buildAtprotoLoopbackClientMetadata,
-} from "@atproto/oauth-client-node";
-import type {
-  NodeSavedSession,
-  NodeSavedState,
-} from "@atproto/oauth-client-node";
-
-export const SCOPE = "atproto";
-
-// Use globalThis to persist across Next.js hot reloads
-const globalAuth = globalThis as unknown as {
-  stateStore: Map<string, NodeSavedState>;
-  sessionStore: Map<string, NodeSavedSession>;
-};
-globalAuth.stateStore ??= new Map();
-globalAuth.sessionStore ??= new Map();
-
-let client: NodeOAuthClient | null = null;
-
-export async function getOAuthClient(): Promise<NodeOAuthClient> {
-  if (client) return client;
-
-  client = new NodeOAuthClient({
-    clientMetadata: buildAtprotoLoopbackClientMetadata({
-      scope: SCOPE,
-      redirect_uris: ["http://127.0.0.1:3000/oauth/callback"],
-    }),
-  
-    stateStore: {
-      async get(key: string) {
-        return globalAuth.stateStore.get(key);
-      },
-      async set(key: string, value: NodeSavedState) {
-        globalAuth.stateStore.set(key, value);
-      },
-      async del(key: string) {
-        globalAuth.stateStore.delete(key);
-      },
-    },
-
-    sessionStore: {
-      async get(key: string) {
-        return globalAuth.sessionStore.get(key);
-      },
-      async set(key: string, value: NodeSavedSession) {
-        globalAuth.sessionStore.set(key, value);
-      },
-      async del(key: string) {
-        globalAuth.sessionStore.delete(key);
-      },
-    },
-  });
-
-  return client;
-}
-```
+<S05 />
 
 `stateStore` is temporary storage using during the OAuth flow; `sessionStore` is persistent storage keyed by a user's DID. The `globalThis` pattern is a standard Next.js technique for persisting data across hot module reloads in development. Without this, the in-memory stores would be wiped every time you edit a file.
 
@@ -3103,143 +2206,25 @@ There's no way around it — this section of the tutorial is pretty dry! You'll 
 
 Next, create `lib/auth/session.ts` to manage user sessions:
 
-```typescript
-import { cookies } from "next/headers";
-import { getOAuthClient } from "./client";
-import type { OAuthSession } from "@atproto/oauth-client-node";
-
-export async function getSession(): Promise<OAuthSession | null> {
-  const did = await getDid();
-  if (!did) return null;
-
-  try {
-    const client = await getOAuthClient();
-    return await client.restore(did);
-  } catch {
-    return null;
-  }
-}
-
-export async function getDid(): Promise<string | null> {
-  const cookieStore = await cookies();
-  return cookieStore.get("did")?.value ?? null;
-}
-```
+<S06 />
 
 Then, create `app/oauth/login/route.ts`. This route initiates the login flow. You only need the user's handle — with it, you can resolve the user's Authorization Server (their PDS) and redirect them there:
 
-```typescript
-import { NextRequest, NextResponse } from "next/server";
-import { getOAuthClient, SCOPE } from "@/lib/auth/client";
-
-export async function POST(request: NextRequest) {
-  try {
-    const { handle } = await request.json();
-
-    if (!handle || typeof handle !== "string") {
-      return NextResponse.json(
-        { error: "Handle is required" },
-        { status: 400 }
-      );
-    }
-
-    const client = await getOAuthClient();
-
-    // Resolves handle, finds their auth server, returns authorization URL
-    const authUrl = await client.authorize(handle, {
-      scope: SCOPE,
-    });
-
-    return NextResponse.json({ redirectUrl: authUrl.toString() });
-  } catch (error) {
-    console.error("OAuth login error:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Login failed" },
-      { status: 500 }
-    );
-  }
-}
-```
+<S07 />
 
 After a user approves the authorization consent screen, they'll be redirected to a callback route. Here, you'll exchange the code from the redirect for actual credentials, then set a cookie for the user's DID. Create `app/oauth/callback/route.ts`:
 
-```typescript
-import { NextRequest, NextResponse } from "next/server";
-import { getOAuthClient } from "@/lib/auth/client";
-
-const PUBLIC_URL = process.env.PUBLIC_URL || "http://127.0.0.1:3000";
-
-export async function GET(request: NextRequest) {
-  try {
-    const params = request.nextUrl.searchParams;
-    const client = await getOAuthClient();
-
-    // Exchange code for session
-    const { session } = await client.callback(params);
-
-    const response = NextResponse.redirect(new URL("/", PUBLIC_URL));
-
-    // Set DID cookie
-    response.cookies.set("did", session.did, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: "/",
-    });
-
-    return response;
-  } catch (error) {
-    console.error("OAuth callback error:", error);
-    return NextResponse.redirect(new URL("/?error=login_failed", PUBLIC_URL));
-  }
-}
-```
+<S08 />
 
 `PUBLIC_URL` falls back to `127.0.0.1:3000` to ensure you always redirect to the correct host. This avoids cookie issues that arise from `localhost` vs `127.0.0.1` mismatches.
 
 Next, you should also create a logout route at `app/oauth/logout/route.ts` to clear the user's session:
 
-```typescript
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { getOAuthClient } from "@/lib/auth/client";
-
-export async function POST() {
-  try {
-    const cookieStore = await cookies();
-    const did = cookieStore.get("did")?.value;
-
-    if (did) {
-      const client = await getOAuthClient();
-      await client.revoke(did);
-    }
-
-    cookieStore.delete("did");
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Logout error:", error);
-    const cookieStore = await cookies();
-    cookieStore.delete("did");
-    return NextResponse.json({ success: true });
-  }
-}
-```
+<S09 />
 
 Finally, you'll make one last route, to expose the `oauth-client-metadata.json` at a well-known URL. This is [used in atproto OAuth](/specs/oauth#clients) to discover client configuration. Create `app/oauth-client-metadata.json/route.ts`:
 
-```typescript
-import { getOAuthClient } from "@/lib/auth/client";
-import { NextResponse } from "next/server";
-
-// The URL of this endpoint IS your client_id
-// Authorization servers fetch this to learn about your app
-
-export async function GET() {
-  const client = await getOAuthClient();
-  return NextResponse.json(client.clientMetadata);
-}
-```
+<S10 />
 
 You can visit http://127.0.0.1:3000/oauth-client-metadata.json to see your client configuration.
 
@@ -3249,150 +2234,21 @@ You can visit http://127.0.0.1:3000/oauth-client-metadata.json to see your clien
 
 Now you just need to add a few forms. Create `components/LoginForm.tsx`:
 
-```tsx
-"use client";
-
-import { useState } from "react";
-
-export function LoginForm() {
-  const [handle, setHandle] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch("/oauth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handle }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Login failed");
-      }
-
-      // Redirect to authorization server
-      window.location.href = data.redirectUrl;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
-      setLoading(false);
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="handle" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-          Handle
-        </label>
-        <input
-          id="handle"
-          type="text"
-          value={handle}
-          onChange={(e) => setHandle(e.target.value)}
-          placeholder="user.example.com"
-          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-          disabled={loading}
-        />
-      </div>
-
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-
-      <button
-        type="submit"
-        disabled={loading || !handle}
-        className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? "Signing in..." : "Sign in"}
-      </button>
-    </form>
-  );
-}
-```
+<S11 />
 
 Do the same for `components/LogoutButton.tsx`:
 
-```tsx
-"use client";
-
-import { useRouter } from "next/navigation";
-
-export function LogoutButton() {
-  const router = useRouter();
-
-  async function handleLogout() {
-    await fetch("/oauth/logout", { method: "POST" });
-    router.refresh();
-  }
-
-  return (
-    <button
-      onClick={handleLogout}
-      className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-    >
-      Sign out
-    </button>
-  );
-}
-```
+<S12 />
 
 And, finally, replace the starter `app/page.tsx` to use these components and show the user's DID when logged in:
 
-```tsx
-import { getSession } from "@/lib/auth/session";
-import { LoginForm } from "@/components/LoginForm";
-import { LogoutButton } from "@/components/LogoutButton";
-
-export default async function Home() {
-  const session = await getSession();
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-      <main className="w-full max-w-md mx-auto p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-            AT Protocol OAuth
-          </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Sign in with your AT Protocol account
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-          {session ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Signed in as{" "}
-                  <span className="font-mono">{session.did}</span>
-                </p>
-                <LogoutButton />
-              </div>
-              <p className="text-green-600">Authentication working!</p>
-            </div>
-          ) : (
-            <LoginForm />
-          )}
-        </div>
-      </main>
-    </div>
-  );
-}
-```
+<S13 />
 
 At this point, you should be able to test the OAuth flow!
 
 If your app isn't already running from Part 1, start it with:
 
-```bash
-pnpm dev
-```
+<S04 />
 
 Then:
 1. Navigate to your app in a browser at [http://127.0.0.1:3000](http://127.0.0.1:3000).
@@ -3413,199 +2269,38 @@ The in-memory approach used so far works for local development, but for producti
 <Note>
 If you're using `pnpm` as a package manager as suggeseted here, you should create a file called `pnpm-workspace.yaml` in the root of your project with the following content to ensure `better-sqlite3` is built correctly in the next step:
 
-```
-onlyBuiltDependencies:
-  - better-sqlite3
-```
+<S14 />
 </Note>
 
-```bash
-pnpm add better-sqlite3 kysely
-pnpm add -D @types/better-sqlite3 tsx
-```
+<S15 />
 
 Next, replace the contents of `next.config.ts` to use `better-sqlite3` server-side:
 
-```typescript
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  serverExternalPackages: ["better-sqlite3"],
-};
-
-export default nextConfig;
-```
+<S16 />
 
 Then, add the actual database connection in `lib/db/index.ts`:
 
-```typescript
-import Database from "better-sqlite3";
-import { Kysely, SqliteDialect } from "kysely";
-
-const DATABASE_PATH = process.env.DATABASE_PATH || "app.db";
-
-let _db: Kysely<DatabaseSchema> | null = null;
-
-export const getDb = (): Kysely<DatabaseSchema> => {
-  if (!_db) {
-    const sqlite = new Database(DATABASE_PATH);
-    sqlite.pragma("journal_mode = WAL");
-
-    _db = new Kysely<DatabaseSchema>({
-      dialect: new SqliteDialect({ database: sqlite }),
-    });
-  }
-  return _db;
-};
-
-export interface DatabaseSchema {
-  auth_state: AuthStateTable;
-  auth_session: AuthSessionTable;
-}
-
-interface AuthStateTable {
-  key: string;
-  value: string;
-}
-
-interface AuthSessionTable {
-  key: string;
-  value: string;
-}
-```
+<S17 />
 
 Next, create the "migrations" that you'll run to populate the database schema. Create `lib/db/migrations.ts`:
 
-```typescript
-import { Kysely, Migration, Migrator } from "kysely";
-import { getDb } from ".";
-
-const migrations: Record<string, Migration> = {
-  "001": {
-    async up(db: Kysely<unknown>) {
-      await db.schema
-        .createTable("auth_state")
-        .addColumn("key", "text", (col) => col.primaryKey())
-        .addColumn("value", "text", (col) => col.notNull())
-        .execute();
-
-      await db.schema
-        .createTable("auth_session")
-        .addColumn("key", "text", (col) => col.primaryKey())
-        .addColumn("value", "text", (col) => col.notNull())
-        .execute();
-    },
-    async down(db: Kysely<unknown>) {
-      await db.schema.dropTable("auth_session").execute();
-      await db.schema.dropTable("auth_state").execute();
-    },
-  },
-};
-
-export function getMigrator() {
-  const db = getDb();
-  return new Migrator({
-    db,
-    provider: {
-      getMigrations: async () => migrations,
-    },
-  });
-}
-```
+<S18 />
 
 Next, create `scripts/migrate.ts` so the migrations can be run from the command line:
 
-```typescript
-import { getMigrator } from "@/lib/db/migrations";
-
-async function main() {
-  const migrator = getMigrator();
-  const { error } = await migrator.migrateToLatest();
-  if (error) throw error;
-  console.log("Migrations complete.");
-}
-
-main();
-```
+<S19 />
 
 Add those command line scrips to `package.json`:
 
-```json
-{
-  "scripts": {
-    "dev": "pnpm migrate && next dev",
-    "build": "next build",
-    "start": "pnpm migrate && next start",
-    "lint": "eslint",
-    // Add this line:
-    "migrate": "tsx scripts/migrate.ts",
-  }
-}
-```
+<S20 />
 
 And finally, update the `stateStore:` and `sessionStore` code blocks in `lib/auth/client.ts` to use the database. You'll need to import `getDb` at the top too:
 
-```typescript
-import { getDb } from "../db";
-
-...
-
-stateStore: {
-  async get(key: string) {
-    const db = getDb();
-    const row = await db
-      .selectFrom("auth_state")
-      .select("value")
-      .where("key", "=", key)
-      .executeTakeFirst();
-    return row ? JSON.parse(row.value) : undefined;
-  },
-  async set(key: string, value: NodeSavedState) {
-    const db = getDb();
-    const valueJson = JSON.stringify(value);
-    await db
-      .insertInto("auth_state")
-      .values({ key, value: valueJson })
-      .onConflict((oc) => oc.column("key").doUpdateSet({ value: valueJson }))
-      .execute();
-  },
-  async del(key: string) {
-    const db = getDb();
-    await db.deleteFrom("auth_state").where("key", "=", key).execute();
-  },
-},
-
-sessionStore: {
-  async get(key: string) {
-    const db = getDb();
-    const row = await db
-      .selectFrom("auth_session")
-      .select("value")
-      .where("key", "=", key)
-      .executeTakeFirst();
-    return row ? JSON.parse(row.value) : undefined;
-  },
-  async set(key: string, value: NodeSavedSession) {
-    const db = getDb();
-    const valueJson = JSON.stringify(value);
-    await db
-      .insertInto("auth_session")
-      .values({ key, value: valueJson })
-      .onConflict((oc) => oc.column("key").doUpdateSet({ value: valueJson }))
-      .execute();
-  },
-  async del(key: string) {
-    const db = getDb();
-    await db.deleteFrom("auth_session").where("key", "=", key).execute();
-  },
-}
-```
+<S21 />
 
 All set! You can Ctrl+C the dev server if it's running, then start it again with:
 
-```bash
-pnpm dev
-```
+<S04 />
 
 You should see "Migrations complete." and an `app.db` file created. Now this app will persist state and sessions across restarts.
 
@@ -3620,89 +2315,11 @@ You don't need your own domain name to test the app at a public URL. You can hos
 
 Create a `well-known` JWKS endpoint that advertises your client's public key at `app/.well-known/jwks.json/route.ts`:
 
-```typescript
-import { NextResponse } from "next/server";
-import { JoseKey } from "@atproto/oauth-client-node";
-
-// Serves the public keys for the OAuth client
-// Required for confidential clients using private_key_jwt authentication
-
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
-
-export async function GET() {
-  if (!PRIVATE_KEY) {
-    return NextResponse.json({ keys: [] });
-  }
-
-  const key = await JoseKey.fromJWK(JSON.parse(PRIVATE_KEY));
-  return NextResponse.json({
-    keys: [key.publicJwk],
-  });
-}
-```
+<S22 />
 
 Next, update `lib/auth/client.ts` once more to use the confidential client configuration when in production:
 
-```typescript
-import {
-    JoseKey,
-    Keyset,
-    NodeOAuthClient,
-    buildAtprotoLoopbackClientMetadata,
-} from "@atproto/oauth-client-node";
-import type {
-    NodeSavedSession,
-    NodeSavedState,
-    OAuthClientMetadataInput,
-} from "@atproto/oauth-client-node";
-import { getDb } from "../db";
-
-export const SCOPE = "atproto";
-
-let client: NodeOAuthClient | null = null;
-
-const PUBLIC_URL = process.env.PUBLIC_URL;
-const PRIVATE_KEY = process.env.PRIVATE_KEY;
-
-function getClientMetadata(): OAuthClientMetadataInput {
-    if (PUBLIC_URL) {
-        return {
-            client_id: `${PUBLIC_URL}/oauth-client-metadata.json`,
-            client_name: "OAuth Tutorial",
-            client_uri: PUBLIC_URL,
-            redirect_uris: [`${PUBLIC_URL}/oauth/callback`],
-            grant_types: ["authorization_code", "refresh_token"],
-            response_types: ["code"],
-            scope: SCOPE,
-            token_endpoint_auth_method: "private_key_jwt" as const,
-            token_endpoint_auth_signing_alg: "ES256" as const, // must match the alg in scripts/gen-key.ts
-            jwks_uri: `${PUBLIC_URL}/.well-known/jwks.json`,
-            dpop_bound_access_tokens: true,
-        };
-    } else {
-        return buildAtprotoLoopbackClientMetadata({
-            scope: SCOPE,
-            redirect_uris: ["http://127.0.0.1:3000/oauth/callback"],
-        });
-    }
-}
-
-async function getKeyset(): Promise<Keyset | undefined> {
-    if (PUBLIC_URL && PRIVATE_KEY) {
-        return new Keyset([await JoseKey.fromJWK(JSON.parse(PRIVATE_KEY))]);
-    } else {
-        return undefined;
-    }
-}
-
-export async function getOAuthClient(): Promise<NodeOAuthClient> {
-    if (client) return client;
-
-    client = new NodeOAuthClient({
-        clientMetadata: getClientMetadata(),
-        keyset: await getKeyset(),
-...
-```
+<S23 />
 
 This will serve a [client metadata document](/specs/oauth#client-id-metadata-document).
 
@@ -3712,35 +2329,15 @@ The `dpop_bound_access_tokens: true` setting enables [DPoP (Demonstrating Proof 
 
 Finally, you'll need to generate a private key for signing. Create a script for that in `scripts/gen-key.ts`:
 
-```typescript
-import { JoseKey } from "@atproto/oauth-client-node";
-
-async function main() {
-  const kid = Date.now().toString();
-  const key = await JoseKey.generate(["ES256"], kid);
-  console.log(JSON.stringify(key.privateJwk));
-};
-
-main();
-```
+<S24 />
 
 Add this script to `package.json`:
 
-```json
-{
-  "scripts": {
-    // Add this line:
-    "gen-key": "tsx scripts/gen-key.ts",
-  }
-}
-```
+<S25 />
 
 Run the script as `pnpm gen-key` and save the output. This will be `PRIVATE_KEY`, one of two environment variables needed for your deployment:
 
-```bash
-PRIVATE_KEY={"kty":"EC","kid":"...","alg":"ES256",...}
-PUBLIC_URL=https://your-app.example.com
-```
+<S26 />
 
 You can provide these as part of our Railway [deployment guide](https://github.com/bluesky-social/nextjs-oauth-tutorial/blob/main/RAILWAY_DEPLOY.md). Follow those steps, and this app should then work from a public URL just like our [demo instance](https://nextjs-oauth-tutorial.up.railway.app/).
 
@@ -3752,9 +2349,7 @@ By default, the app requests only the `atproto` scope. The `atproto` scope is re
 
 To change the requested scope, update the SCOPE constant in `lib/auth/client.ts`. It should be a space-delimited string:
 
-```typescript
-export const SCOPE = "atproto account:email repo:com.example.record";
-```
+<S27 />
 
 This constant is used in three places:
 
@@ -3765,6 +2360,7 @@ This constant is used in three places:
 By centralizing it in one constant, you only need to change it in one place. Now, when you log in to your app again, you'll be prompted to approve the additional scopes.
 
 Congratulations on completing this tutorial! You now have a solid Next.js foundation for building atproto apps with OAuth. From here, you can move on to our [**Statusphere Example App Tutorial**](/guides/statusphere-tutorial).
+
 
 ---
 atproto/src/app/[locale]/guides/overview/en.mdx
@@ -3855,6 +2451,13 @@ import oauth from "./oauth-only.png"
 import skyblur from "./skyblur-oauth.png"
 import granular from "./skyblur-granular.png"
 import lexicon from "./skyblur-lexicon.png"
+import OauthScopeMetadata from './_snippets/oauth-scope-metadata.mdx'
+import OauthAuthUrl from './_snippets/oauth-auth-url.mdx'
+import PermissionSetLexicon from './_snippets/permission-set-lexicon.mdx'
+import GoatLexLint from './_snippets/goat-lex-lint.mdx'
+import GoatLexNew from './_snippets/goat-lex-new.mdx'
+import GoatLexPublish from './_snippets/goat-lex-publish.mdx'
+import GoatLexResolve from './_snippets/goat-lex-resolve.mdx'
 
 export const header = {
   title: 'Permission Requests',
@@ -3874,24 +2477,11 @@ In general, it is best to use existing permission sets for cleaner UI, but you c
 
 When your app initiates an OAuth flow with an atproto identity provider, it can request specific permission sets by including them in the `scope` parameter of the authorization request. This should be supplied as a *space-separated list* in the [`oauth-client-metadata.json` file](/specs/oauth#clients) when registering your OAuth client:
 
-```
-{
-scope: "atproto rpc:app.bsky.feed.searchPosts?aud=* blob:*/*",
-...
-}
-```
+<OauthScopeMetadata />
 
 OAuth in AT uses [Pushed Authorization Requests](https://auth0.com/blog/what-are-oauth-push-authorization-requests-par/) (PAR). The client metadata file will be fetched dynamically during the session lifecycle, and the `scope` parameter in `oauth-client-metadata.json` *needs to match* the actual authorization HTTP request made by your app:
 
-```
-https://your-authorization-server.com/authorize?
-    client_id=1234567890&
-    redirect_uri=https://your-app/callback&
-    scope=atproto rpc:app.bsky.feed.searchPosts?aud=* blob:*/*
-    response_type=code&
-    audience=https://myapi&
-    state=1234567890
-```
+<OauthAuthUrl />
 
 You should try to only request enough permissions to cover the features your app needs. [Transition scopes](/specs/oauth#authorization-scopes) appear to grant permissions to create, update, or delete any of a user's AT records, including posts from other applications. In general, these broad permission requests should be avoided. This helps build trust with your users, and minimizes friction during the authorization process.
 
@@ -3929,36 +2519,7 @@ Full-featured client apps require a large number of granular permissions to func
 
 For example, your application could request a permission set like `include:com.example.authBasicFeatures?aud=did:web:api.example.com%23svc_appview`. This would resolve to a Lexicon that defines a set of permissions required for the app to function:
 
-```
-{
-  "lexicon": 1,
-  "id": "com.example.authBasicFeatures",
-  "defs": {
-    "main": {
-      "type": "permission-set",
-      "title": "Basic App Functionality",
-      "detail": "Creation of posts and interactions",
-      "permissions": [
-        {
-          "type": "permission",
-          "resource": "repo",
-          "collection": ["app.example.post"]
-        },
-        {
-          "type": "permission",
-          "resource": "rpc",
-          "inheritAud": true,
-          "lxm": [
-            "app.example.getFeed"
-            "app.example.getProfile",
-            ...
-          ]
-        },
-      ]
-    }
-  }
-}
-```
+<PermissionSetLexicon />
 
 Note the `auth` prefix in the `app.example.feed.authOnlyPost` and `com.example.authBasicFeatures` examples. This is a naming convention to indicate that the Lexicon is designed for use as a permission set.
 
@@ -3974,55 +2535,21 @@ The `blob:*/*` permission for image/video handling cannot be included in permiss
 
 You can use [`goat`](https://github.com/bluesky-social/goat) to create and publish Lexicons. Before publishing, `goat` can also be used to lint and validate your Lexicon. For example, pulling and linting `app.bsky.feed.post`:
 
-```bash
-$ goat lex pull app.bsky.feed.post
- 🟢 app.bsky.feed.post
-
-$ goat lex lint lexicons/app/bsky/feed/post.json
- 🟡 lexicons/app/bsky/feed/post.json
-    [unlimited-string]: no max length
-    [unlimited-string]: no max length
-error: linting issues detected
-```
+<GoatLexLint />
 
 Nobody's perfect 😊
 
 You can create a new Lexicon record with `goat lex new record`:
 
-```bash
-$ goat lex new record dev.project.thing
-```
+<GoatLexNew />
 
 Develop your Lexicon following the [style guide](/guides/lexicon-style-guide), and then eventually publish it with `goat lex publish`:
 
-```bash
-$ goat lex publish
- 🟢 dev.project.thing
-```
+<GoatLexPublish />
 
 After publishing a new Lexicon, you can verify that it is live with `goat lex resolve`:
 
-```bash
-$ goat lex resolve app.bsky.feed.post
-
-{
-  "$type": "com.atproto.lexicon.schema",
-  "defs": {
-    "entity": {
-      "description": "Deprecated: use facets instead.",
-      "properties": {
-        "index": {
-          "ref": "#textSlice",
-          "type": "ref"
-        },
-        "type": {
-          "description": "Expected values are 'mention' and 'link'.",
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-...
-```
+<GoatLexResolve />
 
 ## Revising Permission Sets
 
@@ -4060,7 +2587,7 @@ The *Skyblur* Lexicon permissions are defined and summarized differently:
   <Image src={lexicon} alt="" className="w-full max-w-md mx-auto" />
 </Container>
 
-This is all at the discretion of app developers and Lexicon designers. We provide a model for using different Lexicons side by side, and for each Lexicon to define its own permission sets and presentation. 
+This is all at the discretion of app developers and Lexicon designers. We provide a model for using different Lexicons side by side, and for each Lexicon to define its own permission sets and presentation.
 
 ## Further Reading and Resources
 
@@ -4075,6 +2602,11 @@ This is all at the discretion of app developers and Lexicon designers. We provid
 ---
 atproto/src/app/[locale]/guides/publishing-lexicons/en.mdx
 ---
+import BrewInstallGoat from './_snippets/brew-install-goat.mdx'
+import GoatLexPull from './_snippets/goat-lex-pull.mdx'
+import GoatLexNew from './_snippets/goat-lex-new.mdx'
+import GoatLexPublish from './_snippets/goat-lex-publish.mdx'
+
 export const header = {
   title: 'Publishing Lexicons',
   description: 'Sharing your lexicons with the world',
@@ -4091,34 +2623,19 @@ You can use [`goat`](https://github.com/bluesky-social/goat), our command line t
 
 `goat` can be installed from [Homebrew](https://formulae.brew.sh/formula/goat) on macOS and Linux:
 
-```shell
-brew install goat
-```
+<BrewInstallGoat />
 
 In a project directory, you can download some existing Lexicons, which will get saved as JSON files in `./lexicons/`:
 
-```markdown
-$ goat lex pull com.atproto.repo.strongRef com.atproto.moderation. app.bsky.actor.profile
- 🟢 com.atproto.repo.strongRef
- 🟢 com.atproto.moderation.defs
- 🟢 com.atproto.moderation.createReport
- 🟢 app.bsky.actor.profile
-```
+<GoatLexPull />
 
 You can also create a new Lexicon record with `goat lex new record`:
 
-```markdown
-$ goat lex new record dev.project.thing
-
-$ open ./lexicons/dev/project/thing.json
-```
+<GoatLexNew />
 
 And eventually publish it with `goat lex publish`:
 
-```markdown
-$ goat lex publish
- 🟢 dev.project.thing
-```
+<GoatLexPublish />
 
 <Note>
 Lexicons are published into *your own repository* like any other record. This means that you'll need to log in with `goat` when publishing! To do this, use `goat account login` or set the `GOAT_USERNAME` and `GOAT_PASSWORD` environment variables.
@@ -4132,9 +2649,22 @@ Refer to the [Lexicon Style Guide](/guides/lexicon-style-guide) for guidance on 
 - [Lexicon Style Guide](/guides/lexicon-style-guide)
 - [Lexicon Specs](/specs/lexicon)
 
+
 ---
 atproto/src/app/[locale]/guides/reading-data/en.mdx
 ---
+import ListRecordsTs from './_snippets/list-records-ts.mdx'
+import ListRecordsGo from './_snippets/list-records-go.mdx'
+import GetRecordTs from './_snippets/get-record-ts.mdx'
+import GetRecordGo from './_snippets/get-record-go.mdx'
+import ResolveHandleUrl from './_snippets/resolve-handle-url.mdx'
+import ResolveHandleResponse from './_snippets/resolve-handle-response.mdx'
+import ClientDidTs from './_snippets/client-did-ts.mdx'
+import UnauthenticatedClientTs from './_snippets/unauthenticated-client-ts.mdx'
+import GetProfileTs from './_snippets/get-profile-ts.mdx'
+import UnauthenticatedClientGo from './_snippets/unauthenticated-client-go.mdx'
+import GetProfileGo from './_snippets/get-profile-go.mdx'
+
 export const header = {
   title: 'Reading Data',
   description: 'Read AT Protocol Records',
@@ -4151,31 +2681,14 @@ export const header = {
     <TabPanel value="ts">
     You can read records from a user's data repository with `client.list()`:
 
-    ```tsx
-    const posts = await client.list(app.bsky.feed.post, {
-      limit: 10,
-      repo: 'alex.bsky.team',
-    })
-    ```
+    <ListRecordsTs />
 
-    Each Lexicon will have its own parameters; for `app.bsky.feed.post`, you can specify the `repo` (a user's handle or [DID](#did-resolution)) and a `limit` on the number of posts to return. 
+    Each Lexicon will have its own parameters; for `app.bsky.feed.post`, you can specify the `repo` (a user's handle or [DID](#did-resolution)) and a `limit` on the number of posts to return.
     </TabPanel>
     <TabPanel value="go">
     You can read posts from a user's data repository with `RepoListRecords()`:
 
-    ```go
-    resp, _ := comatproto.RepoListRecords(ctx, client,
-        "app.bsky.feed.post",  // lexicon
-        "",                    // cursor
-        10,                    // limit
-        "alex.bsky.team",      // handle or DID
-        false,                 // reverse
-    )
-
-    for _, record := range resp.Records {
-        fmt.Printf("Record: %s\n", record.Uri)
-    }
-    ```
+    <ListRecordsGo />
     </TabPanel>
   </TabPanels>
 </TabGroup>
@@ -4193,26 +2706,12 @@ Refer to [`app.bsky.feed.post`](https://lexicon.garden/lexicon/did:plc:4v4y5r3lw
     <TabPanel value="ts">
     You can use `client.get()` to read an individual record by its [`rkey`](/specs/record-key):
 
-    ```tsx
-    const post = await client.get(app.bsky.feed.post, {
-      rkey: '3jxf7z2k3q2',
-    })
-    ```
+    <GetRecordTs />
     </TabPanel>
     <TabPanel value="go">
     You can use `RepoGetRecord()` to read an individual record by its [`rkey`](/specs/record-key):
-    
-    ```go
-    resp, _ := comatproto.RepoGetRecord(ctx, client, 
-        "",                    // cid (empty for latest)
-        "app.bsky.feed.post",  // lexicon
-        "alex.bsky.team",      // handle or DID
-        "3mbl5xdw4yk2r",       // rkey
-    )
 
-    fmt.Printf("URI: %s\n", resp.Uri)
-    // resp.Value contains the record data
-    ```
+    <GetRecordGo />
     </TabPanel>
   </TabPanels>
 </TabGroup>
@@ -4224,21 +2723,13 @@ In atproto, user data is resolved through [DIDs](/guides/sync#data-repositories)
 
 You can resolve a known username to a DID using the `com.atproto.identity.resolveHandle` endpoint. This means that you can just visit this address in a browser with a `handle=` arugment to look up your DID:
 
-```
-https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=youraccount.bsky.social
-```
+<ResolveHandleUrl />
 
-```
-{
-did: "did:plc:3vekukmab2djjeengw2o3wln"
-}
-```
+<ResolveHandleResponse />
 
 The TypeScript SDK also provides the DID of the currently-authenticated as `client.did`:
 
-```tsx
-const your_did = client.did
-```
+<ClientDidTs />
 
 ## Unauthenticated Reads
 
@@ -4251,45 +2742,20 @@ Some API endpoints can be accessed without authentication. You can create an una
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-    ```tsx
-    import { Client } from '@atproto/lex'
-    import * as app from './lexicons/app.js'
-
-    const client = new Client('https://public.api.bsky.app')
-    ```
+    <UnauthenticatedClientTs />
 
     As with an authenticated client, you can `.get()` any public records, like a user's profile:
 
-    ```tsx
-    const profile = await client.call(app.bsky.actor.getProfile, {
-      actor: 'alex.bsky.team',
-    })
-    ```
+    <GetProfileTs />
 
     You can make API calls to any Lexicon using the same SDK client pattern. For more examples, refer to [the SDK documentation](https://www.npmjs.com/package/@atproto/lex).
     </TabPanel>
     <TabPanel value="go">
-    ```go
-    import (
-        "context"
-        appbsky "github.com/bluesky-social/indigo/api/bsky"
-        "github.com/bluesky-social/indigo/atproto/atclient"
-    )
-
-    ctx := context.Background()
-
-    client := atclient.NewAPIClient("https://public.api.bsky.app")
-    ```
+    <UnauthenticatedClientGo />
 
     As with an authenticated client, you can `.get()` any public records, like a user's profile:
 
-    ```go
-    profile, _ := appbsky.ActorGetProfile(ctx, client, "alex.bsky.team")
-
-    fmt.Printf("Handle: %s\n", profile.Handle)
-    fmt.Printf("Display Name: %s\n", *profile.DisplayName)
-    fmt.Printf("Followers: %d\n", *profile.FollowersCount)
-    ```
+    <GetProfileGo />
 
     You can make API calls to any Lexicon using the same SDK client pattern. For more examples, refer to [the Go SDK libraries](https://pkg.go.dev/github.com/bluesky-social/indigo).
     </TabPanel>
@@ -4307,9 +2773,15 @@ Next, you might try [writing](/guides/writing-data) to a user's data repository.
 - [Record Key spec](/specs/record-key)
 - [URI scheme](/specs/at-uri-scheme)
 
+
 ---
 atproto/src/app/[locale]/guides/reads-and-writes/en.mdx
 ---
+import NpmLexInstall from './_snippets/npm-lex-install.mdx'
+import LexImportTs from './_snippets/lex-import-ts.mdx'
+import GoImports from './_snippets/go-imports.mdx'
+import GoBlankImports from './_snippets/go-blank-imports.mdx'
+
 export const header = {
   title: 'Reads and Writes',
   description: 'Read and Write from the Atmosphere',
@@ -4340,41 +2812,23 @@ After [authenticating](/guides/sdk-auth#creating-a-client), you'll be able to ma
 
     Use `lex` to install the `app.bsky.feed.post` and `app.bsky.actor.profile` Lexicons as described in [Installing Lexicons](/guides/installing-lexicons):
 
-    ```bash
-    npm install -g @atproto/lex
-    lex install app.bsky.feed.post app.bsky.actor.profile
-    lex build
-    ```
+    <NpmLexInstall />
 
     This will generate TypeScript types for the Lexicons in your project. You can use this `import` statement to access all installed Lexicons:
 
-    ```tsx
-    import * as app from './lexicons/app.js'
-    ```
+    <LexImportTs />
 
     This will give you access to the API methods for your Lexicons. Now you are ready to start [making requests](/guides/reading-data)!
     </TabPanel>
     <TabPanel value="go">
-    ```go
-    import (
-      "context"
-      appbsky "github.com/bluesky-social/indigo/api/bsky"
-      comatproto "github.com/bluesky-social/indigo/api/atproto"
-      "github.com/bluesky-social/indigo/atproto/atclient"
-      lexutil "github.com/bluesky-social/indigo/lex/util"
-    )
+    <GoImports />
 
-    ctx := context.Background()
-    ```
     Import the SDK libraries and go directly to [making requests](/guides/reading-data)!
 
     <Note>
     Note that you'll need to [blank import](https://www.oreilly.com/library/view/the-go-programming/9780134190570/ebook_split_100.html) the `bsky` and `util` libraries if you aren't using them directly, due to the way Go imports work:
 
-    ```go
-    _ "github.com/bluesky-social/indigo/api/bsky"
-    _ "github.com/bluesky-social/indigo/lex/util"
-    ```
+    <GoBlankImports />
     </Note>
 
     </TabPanel>
@@ -4389,6 +2843,7 @@ After [authenticating](/guides/sdk-auth#creating-a-client), you'll be able to ma
 - [Social graph](/guides/social-graph)
 - [Record Key spec](/specs/record-key)
 - [URI scheme](/specs/at-uri-scheme)
+
 
 ---
 atproto/src/app/[locale]/guides/scopes/en.mdx
@@ -4449,6 +2904,9 @@ Client Apps should be sure to check which auth scopes were actually approved dur
 atproto/src/app/[locale]/guides/sdk-auth/en.mdx
 ---
 import {Container} from "@/components/Container"
+import PasswordSessionTs from './_snippets/password-session-ts.mdx'
+import LoginWithPasswordGo from './_snippets/login-with-password-go.mdx'
+import ClientSessionTs from './_snippets/client-session-ts.mdx'
 
 export const header = {
   title: 'SDK authentication',
@@ -4468,42 +2926,16 @@ If you are using password auth, you should generate an [app password](/specs/xrp
     <TabPanel value="ts">
     Start by importing `PasswordSession`, providing credentials to `PasswordSession.login()`, and creating a `session`:
 
-    ```tsx
-    import { PasswordSession } from '@atproto/lex-password-session'
-
-    const session = await PasswordSession.login({
-      service: 'https://bsky.social', // or your PDS host
-      identifier: 'your-handle.bsky.social',
-      password: 'your-app-password',
-    })
-    ```
+    <PasswordSessionTs />
 
     Applications with an end user login flow should use [OAuth](/guides/oauth-cli-tutorial) authentication rather than app password sessions. Password auth is acceptable for bots and command line tools.
-    
+
     Both methods will produce the same authenticated `session`.
     </TabPanel>
     <TabPanel value="go">
     Start by importing the `atclient` library and calling `LoginWithPassword()`:
 
-    ```go
-    import (
-      "context"
-      "github.com/bluesky-social/indigo/atproto/atclient"
-      "github.com/bluesky-social/indigo/atproto/identity"
-    )
-
-    func main() {
-      ctx := context.Background()
-
-      client, _ := atclient.LoginWithPassword(ctx,
-        identity.DefaultDirectory(),   // handles PDS lookup automatically
-        "your-handle.bsky.social",     // identifier
-        "your-app-password",           // password
-        "",                            // authToken (optional 2FA token)
-        nil,                           // refresh callback (optional)
-      )
-    }
-    ```
+    <LoginWithPasswordGo />
 
     Applications with an end user login flow should use [OAuth](/guides/go-oauth-cli-tutorial) authentication rather than app password sessions. Password auth is acceptable for bots and command line tools.
     </TabPanel>
@@ -4521,13 +2953,7 @@ If you are using password auth, you should generate an [app password](/specs/xrp
     <TabPanel value="ts">
     Once you have a logged-in `session`, you can create a `Client` instance to read and write data:
 
-    ```tsx
-    import { Client } from '@atproto/lex'
-    const client = new Client(session)
-
-    // Make authenticated API calls
-    console.log('Logged in as:', session.did)
-    ```
+    <ClientSessionTs />
     </TabPanel>
     <TabPanel value="go">
     The `client` returned by `LoginWithPassword()` is authenticated and ready to make API calls.
@@ -4553,6 +2979,7 @@ The `com.atproto.server.createSession` API endpoint called by login methods retu
 - [Permission requests](/guides/permission-sets)
 - [OAuth spec](/specs/oauth)
 - [Permissions spec](/specs/permission)
+
 
 ---
 atproto/src/app/[locale]/guides/self-hosting/en.mdx
@@ -4656,6 +3083,27 @@ import setstatus from "./set-status.png"
 import tap from "./tap-status.png"
 import feed from "./feed-status.png"
 import taproot from "./taproot-status.png"
+import S01 from './_snippets/01-install-brew.mdx'
+import S02 from './_snippets/02-pnpm-add.mdx'
+import S03 from './_snippets/03-npm-install-lex.mdx'
+import S04 from './_snippets/04-lex-install.mdx'
+import S05 from './_snippets/05-lex-build.mdx'
+import S06 from './_snippets/06-scope-constant.mdx'
+import S07 from './_snippets/07-db-schema.mdx'
+import S08 from './_snippets/08-db-migrations.mdx'
+import S09 from './_snippets/09-status-route.mdx'
+import S10 from './_snippets/10-status-picker.mdx'
+import S11 from './_snippets/11-page-v1.mdx'
+import S12 from './_snippets/12-tap-index.mdx'
+import S13 from './_snippets/13-db-queries-v1.mdx'
+import S14 from './_snippets/14-webhook-route.mdx'
+import S15 from './_snippets/15-page-status-update.mdx'
+import S16 from './_snippets/16-tap-run.mdx'
+import S17 from './_snippets/17-curl-add-did.mdx'
+import S18 from './_snippets/18-queries-extra-imports.mdx'
+import S19 from './_snippets/19-queries-handle-statuses.mdx'
+import S20 from './_snippets/20-page-v2.mdx'
+import S21 from './_snippets/21-tap-run-signal.mdx'
 
 export const header = {
   title: 'Create a Social App',
@@ -4677,21 +3125,15 @@ You should have installed:
 
 On platforms supported by [homebrew](https://brew.sh/), you can install them with:
 
-```bash
-brew install node pnpm go
-```
+<S01 />
 
 Begin by adding these atproto libraries to your existing project:
 
-```bash
-pnpm add @atproto/common-web @atproto/lex @atproto/syntax @atproto/tap
-```
+<S02 />
 
 You should also have our `lex` CLI tool installed globally:
 
-```bash
-npm install -g @atproto/lex
-```
+<S03 />
 
 You'll begin by adding Lexicons to your project.
 
@@ -4699,15 +3141,11 @@ You'll begin by adding Lexicons to your project.
 
 [Lexicons](/guides/lexicon) define the schema for records in atproto. To create this tutorial, we've already published a new "Statusphere" Lexicon to our repository, available at `xyz.statusphere.status`. You can use `lex` to download and build this Lexicon into your project:
 
-```bash
-lex install xyz.statusphere.status
-```
+<S04 />
 
 If you want, you can view the downloaded Lexicon file at `lib/lexicons/xyz.statusphere.status.json`. From here, you can run `lex build` to generate TypeScript types for all of your installed Lexicons:
 
-```bash
-lex build --importExt=\"\"
-```
+<S05 />
 
 <Note>
 You could add this command to `package.json` if you needed, but we won't be using it again in this tutorial now that our Lexicons have been built. If you ever add another Lexicon to a project with `lex install`, you'll need to re-run `lex build` with the `--override` flag to regenerate the types.
@@ -4715,9 +3153,7 @@ You could add this command to `package.json` if you needed, but we won't be usin
 
 One more thing you should do now is update the `SCOPE` constant in `lib/auth/client.ts` to request access to this collection. Atproto permission scopes are Lexicons, so you can add `xyz.statusphere.status` to the list of scopes your app requests:
 
-```typescript
-export const SCOPE = "atproto repo:xyz.statusphere.status";
-```
+<S06 />
 
 Now you can move on to creating the database schema.
 
@@ -4725,71 +3161,11 @@ Now you can move on to creating the database schema.
 
 Update `lib/db/index.ts` to add new tables:
 
-```typescript
-export interface DatabaseSchema {
-  auth_state: AuthStateTable;
-  auth_session: AuthSessionTable;
-  account: AccountTable;   // New
-  status: StatusTable;     // New
-}
-
-// ... existing auth tables ...
-
-export interface AccountTable {
-  did: string;
-  handle: string;
-  active: 0 | 1;
-}
-
-export interface StatusTable {
-  uri: string;
-  authorDid: string;
-  status: string;
-  createdAt: string;
-  indexedAt: string;
-  current: 0 | 1;
-}
-```
+<S07 />
 
 Next, add the migrations script that creates these tables. If you're building on top of the OAuth tutorial and have already deployed/migrated your database, you'll want to put these in a new migration, e.g. called "002", in `lib/db/migrations.ts`:
 
-```typescript
-const migrations: Record<string, Migration> = {
-  "001": {} // existing migrations for auth tables
-  "002": {
-    async up(db: Kysely<unknown>) {
-      await db.schema
-        .createTable("account")
-        .addColumn("did", "text", (col) => col.primaryKey())
-        .addColumn("handle", "text", (col) => col.notNull())
-        .addColumn("active", "integer", (col) => col.notNull().defaultTo(1))
-        .execute();
-
-      await db.schema
-        .createTable("status")
-        .addColumn("uri", "text", (col) => col.primaryKey())
-        .addColumn("authorDid", "text", (col) => col.notNull())
-        .addColumn("status", "text", (col) => col.notNull())
-        .addColumn("createdAt", "text", (col) => col.notNull())
-        .addColumn("indexedAt", "text", (col) => col.notNull())
-        .addColumn("current", "integer", (col) => col.notNull().defaultTo(0))
-        .execute();
-
-      await db.schema
-        .createIndex("status_current_idx")
-        .on("status")
-        .columns(["current", "indexedAt"])
-        .execute();
-    },
-    async down(db: Kysely<unknown>) {
-      await db.schema.dropTable("status").execute();
-      await db.schema.dropTable("account").execute();
-      await db.schema.dropTable("auth_session").execute();
-      await db.schema.dropTable("auth_state").execute();
-    },
-  },
-};
-```
+<S08 />
 
 You can run `pnpm migrate` to apply these new migrations to your database. Now, to actually build the app logic!
 
@@ -4797,157 +3173,17 @@ You can run `pnpm migrate` to apply these new migrations to your database. Now, 
 
 First you'll build the feature that allows users to write their status to their [PDS](/guides/the-at-stack#pds). Create a new API route at `app/api/status/route.ts`:
 
-```typescript
-import { NextRequest, NextResponse } from "next/server";
-import { Client } from "@atproto/lex";
-import { getSession } from "@/lib/auth/session";
-import { getOAuthClient } from "@/lib/auth/client";
-import * as xyz from "@/src/lexicons/xyz";
-
-export async function POST(request: NextRequest) {
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { status } = await request.json();
-
-  if (!status || typeof status !== "string") {
-    return NextResponse.json({ error: "Status is required" }, { status: 400 });
-  }
-
-  const client = await getOAuthClient();
-  const oauthSession = await client.restore(session.did);
-  const lexClient = new Client(oauthSession);
-
-  const createdAt = new Date().toISOString();
-  const res = await lexClient.create(xyz.statusphere.status, {
-    status,
-    createdAt,
-  });
-
-  return NextResponse.json({
-    success: true,
-    uri: res.uri,
-  });
-}
-```
+<S09 />
 
 This verifies that a user is logged in, creates a lex `Client` with their OAuth session, and then creates a new `xyz.statusphere.status` record with the submitted status text.
 
 Next, create a Status picker component at `components/StatusPicker.tsx`:
 
-```tsx
-"use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-
-const EMOJIS = ["👍", "👎", "💙", "🔥", "😆", "😢", "🤔", "😴", "🎉", "🤩", "😭", "🥳", "😤", "💀", "✨", "👀", "🙏", "📚", "💻", "🍕", "🌴"];
-
-interface StatusPickerProps {
-  currentStatus?: string | null;
-}
-
-export function StatusPicker({ currentStatus }: StatusPickerProps) {
-  const router = useRouter();
-  const [selected, setSelected] = useState<string | null>(currentStatus ?? null);
-  const [loading, setLoading] = useState(false);
-
-  async function handleSelect(emoji: string) {
-    setLoading(true);
-    setSelected(emoji);
-
-    try {
-      const res = await fetch("/api/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: emoji }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to update status");
-      }
-
-      router.refresh();
-    } catch (err) {
-      console.error("Failed to update status:", err);
-      setSelected(currentStatus ?? null);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
-        Set your status
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {EMOJIS.map((emoji) => (
-          <button
-            key={emoji}
-            onClick={() => handleSelect(emoji)}
-            disabled={loading}
-            className={`text-2xl p-2 rounded-lg transition-all
-              ${selected === emoji
-                ? "bg-blue-100 dark:bg-blue-900 ring-2 ring-blue-500"
-                : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              }
-              disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {emoji}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-```
+<S10 />
 
 Finally, update `app/page.tsx` to include the status picker:
 
-```tsx
-import { getSession } from "@/lib/auth/session";
-import { LoginForm } from "@/components/LoginForm";
-import { LogoutButton } from "@/components/LogoutButton";
-import { StatusPicker } from "@/components/StatusPicker";
-
-export default async function Home() {
-  const session = await getSession();
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-      <main className="w-full max-w-md mx-auto p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-            Statusphere
-          </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Set your status on the Atmosphere
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-          {session ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  Signed in
-                </p>
-                <LogoutButton />
-              </div>
-              <StatusPicker />
-            </div>
-          ) : (
-            <LoginForm />
-          )}
-        </div>
-      </main>
-    </div>
-  );
-}
-```
+<S11 />
 
 Run the app with `pnpm dev` — you'll be able to log in, and select an emoji to set your status!
 
@@ -4967,210 +3203,29 @@ Next, you'll add sync features to actually receive status updates.
 
 [Tap](/guides/backfilling#using-tap) is the best way to synchronize and stream AT Protocol records. You'll use the Tap [TypeScript library](https://www.npmjs.com/package/@atproto/tap) to sync new records in your database. Create `lib/tap/index.ts`:
 
-```typescript
-import { Tap } from "@atproto/tap";
-
-const TAP_URL = process.env.TAP_URL || "http://localhost:2480";
-
-let _tap: Tap | null = null;
-
-export const getTap = (): Tap => {
-  if (!_tap) {
-    _tap = new Tap(TAP_URL);
-  }
-  return _tap;
-};
-```
+<S12 />
 
 Next, create `lib/db/queries.ts` with some database queries for handling Tap events:
 
-```typescript
-import { getDb, AccountTable, StatusTable, DatabaseSchema } from ".";
-import { AtUri } from "@atproto/syntax";
-import { Transaction } from "kysely";
-
-export async function getAccountStatus(did: string) {
-  const db = getDb();
-  const status = await db
-    .selectFrom("status")
-    .selectAll()
-    .where("authorDid", "=", did)
-    .orderBy("createdAt", "desc")
-    .limit(1)
-    .executeTakeFirst();
-  return status ?? null;
-}
-
-export async function insertStatus(data: StatusTable) {
-  getDb()
-    .transaction()
-    .execute(async (tx) => {
-      await tx
-        .insertInto("status")
-        .values(data)
-        .onConflict((oc) =>
-          oc.column("uri").doUpdateSet({
-            status: data.status,
-            createdAt: data.createdAt,
-            indexedAt: data.indexedAt,
-          }),
-        )
-        .execute();
-      setCurrStatus(tx, data.authorDid);
-    });
-}
-
-export async function deleteStatus(uri: AtUri) {
-  await getDb()
-    .transaction()
-    .execute(async (tx) => {
-      await tx.deleteFrom("status").where("uri", "=", uri.toString()).execute();
-      await setCurrStatus(tx, uri.hostname);
-    });
-}
-
-export async function upsertAccount(data: AccountTable) {
-  await getDb()
-    .insertInto("account")
-    .values(data)
-    .onConflict((oc) =>
-      oc.column("did").doUpdateSet({
-        handle: data.handle,
-        active: data.active,
-      }),
-    )
-    .execute();
-}
-
-export async function deleteAccount(did: string) {
-  await getDb().deleteFrom("account").where("did", "=", did).execute();
-  await getDb().deleteFrom("status").where("authorDid", "=", did).execute();
-}
-
-// Helper to update which status is "current" for a user (inside a transaction)
-async function setCurrStatus(tx: Transaction<DatabaseSchema>, did: string) {
-  // Clear current flag for all user's statuses
-  await tx
-    .updateTable("status")
-    .set({ current: 0 })
-    .where("authorDid", "=", did)
-    .where("current", "=", 1)
-    .execute();
-  // Set the most recent status as current
-  await tx
-    .updateTable("status")
-    .set({ current: 1 })
-    .where("uri", "=", (qb) =>
-      qb
-        .selectFrom("status")
-        .select("uri")
-        .where("authorDid", "=", did)
-        .orderBy("createdAt", "desc")
-        .limit(1),
-    )
-    .execute();
-}
-```
+<S13 />
 
 The `setCurrStatus` helper ensures only the most recent status per user has `current = 1`. This will be used later on.
 
 Tap will deliver events through a webhook endpoint at `app/api/webhook/route.ts`:
 
-```typescript
-import { NextRequest, NextResponse } from "next/server";
-import { parseTapEvent, assureAdminAuth } from "@atproto/tap";
-import { AtUri } from "@atproto/syntax";
-import {
-  upsertAccount,
-  insertStatus,
-  deleteStatus,
-  deleteAccount,
-} from "@/lib/db/queries";
-import * as xyz from "@/src/lexicons/xyz";
-
-const TAP_ADMIN_PASSWORD = process.env.TAP_ADMIN_PASSWORD;
-
-export async function POST(request: NextRequest) {
-  // Verify request is from our TAP server
-  if (TAP_ADMIN_PASSWORD) {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    try {
-      assureAdminAuth(TAP_ADMIN_PASSWORD, authHeader);
-    } catch {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
-
-  const body = await request.json();
-  const evt = parseTapEvent(body);
-
-  // Handle account/identity changes
-  if (evt.type === "identity") {
-    if (evt.status === "deleted") {
-      await deleteAccount(evt.did);
-    } else {
-      await upsertAccount({
-        did: evt.did,
-        handle: evt.handle,
-        active: evt.isActive ? 1 : 0,
-      });
-    }
-  }
-
-  // Handle status record changes
-  if (evt.type === "record") {
-    const uri = AtUri.make(evt.did, evt.collection, evt.rkey);
-
-    if (evt.action === "create" || evt.action === "update") {
-      let record: xyz.statusphere.status.Main;
-      try {
-        record = xyz.statusphere.status.$parse(evt.record);
-      } catch {
-        return NextResponse.json({ success: false });
-      }
-
-      await insertStatus({
-        uri: uri.toString(),
-        authorDid: evt.did,
-        status: record.status,
-        createdAt: record.createdAt,
-        indexedAt: new Date().toISOString(),
-        current: 1,
-      });
-    } else if (evt.action === "delete") {
-      await deleteStatus(uri);
-    }
-  }
-
-  return NextResponse.json({ success: true });
-}
-```
+<S14 />
 
 Tap sends webhook events when records change anywhere on the network. Requests are validated using a shared secret; for `identity` events, you update the account cache, and for `record` events, you check if the record matches your Lexicon and insert/update/delete it in your database.
 
 Update `app/page.tsx` again to fetch and pass the current user's status:
 
-```tsx
-import { getAccountStatus } from "@/lib/db/queries";
-
-// In Home function:
-const accountStatus = session ? await getAccountStatus(session.did) : null;
-
-// Add to the StatusPicker element:
-<StatusPicker currentStatus={accountStatus?.status} />
-```
+<S15 />
 
 This way, the `StatusPicker` will highlight the user's current status when the page loads.
 
 Now, in another terminal, install and run `tap` from its source repository:
 
-```bash
-go install github.com/bluesky-social/indigo/cmd/tap
-tap run --webhook-url=http://localhost:3000/api/webhook --collection-filters=xyz.statusphere.status
-```
+<S16 />
 
 <Note>
 If you set the `TAP_ADMIN_PASSWORD` environment variable, pass the same value to the tap command with `--admin-password="<your-password>"`.
@@ -5179,10 +3234,7 @@ If you set the `TAP_ADMIN_PASSWORD` environment variable, pass the same value to
 
 Ctrl+C your running app. Then add your data repository to Tap for tracking (you'll add other data sources later):
 
-```bash
-# Replace with your own DID below
-curl -H 'Content-Type: application/json' -d '{"dids":["DID"]}' http://localhost:2480/repos/add
-```
+<S17 />
 
 Restart your app with `pnpm dev`, complete the login flow, and you should find your saved status highlighted:
 
@@ -5196,172 +3248,15 @@ Finally, you'll add functionality to display user handles and a feed of statuses
 
 First, add some additional imports to `lib/db/queries.ts`:
 
-```typescript
-import { getHandle } from "@atproto/common-web";
-import { getTap } from "@/lib/tap";
-```
+<S18 />
 
 Then, add additional functions to fetch account handles and statuses:
 
-```typescript
-export async function getAccountHandle(did: string): Promise<string | null> {
-  const db = getDb();
-  // if we've tracked to the account through Tap and gotten their account info, we'll load from there
-  const account = await db
-    .selectFrom("account")
-    .select("handle")
-    .where("did", "=", did)
-    .executeTakeFirst();
-  if (account) return account.handle;
-  // otherwise we'll resolve the accounts DID through Tap which provides identity caching
-  try {
-    const didDoc = await getTap().resolveDid(did);
-    if (!didDoc) return null;
-    return getHandle(didDoc) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-export async function getRecentStatuses(limit = 5) {
-  const db = getDb();
-  return db
-    .selectFrom("status")
-    .innerJoin("account", "status.authorDid", "account.did")
-    .selectAll()
-    .orderBy("createdAt", "desc")
-    .limit(limit)
-    .execute();
-}
-
-export async function getTopStatuses(limit = 10) {
-  const db = getDb();
-  return db
-    .selectFrom("status")
-    .select(["status", db.fn.count("uri").as("count")])
-    .where("current", "=", 1)
-    .groupBy("status")
-    .orderBy("count", "desc")
-    .limit(limit)
-    .execute();
-}
-```
+<S19 />
 
 Next, update `app/page.tsx` to display the full feed with top statuses, handles, and timestamps:
 
-```tsx
-import { getSession } from "@/lib/auth/session";
-import {
-  getAccountStatus,
-  getRecentStatuses,
-  getTopStatuses,
-  getAccountHandle,
-} from "@/lib/db/queries";
-import { LoginForm } from "@/components/LoginForm";
-import { LogoutButton } from "@/components/LogoutButton";
-import { StatusPicker } from "@/components/StatusPicker";
-
-export default async function Home() {
-  const session = await getSession();
-  const [statuses, topStatuses, accountStatus, accountHandle] =
-    await Promise.all([
-      getRecentStatuses(),
-      getTopStatuses(),
-      session ? getAccountStatus(session.did) : null,
-      session ? getAccountHandle(session.did) : null,
-    ]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-      <main className="w-full max-w-md mx-auto p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-            Statusphere
-          </h1>
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Set your status on the Atmosphere
-          </p>
-        </div>
-
-        {session ? (
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Signed in as @{accountHandle ?? session.did}
-              </p>
-              <LogoutButton />
-            </div>
-            <StatusPicker currentStatus={accountStatus?.status} />
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 mb-6">
-            <LoginForm />
-          </div>
-        )}
-
-        {topStatuses.length > 0 && (
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 mb-6">
-            <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">
-              Top Statuses
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {topStatuses.map((s) => (
-                <span
-                  key={s.status}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-sm"
-                >
-                  <span className="text-lg">{s.status}</span>
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    {String(s.count)}
-                  </span>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3">
-            Recent
-          </h3>
-          {statuses.length === 0 ? (
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-              No statuses yet. Be the first!
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {statuses.map((s) => (
-                <li key={s.uri} className="flex items-center gap-3">
-                  <span className="text-2xl">{s.status}</span>
-                  <span className="text-zinc-600 dark:text-zinc-400 text-sm">
-                    @{s.handle}
-                  </span>
-                  <span className="text-zinc-400 dark:text-zinc-500 text-xs ml-auto">
-                    {timeAgo(s.createdAt)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </main>
-    </div>
-  );
-}
-
-function timeAgo(dateString: string): string {
-  const now = Date.now();
-  const then = new Date(dateString).getTime();
-  const seconds = Math.floor((now - then) / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  return `${days}d`;
-}
-```
+<S20 />
 
 Now logged-in users will see "Signed in as @theirhandle" instead of just "Signed in", along with a feed of recent statuses from all users, and a "Top Statuses" section showing the most popular current statuses.
 
@@ -5369,12 +3264,7 @@ You can stop and restart your app with `pnpm dev` again.
 
 One last thing — remember, you only added a single data source to `tap` earlier. To see statuses from across the entire network, stop and re-run `tap` with the `--signal-collection` flag:
 
-```bash
-tap run \
-  --webhook-url=http://localhost:3000/api/webhook \
-  --collection-filters=xyz.statusphere.status \
-  --signal-collection=xyz.statusphere.status
-```
+<S21 />
 
 ... and you'll start seeing statuses from other users on the network!
 
@@ -5392,6 +3282,9 @@ This gives you all the tools you need to continue building on AT Protocol. You c
 ---
 atproto/src/app/[locale]/guides/streaming-data/en.mdx
 ---
+import FirehoseConnect from './_snippets/firehose-connect.mdx'
+import JetstreamPython from './_snippets/jetstream-python.mdx'
+
 export const header = {
   title: 'Streaming Data',
   description: 'Working with the Firehose and Jetstream',
@@ -5407,9 +3300,7 @@ Many AT applications that need to stream incoming data will utilize the firehose
 
 Anyone can connect to the firehose without authentication — this is a core feature of the protocol. To get started, open a WebSocket connection to any provider of the `com.atproto.sync.subscribeRepos` endpoint:
 
-```shell 
-$ websocat wss://bsky.network/xrpc/com.atproto.sync.subscribeRepos
-```
+<FirehoseConnect />
 
 From here, you would need to read each message as it comes in, and decode the associated data. Our [Go](https://github.com/bluesky-social/indigo) SDK is currently the most feature-complete for interacting with the firehose directly.
 
@@ -5429,26 +3320,7 @@ You can work with Jetstream like any other websocket. Just provide a Jetstream e
 
 Here is a Python example:
 
-```python
-import asyncio
-import websockets
-
-uri = "wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=app.bsky.feed.post"
-
-async def listen_to_websocket():
-  async with websockets.connect(uri) as websocket:
-    while True:
-      try:
-        message = await websocket.recv()
-        print(message)
-      except websockets.ConnectionClosed as e:
-        print(f"Connection closed: {e}")
-        break
-      except Exception as e:
-        print(f"Error: {e}")
-
-asyncio.get_event_loop().run_until_complete(listen_to_websocket())
-```
+<JetstreamPython />
 
 ## Further Reading and Resources
 
@@ -5460,10 +3332,14 @@ asyncio.get_event_loop().run_until_complete(listen_to_websocket())
 - [Sync spec](/specs/sync)
 - The [Microcosm](https://www.microcosm.blue/) community project maintains tools for working with AT records at scale without local mirroring.
 
+
 ---
 atproto/src/app/[locale]/guides/subscriptions/en.mdx
 ---
 import {Container} from "@/components/Container"
+import AcceptLabelersCurl from './_snippets/accept-labelers-curl.mdx'
+import LabelerConfigTs from './_snippets/labeler-config-ts.mdx'
+import CreateReportTs from './_snippets/create-report-ts.mdx'
 
 export const header = {
   title: 'Subscriptions',
@@ -5476,34 +3352,11 @@ Labeler services each have a service identity, meaning a DID document. This is t
 
 To include labels from a given labeler, set the `atproto-accept-labelers` header on an XRPC request to a comma-separated list of the DIDs of the labelers you want to include, like so:
 
-```bash
-curl -H "atproto-accept-labelers: did:plc:vmt7o7y6titkqzzxav247zrn, did:plc:vmt7o7y6titkqzzxav247zrn"
-```
+<AcceptLabelersCurl />
 
 You can also add labelers using the TypeScript SDK:
 
-```tsx
-import { Client } from '@atproto/lex'
-
-// Global app-level labelers
-Client.configure({
-  appLabelers: ['did:plc:labeler1', 'did:plc:labeler2'],
-})
-
-// Client-specific labelers
-const client = new Client(session, {
-  labelers: ['did:plc:labeler3'],
-})
-
-// Add labelers dynamically
-client.addLabelers(['did:plc:labeler4'])
-
-// Replace all labelers
-client.setLabelers(['did:plc:labeler5'])
-
-// Clear labelers
-client.clearLabelers()
-```
+<LabelerConfigTs />
 
 ## Use labels in your app
 
@@ -5519,25 +3372,7 @@ To send a report to a Labeler, use the `com.atproto.moderation.createReport` pro
 
 To specify which labeler should receive the report, set the `atproto-proxy` header with the DID of the labeler and the service key of `atproto_labeler`. In the TypeScript SDK, it looks like this:
 
-```typescript
-import { AtpAgent } from '@atproto/api'
-
-const agent = new AtpAgent({
-    service: 'https://bsky.social'
-})
-await agent.login({
-    identifier: 'alex.bsky.team',
-    password: 'your-app-password'
-})
-
-agent
-  .withProxy('atproto_labeler', 'did:web:my-labeler.com')
-  .createModerationReport({
-    reasonType: 'com.atproto.moderation.defs#reasonViolation',
-    reason: 'They were being such a jerk to me!',
-    subject: { did: 'did:web:bob.com' },
-  })
-```
+<CreateReportTs />
 
 ## Further Reading and Resources
 
@@ -5547,9 +3382,13 @@ agent
 - [Label Specs](/specs/label)
 - [Using Ozone](/guides/using-ozone)
 
+
 ---
 atproto/src/app/[locale]/guides/sync/en.mdx
 ---
+import AtUriExample from './_snippets/at-uri-example.mdx'
+import WriteResponse from './_snippets/write-response.mdx'
+
 export const header = {
   title: 'Sync',
   description: 'Synchronizing AT Protocol data',
@@ -5576,20 +3415,13 @@ Multiple types of identifiers are used within a data repository:
 
 Take, for example, a single AT record:
 
-```
-at://did:plc:vmt7o7y6titkqzzxav247zrn/app.bsky.feed.post/3m72rq2hgss2a
-```
+<AtUriExample />
 
 This can be broken down as `at://DID/NSID/rkey` , or `at://repository/collection/record`. It has a corresponding CID of `bafyreidgbehqwweghrrddfu6jgj7lyr6fwhzgazhirnszdb5lvr7iynkiy`.
 
 When making a write request to an AT API endpoint — such as when creating a new post — this full repository path will be returned as a response:
 
-```json
-{
-  "uri": "at://did:plc:u5cwb2mwiv2bfq53cjufe6yn/app.bsky.feed.post/3k4duaz5vfs2b",
-  "cid": "bafyreibjifzpqj6o6wcq3hejh7y4z4z2vmiklkvykc57tw3pcbx3kxifpm"
-}
-```
+<WriteResponse />
 
 This is how individual records are uniquely identified and stored within AT data repositories.
 
@@ -5610,6 +3442,7 @@ There are many ways of synchronizing and streaming AT data. You can use [Jetstre
 - [Event Stream spec](/specs/event-stream)
 - [Sync spec](/specs/sync)
 - The [Microcosm](https://www.microcosm.blue/) community project maintains tools for working with AT records at scale without local mirroring.
+
 
 ---
 atproto/src/app/[locale]/guides/the-at-stack/en.mdx
@@ -6028,6 +3861,8 @@ You now have an understanding of the Ozone moderation flow. Ozone also allows yo
 ---
 atproto/src/app/[locale]/guides/video-handling/en.mdx
 ---
+import FfprobeAspectRatio from './_snippets/ffprobe-aspect-ratio.mdx'
+
 export const header = {
   title: 'Video Handling',
   description: 'Handling video uploads and processing',
@@ -6043,18 +3878,7 @@ For this reason, video uploads are typically handled by a side-car service befor
 
 Depending on the requirements of your application, you may need to supply an aspect ratio along with video uploads. This metadata can be tricky to compute. If you're developing in a browser, you can load the video into a `<video>` and observe the dimensions when loaded. If you're in a native app, you'll most likely be able to get it via the media picker APIs. Alternatively, you can use a tool like `ffprobe` :
 
-```jsx
-import { ffprobe } from "https://deno.land/x/fast_forward@0.1.6/ffprobe.ts";
-
-export async function getAspectRatio(fileName: string) {
-  const { streams } = await ffprobe(fileName, {});
-  const videoSteam = streams.find((stream) => stream.codec_type === "video");
-  return {
-    width: videoSteam.width,
-    height: videoSteam.height,
-  };
-}
-```
+<FfprobeAspectRatio />
 
 ## Transcoding
 
@@ -6079,6 +3903,18 @@ There are client-side code samples for both methods here:
 ---
 atproto/src/app/[locale]/guides/writing-data/en.mdx
 ---
+import CreatePostTs from './_snippets/create-post-ts.mdx'
+import CreatePostResultTs from './_snippets/create-post-result-ts.mdx'
+import CreatePostGo from './_snippets/create-post-go.mdx'
+import CreatePostResultGo from './_snippets/create-post-result-go.mdx'
+import CreateResponse from './_snippets/create-response.mdx'
+import InstallProfileLexicon from './_snippets/install-profile-lexicon.mdx'
+import UpdateProfileTs from './_snippets/update-profile-ts.mdx'
+import UpdateProfileGo from './_snippets/update-profile-go.mdx'
+import InstallPostLexicon from './_snippets/install-post-lexicon.mdx'
+import DeletePostTs from './_snippets/delete-post-ts.mdx'
+import DeletePostGo from './_snippets/delete-post-go.mdx'
+
 export const header = {
   title: 'Writing Data',
   description: 'Write AT Protocol Records',
@@ -6097,14 +3933,7 @@ Writing data — for example, by posting to a Bluesky feed — works similarly t
     <TabPanel value="ts">
 To create a new record, call `client.create()` with an imported Lexicon, along with any required fields:
 
-```tsx
-import * as app from './lexicons/app.js'
-
-const result = await client.create(app.bsky.feed.post, {
-  text: 'Hello, world!',
-  createdAt: new Date().toISOString(),
-})
-```
+<CreatePostTs />
 
 `text` and `createdAt` are required values under the [`app.bsky.feed.post` Lexicon](https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.post.html).
 
@@ -6114,28 +3943,13 @@ This will post using the currently-authenticated user session. If you want to po
 
 The API will respond with the `at://` URI of the post and a content hash of the post as the `cid`:
 
-```tsx
-console.log(result.uri) // at://did:plc:...
-console.log(result.cid)
-```
+<CreatePostResultTs />
     </TabPanel>
     <TabPanel value="go">
 To create a new record, call `RepoCreateRecord()` with your target Lexicon and any required fields:
 
-```go
-now := time.Now().UTC().Format(time.RFC3339)
+<CreatePostGo />
 
-post := &appbsky.FeedPost{
-    Text:      "Hello from Go!",
-    CreatedAt: now,
-}
-
-resp, _ := comatproto.RepoCreateRecord(ctx, client, &comatproto.RepoCreateRecord_Input{
-    Repo:       client.AccountDID.String(), // handle or DID
-    Collection: "app.bsky.feed.post",       // lexicon
-    Record:     &lexutil.LexiconTypeDecoder{Val: post},
-})
-```
 `Text` and `CreatedAt` are required values under the [`app.bsky.feed.post` Lexicon](https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.post.html).
 
 <Note>
@@ -6144,21 +3958,14 @@ This will post using the currently-authenticated user session. If you want to po
 
 The API will respond with the `at://` URI of the post and a content hash of the post as the `cid`:
 
-```go
-fmt.Printf("Created post: %s (CID: %s)\n", resp.Uri, resp.Cid)
-```
+<CreatePostResultGo />
     </TabPanel>
   </TabPanels>
-</TabGroup>    
+</TabGroup>
 
-```
-{
-  "uri": "at://did:plc:u5cwb2mwiv2bfq53cjufe6yn/app.bsky.feed.post/3k4duaz5vfs2b",
-  "cid": "bafyreibjifzpqj6o6wcq3hejh7y4z4z2vmiklkvykc57tw3pcbx3kxifpm"
-}
-```
+<CreateResponse />
 
-If you are building a client or another interface that both reads and writes data, it is important to ensure that you read your own writes using this response. 
+If you are building a client or another interface that both reads and writes data, it is important to ensure that you read your own writes using this response.
 
 ## Read-after-Write
 
@@ -6183,38 +3990,14 @@ This read-after-write behavior *only* applies to records from the user making th
     <TabPanel value="ts">
 To update an existing record, like a user's profile, use `client.put()`:
 
-```bash
-lex install app.bsky.actor.profile
-lex build
-```
+<InstallProfileLexicon />
 
-```tsx
-import * as app from './lexicons/app.js'
-
-await client.put(app.bsky.actor.profile, {
-  displayName: 'New Name',
-  description: 'Updated bio',
-})
-```
+<UpdateProfileTs />
     </TabPanel>
     <TabPanel value="go">
 To update an existing record, like a user's profile, use `RepoPutRecord()`:
 
-```go
-newProfile := &appbsky.ActorProfile{
-  DisplayName: ptrString("New Display Name"),
-  Description: ptrString("Updated bio"),
-}
-
-resp, _ := comatproto.RepoPutRecord(ctx, client, &comatproto.RepoPutRecord_Input{
-  Repo:       client.AccountDID.String(),     // handle or DID
-  Collection: "app.bsky.actor.profile",       // lexicon
-  Rkey:       "self",                         // rkey
-  Record:     &lexutil.LexiconTypeDecoder{Val: newProfile},
-})
-
-fmt.Printf("Updated: %s (CID: %s)\n", resp.Uri, resp.Cid)
-```
+<UpdateProfileGo />
 
 `RepoPutRecord` is idempotent — it'll create the record if it doesn't exist, or overwrite it if it does.
     </TabPanel>
@@ -6232,28 +4015,14 @@ fmt.Printf("Updated: %s (CID: %s)\n", resp.Uri, resp.Cid)
     <TabPanel value="ts">
 To delete a record, like an individual post, use `client.delete()`:
 
-```bash
-lex install app.bsky.actor.post
-lex build
-```
+<InstallPostLexicon />
 
-```tsx
-import * as app from './lexicons/app.js'
-
-await client.delete(app.bsky.feed.post, {
-  rkey: '3jxf7z2k3q2',
-})
-```
+<DeletePostTs />
     </TabPanel>
     <TabPanel value="go">
     To delete a record, like an individual post, use `RepoDeleteRecord():`
-```go
-comatproto.RepoDeleteRecord(ctx, client, &comatproto.RepoDeleteRecord_Input{
-    Repo:       client.AccountDID.String(), // handle or DID
-    Collection: "app.bsky.feed.post",       // lexicon
-    Rkey:       "3mbl5xdw4yk2r",             // rkey
-})
-```
+
+<DeletePostGo />
     </TabPanel>
   </TabPanels>
 </TabGroup>
@@ -6266,5 +4035,6 @@ comatproto.RepoDeleteRecord(ctx, client, &comatproto.RepoDeleteRecord_Input{
 - [Social graph](/guides/social-graph)
 - [Record Key spec](/specs/record-key)
 - [URI scheme](/specs/at-uri-scheme)
+
 
 ---
