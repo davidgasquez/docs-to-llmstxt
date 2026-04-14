@@ -243,6 +243,7 @@ Begin by reading [SDK authentication](/guides/sdk-auth). To implement OAuth in y
 atproto/src/app/[locale]/guides/backfilling/en.mdx
 ---
 import TapRun from './_snippets/tap-run.mdx'
+import TapInstall from './_snippets/tap-install.mdx'
 
 export const header = {
   title: 'Backfilling',
@@ -261,7 +262,11 @@ When backfilling, you generally need to maintain 'up to date' replica of the dat
 
 `tap` simplifies AT sync by handling the firehose connection, verification, backfill, and filtering. Your application connects to a Tap and receives simple JSON events for only the repos and collections you care about, no need to worry about binary formats for validating cryptographic signatures.
 
-Tap can be run from the command line:
+Install `tap` from the [indigo](https://github.com/bluesky-social/indigo) repo after installing Go:
+
+<TapInstall />
+
+Then, run `tap` from the command line:
 
 <TapRun />
 
@@ -441,7 +446,7 @@ On platforms supported by [homebrew](https://brew.sh/), you can install it with:
 
 <S01 />
 
-You should also have our `lex` CLI tool installed globally:
+You should also have our `lex` CLI tool and `tsx` installed globally:
 
 <S02 />
 
@@ -495,7 +500,7 @@ Save your bot's host (PDS), username, and password to an `.env` file.
 
 <S09 />
 
-Now you can test the bot using `ts-node`.
+Now you can test the bot using `tsx`.
 
 <S10 />
 
@@ -632,7 +637,7 @@ On platforms supported by [homebrew](https://brew.sh/), you can install them wit
 
 <S01 />
 
-You should also have our `lex` CLI tool installed globally:
+You should also have our `lex` CLI tool and `tsx` installed globally:
 
 <S02 />
 
@@ -728,7 +733,7 @@ You'll connect to tap with `channel.start()` then initiate your server. Add the 
 
 This kicks off both your connection to `tap` (your feed input) and your XRPC server (your feed output). It also provides some logging to help you test your feed generator.
 
-Run it with `ts-node src/index.ts`. You should see some initial posts being indexed:
+Run it with `npx tsx src/index.ts`. You should see some initial posts being indexed:
 
 <S13 />
 
@@ -1963,7 +1968,7 @@ Create a new project directory and install the [SDK](https://www.npmjs.com/packa
 
 <S02 />
 
-You'll also need the `lex` CLI tool installed globally, and the `app.bsky.actor.profile` Lexicon installed in this project to fetch the user's profile:
+You'll also need the `lex` CLI tool and `tsx` installed globally, and the `app.bsky.actor.profile` Lexicon installed in this project to fetch the user's profile:
 
 <S03 />
 
@@ -3627,6 +3632,10 @@ export const header = {
 These tutorials will guide you through building applications using the AT Protocol. Each tutorial focuses on a specific use case or feature, providing step-by-step instructions and code examples.
 
 Our tutorials are organized to be completed in order, but each tutorial is self-contained and can be followed independently.
+
+<Note>
+These tutorials are written to be cross-platform. In general, we recommend using platforms supported by [homebrew](https://brew.sh/): macOS, Linux, or [WSL](https://docs.microsoft.com/en-us/windows/wsl/) on Windows. There is also an outstanding [DNS bug](https://github.com/nodejs/node/issues/62347) affecting Node.js on Windows when not using WSL, which can break `lex` resolution.
+</Note>
 
 ## Build-a-Bot
 
