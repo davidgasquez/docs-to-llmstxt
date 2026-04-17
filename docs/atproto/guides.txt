@@ -1,3 +1,96 @@
+atproto/src/app/[locale]/guides/about-oauth/en.mdx
+---
+import {Container} from "@/components/Container"
+import {ResponsiveTable} from '@/components/ResponsiveTable'
+
+export const header = {
+  title: 'About OAuth',
+  description: 'OAuth implementation patterns for atproto applications',
+}
+
+This page covers the OAuth libraries and implementation patterns available for atproto applications. If you're new to atproto OAuth, we recommend starting with one of our hands-on tutorials:
+
+- [OAuth with Node.js](/guides/oauth-cli-tutorial) - A minimal CLI app, good for understanding how atproto OAuth works
+- [OAuth with Go](/guides/go-oauth-cli-tutorial) - OAuth from a Go CLI app
+- [OAuth with Next.js](/guides/oauth-tutorial) - Build a web app with AT Protocol login
+
+For a conceptual overview of how OAuth works in atproto (including how it differs from other OAuth systems), see the [Auth overview](/guides/auth#what-is-o-auth).
+
+## SDK Libraries
+
+The following libraries handle the OAuth flow, including [DPoP](/guides/oauth-patterns#understanding-d-po-p), token refresh, and session management.
+
+### TypeScript
+
+- [@atproto/oauth-client-browser](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-browser#readme) ([npmx](https://www.npmx.dev/package/@atproto/oauth-client-browser)) - Suitable for frontend-only applications (e.g. SPAs).
+- [@atproto/oauth-client-node](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-node#readme) ([npmx](https://www.npmx.dev/package/@atproto/oauth-client-node)) - Suitable for Electron desktop apps or server-side deployments.
+- [@atproto/oauth-client-expo](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-expo#readme) ([npmx](https://www.npmx.dev/package/@atproto/oauth-client-expo)) - For use in React Native projects (e.g. mobile apps)
+- [@atproto/oauth-client](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client#readme) ([npmx](https://www.npmx.dev/package/@atproto/oauth-client)) (This is the core implementation on which the above three libraries depend)
+- [@fujocoded/authproto](https://github.com/FujoWebDev/fujocoded-plugins/tree/main/astro-authproto) ([npmx](https://www.npmx.dev/package/@fujocoded/authproto)) - Community implementation for Astro apps
+- [@atcute/oauth-browser-client](https://github.com/mary-ext/atcute/tree/HEAD/packages/oauth/browser-client) ([npmx](https://npmx.dev/package/@atcute/oauth-browser-client)) - Community browser client implementation
+
+### Go
+
+- [Indigo](https://github.com/bluesky-social/indigo/tree/main/atproto/auth/oauth) ([Online API Docs](https://pkg.go.dev/github.com/bluesky-social/indigo/atproto/auth/oauth)) - Suitable for native apps or server-side deployments
+
+## Atproto OAuth Example Apps
+
+These simple example apps demonstrate usage of their respective SDKs.
+
+<ResponsiveTable
+  columns={[{label: 'Example App'}, {label: 'Language'}, {label: 'SDK'}, {label: 'Architecture'}, {label: 'Confidential Client?'}, {label: 'Localhost development client ID?', href: '/specs/oauth#localhost-client-development'}]}
+  rows={[
+    [{label: 'cookbook/react-native-oauth', href:' https://github.com/bluesky-social/cookbook/tree/main/react-native-oauth#readme' }, {label: 'TypeScript'}, {label: '@atproto/oauth-client-expo'}, {label: 'Mobile App (no backend)'}, {label: 'No'}, {label: 'No (requires hosted client metadata)'},],
+    [{label: 'cookbook/vanillajs-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/vanillajs-oauth-web-app#readme' }, {label: 'JavaScript'}, {label: '@atproto/oauth-client-browser'}, {label: 'Web SPA (no backend)'}, {label: 'No'}, {label: 'Optionally'},],
+    [{label: 'cookbook/nextjs-oauth', href:' https://github.com/bluesky-social/nextjs-oauth-tutorial/tree/129cf28b4146ae709e0dac43ce20154ab5237559#readme' }, {label: 'TypeScript'}, {label: '@atproto/oauth-client-node'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},],
+    [{label: 'cookbook/go-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme' }, {label: 'Go'}, {label: 'indigo'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},],
+    [{label: 'cookbook/go-oauth-cli-app', href:' https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app#readme' }, {label: 'Go'}, {label: 'indigo'}, {label: 'Native CLI'}, {label: 'No'}, {label: 'No (requires hosted client metadata)'},],
+    [{label: 'cookbook/python-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme' }, {label: 'Python'}, {label: 'None'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},]
+  ]}
+/>
+
+<Note>
+The Python example does not use an SDK! It may be useful as reference when building an OAuth SDK from scratch, alongside the advanced [OAuth client implementation guide](https://docs.bsky.app/docs/advanced-guides/oauth-client)
+</Note>
+
+## How the OAuth flow works
+
+1. Your app [redirects the user](/guides/permission-requests) to their PDS's authorization endpoint with your requested scopes
+2. The user reviews the permissions and approves (or denies) access
+3. The PDS redirects back to your `redirect_uri` with an authorization code
+4. Your app (or the SDK) exchanges the code for access and refresh tokens
+5. You use the access token to make authenticated API requests
+
+The SDKs handle steps 3-5 automatically. Your callback endpoint just needs to call the SDK's callback handler, which completes the token exchange and returns an authenticated session. From there, you can make API calls — see [Reads and Writes](/guides/reads-and-writes).
+
+## Types of App
+
+The *simplest* type of app is one where the OAuth session is established directly between the user's device and the PDS, as demonstrated in the [cookbook/vanillajs-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/vanillajs-oauth-web-app#readme) example. It's simple because it doesn't require a dedicated backend service, only hosting static resources.
+
+If your app doesn't need long-lived sessions, then this approach is completely fine. But for other use cases, session lifetime will be limited because the app is a "public client", as opposed to a "confidential client". Becoming a confidential client involves establishing a secret key, bound to the client ID. If the client is publicly available and runs on the user's own device, it cannot protect a client secret. Thus, implementing a confidential client necessitates hosting some backend infrastructure, which the [cookbook/go-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme) and [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme) examples demonstrate (both using the "BFF" pattern, see below).
+
+See [Types of Clients](/specs/oauth#types-of-clients) for more technical details on confidential vs. public clients.
+
+There are several design strategies that can be used to "upgrade" a public client into a confidential client:
+
+- [Backend For Frontend (BFF)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps#name-backend-for-frontend-bff): The OAuth session is established between the app backend server and the PDS. This server-side session is associated with the user's frontend session via mechanisms such as session cookies. The frontend makes requests to the PDS by proxying them through the backend, which handles the OAuth authorization.
+- [Token-Mediating Backend (TMB)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps#name-token-mediating-backend): Similar to the BFF pattern, except the backend passes OAuth access tokens to the frontend once the session has been established, allowing the frontend to make direct requests to the PDS.
+- [Client Assertion Backend](https://github.com/bluesky-social/proposals/tree/main/0010-client-assertion-backend): A proposed alternative to the TMB pattern with simplified server-side logic.
+
+Of these three, the BFF pattern is the currently recommended approach for building confidential-client applications. This is demonstrated in the [cookbook/go-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme) and [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme) examples.
+
+## Further Reading and Resources
+
+- [Auth](/guides/auth)
+- [SDK authentication](/guides/sdk-auth)
+- [Permission Requests](/guides/permission-requests)
+- [Permission Sets](/guides/permission-sets)
+- [OAuth Patterns](/guides/oauth-patterns)
+- [OAuth spec](/specs/oauth)
+- [Permissions spec](/specs/permission)
+
+
+---
 atproto/src/app/[locale]/guides/account-lifecycle/en.mdx
 ---
 export const header = {
@@ -175,14 +268,14 @@ export const header = {
   </TabList>
   <TabPanels>
     <TabPanel value="ts">
-    You can log in using any [OAuth](/guides/oauth-cli-tutorial) provider, or with [PasswordSession](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex-password-session) from our SDK if you are using password auth.
+    You can log in using any [OAuth](/guides/about-oauth) provider, or with [PasswordSession](https://github.com/bluesky-social/atproto/tree/main/packages/lex/lex-password-session) from our SDK if you are using password auth.
 
     Begin by installing the atproto packages:
 
     <NpmInstall />
     </TabPanel>
     <TabPanel value="go">
-    You can log in using any [OAuth](/guides/go-oauth-cli-tutorial) provider, or with password authentication from our SDK.
+    You can log in using any [OAuth](/guides/about-oauth) provider, or with password authentication from our SDK.
 
     Begin by installing the atproto packages:
 
@@ -199,13 +292,13 @@ Next, authenticate with an [SDK](/guides/sdk-auth).
 
 You might start out by just using atproto identities as an OAuth source — though you'll find that there's lots more you can do by building on top of the atproto [social graph](/guides/social-graph).
 
-This section is aimed at developers building applications on atproto. Applications with their own end-user login flow should implement [OAuth](#what-is-oauth) for authentication. Single-purpose applications such as bots or command line tools may use [password authentication](/guides/sdk-auth) instead.
+This section is aimed at developers building applications on atproto. Applications with their own end-user login flow should implement [OAuth](#what-is-o-auth) for authentication. Single-purpose applications such as bots or command line tools may use [password authentication](/guides/sdk-auth) instead.
 
 <Note>
 We also support the use of [App Passwords](/specs/xrpc#app-passwords). Accounts can create and revoke app passwords separate from their primary password. This way, you do not need to supply your primary password to applications that use password auth.
 </Note>
 
-To implement OAuth in your application, refer to [OAuth patterns](/guides/oauth-patterns) for common use cases, and the [Scopes](/guides/scopes) guide for understanding permission models. If you're building your own protocol implementation or OAuth Client SDK, refer to the [OAuth spec](/specs/oauth).
+To implement OAuth in your application, refer to [About OAuth](/guides/about-oauth) for common use cases, and the [Permission Sets](/guides/permission-sets) guide for understanding permission models. If you're building your own protocol implementation or OAuth Client SDK, refer to the [OAuth spec](/specs/oauth).
 
 ## What *is* OAuth?
 
@@ -215,26 +308,15 @@ OAuth aims to solve these problems with a family of open specifications for mana
 
 As a developer, you can request limited access to a person's account, meaning if you only need to post a message to someone's public timeline, you don't also need to request access to read their private messages. This is great for your app because you don't have to worry about managing data you don't need, and it's great for the person using your app because they don't need to worry about their DMs being compromised.
 
-## How is OAuth Different in AT Protocol?
-
-Atproto [specifies](/specs/oauth) a particular "profile" of the OAuth standards, using [OAuth 2.1](https://www.ietf.org/archive/id/draft-ietf-oauth-v2-1-13.html) as the foundation.
-
-There are a few details that might catch you off guard if you're used to using other OAuth systems.
-
-- **Atproto is distributed**: Usually, when an app has a "sign in with..." button, it provides a choice of which authorities it allows to authenticate users (usually one of a few big corporations). With atproto OAuth, the app has no prior relationship with the authentication provider: a user's [PDS](/guides/the-at-stack#pds). This is also the reason why atproto OAuth is not compatible with OIDC, which requires a pre-established relationship.
-
-- **Migration**: Atproto users can migrate their accounts between servers ([PDSes](/guides/glossary#pds-personal-data-server)) over time. To facilitate this atproto has a flexible [Identity](/guides/identity) layer, which allows usernames ([handles](/specs/handle)) to be resolved to a static user ID ([DID](/specs/did)), which in turn can be resolved to locate the user's PDS. When a user logs in to an app, the OAuth client dynamically resolves these relationships.
-
-- **Client IDs**: In other OAuth ecosystems, it is often necessary for client apps to pre-register themselves with the resource server. This is not viable in a decentralized system (with many clients and many resource servers), so atproto addresses this using [Client ID Metadata Documents](/specs/oauth#client-id-metadata-document).
-
 ## Further Reading and Resources
 
-Begin by reading [SDK authentication](/guides/sdk-auth). To implement OAuth in your application, refer to [OAuth patterns](/guides/oauth-patterns) for common use cases, and the [Scopes](/guides/scopes) guide for understanding permission models.
+Begin by reading [SDK authentication](/guides/sdk-auth). To implement OAuth in your application, refer to [About OAuth](/guides/about-oauth) for common use cases, and the [Permission Sets](/guides/permission-sets) guide for understanding permission models.
 
 - [SDK authentication](/guides/sdk-auth)
-- [OAuth patterns](/guides/oauth-patterns)
-- [Scopes](/guides/scopes)
-- [Permission requests](/guides/permission-sets)
+- [About OAuth](/guides/about-oauth)
+- [Permission Requests](/guides/permission-requests)
+- [Permission Sets](/guides/permission-sets)
+- [OAuth Patterns](/guides/oauth-patterns)
 - [OAuth spec](/specs/oauth)
 - [Permissions spec](/specs/permission)
 
@@ -1256,7 +1338,7 @@ A few things to keep in mind:
 
 - **This is for local development.** The localhost client won't work in production. For a production-ready Go example with SQLite persistence and multiple commands, see the [go-oauth-cli-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app) in the Cookbook.
 - **Sessions are in-memory.** Every run requires re-authorization. The Cookbook example shows how to persist sessions with SQLite.
-- **Scopes.** This tutorial requests only the base `atproto` scope. To read or write data on behalf of the user, you'll need additional [scopes](/guides/scopes).
+- **Scopes.** This tutorial requests only the base `atproto` scope. To read or write data on behalf of the user, you'll need additional [scopes](/guides/permission-sets).
 
 You can find more guides and tutorials in our [Docs](/guides), and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
 
@@ -2036,7 +2118,7 @@ A few things to keep in mind:
 
 - **This is for local development.** The loopback client won't work in production — see the [OAuth with NextJS Tutorial](/guides/oauth-tutorial) for deploying a real app.
 - **Sessions are in-memory.** Every run requires re-authorization. For persistent sessions, use a database as shown in the [NextJS tutorial](/guides/oauth-tutorial#part-3-adding-database-persistence).
-- **Scopes.** This tutorial requests only the base `atproto` scope. To read or write data on behalf of the user, you'll need additional [scopes](/guides/scopes).
+- **Scopes.** This tutorial requests only the base `atproto` scope. To read or write data on behalf of the user, you'll need additional [scopes](/guides/permission-sets).
 
 You can find more guides and tutorials in our [Docs](/guides), and more example apps in the [Cookbook](https://github.com/bluesky-social/cookbook/) repository. Happy building!
 
@@ -2044,61 +2126,26 @@ You can find more guides and tutorials in our [Docs](/guides), and more example 
 ---
 atproto/src/app/[locale]/guides/oauth-patterns/en.mdx
 ---
-import {Container} from "@/components/Container"
-import {ResponsiveTable} from '@/components/ResponsiveTable'
-
 export const header = {
   title: 'OAuth Patterns',
-  description: 'OAuth implementation examples',
+  description: 'Advanced OAuth implementation patterns for atproto applications',
 }
 
-## TypeScript
+This page covers advanced OAuth implementation details that most developers won't need to handle directly. If you're using one of the [reference SDKs](/guides/about-oauth#typescript), these details are handled automatically.
 
-- [@atproto/oauth-client-browser](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-browser#readme) ([npmjs](https://www.npmjs.com/package/@atproto/oauth-client-browser)) - Suitable for frontend-only applications (e.g. SPAs).
-- [@atproto/oauth-client-node](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-node#readme) ([npmjs](https://www.npmjs.com/package/@atproto/oauth-client-node)) - Suitable for Electron desktop apps or server-side deployments.
-- [@atproto/oauth-client-expo](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client-expo#readme) ([npmjs](https://www.npmjs.com/package/@atproto/oauth-client-expo)) - For use in React Native projects (e.g. mobile apps)
-- [@atproto/oauth-client](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client#readme) ([npmjs](https://www.npmjs.com/package/@atproto/oauth-client)) (This is the core implementation on which the above three libraries depend)
-- [@fujocoded/authproto](https://github.com/FujoWebDev/fujocoded-plugins/tree/main/astro-authproto) ([npmjs](https://www.npmjs.com/package/@fujocoded/authproto)) - Community implementation for Astro apps
+For getting started with OAuth, see [About OAuth](/guides/about-oauth). For understanding permission scopes, see [Permission Sets](/guides/permission-sets). For the full specification, see the [OAuth spec](/specs/oauth).
 
-## Go
+## How is OAuth Different in AT Protocol?
 
-- [Indigo](https://github.com/bluesky-social/indigo/tree/main/atproto/auth/oauth) ([Online API Docs](https://pkg.go.dev/github.com/bluesky-social/indigo/atproto/auth/oauth)) - Suitable for native apps or server-side deployments
+Atproto [specifies](/specs/oauth) a particular "profile" of the OAuth standards, using [OAuth 2.1](https://www.ietf.org/archive/id/draft-ietf-oauth-v2-1-13.html) as the foundation.
 
-## Atproto OAuth Example Apps
+There are a few details that might catch you off guard if you're used to using other OAuth systems.
 
-These simple example apps demonstrate usage of their respective SDKs.
+- **Atproto is distributed**: Usually, when an app has a "sign in with..." button, it provides a choice of which authorities it allows to authenticate users (usually one of a few big corporations). With atproto OAuth, the app has no prior relationship with the authentication provider: a user's [PDS](/guides/the-at-stack#pds). This is also the reason why atproto OAuth is not compatible with OIDC, which requires a pre-established relationship.
 
-<ResponsiveTable
-  columns={[{label: 'Example App'}, {label: 'Language'}, {label: 'SDK'}, {label: 'Architecture'}, {label: 'Confidential Client?'}, {label: 'Localhost development client ID?', href: '/specs/oauth#localhost-client-development'}]}
-  rows={[
-    [{label: 'cookbook/react-native-oauth', href:' https://github.com/bluesky-social/cookbook/tree/main/react-native-oauth#readme' }, {label: 'TypeScript'}, {label: '@atproto/oauth-client-expo'}, {label: 'Mobile App (no backend)'}, {label: 'No'}, {label: 'No (requires hosted client metadata)'},],
-    [{label: 'cookbook/vanillajs-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/vanillajs-oauth-web-app#readme' }, {label: 'JavaScript'}, {label: '@atproto/oauth-client-browser'}, {label: 'Web SPA (no backend)'}, {label: 'No'}, {label: 'Optionally'},],
-    [{label: 'cookbook/nextjs-oauth', href:' https://github.com/bluesky-social/nextjs-oauth-tutorial/tree/129cf28b4146ae709e0dac43ce20154ab5237559#readme' }, {label: 'TypeScript'}, {label: '@atproto/oauth-client-node'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},],
-    [{label: 'cookbook/go-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme' }, {label: 'Go'}, {label: 'indigo'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},],
-    [{label: 'cookbook/go-oauth-cli-app', href:' https://github.com/bluesky-social/cookbook/tree/main/go-oauth-cli-app#readme' }, {label: 'Go'}, {label: 'indigo'}, {label: 'Native CLI'}, {label: 'No'}, {label: 'No (requires hosted client metadata)'},],
-    [{label: 'cookbook/python-oauth-web-app', href:' https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme' }, {label: 'Python'}, {label: 'None'}, {label: 'Web BFF'}, {label: 'Optionally'}, {label: 'Optionally'},]
-  ]}
-/>
+- **Migration**: Atproto users can migrate their accounts between servers ([PDSes](/guides/glossary#pds-personal-data-server)) over time. To facilitate this atproto has a flexible [Identity](/guides/identity) layer, which allows usernames ([handles](/specs/handle)) to be resolved to a static user ID ([DID](/specs/did)), which in turn can be resolved to locate the user's PDS. When a user logs in to an app, the OAuth client dynamically resolves these relationships.
 
-<Note>
-The Python example does not use an SDK! It may be useful as reference when building an OAuth SDK from scratch, alongside the advanced [OAuth client implementation guide](https://docs.bsky.app/docs/advanced-guides/oauth-client)
-</Note>
-
-## Types of App
-
-The *simplest* type of app is one where the OAuth session is established directly between the user's device and the PDS, as demonstrated in the [cookbook/vanillajs-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/vanillajs-oauth-web-app#readme) example. It's simple because it doesn't require a dedicated backend service, only hosting static resources.
-
-If your app doesn't need long-lived sessions, then this approach is completely fine. But for other use cases, session lifetime will be limited because the app is a "public client", as opposed to a "confidential client". Becoming a confidential client involves establishing a secret key, bound to the client ID. If the client is publicly available and runs on the user's own device, it cannot protect a client secret. Thus, implementing a confidential client necessitates hosting some backend infrastructure, which the [cookbook/go-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme) and [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme) examples demonstrate (both using the "BFF" pattern, see below).
-
-See [Types of Clients](/specs/oauth#types-of-clients) for more technical details on confidential vs. public clients.
-
-There are several design strategies that can be used to "upgrade" a public client into a confidential client:
-
-- [Backend For Frontend (BFF)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps#name-backend-for-frontend-bff): The OAuth session is established between the app backend server and the PDS. This server-side session is associated with the user's frontend session via mechanisms such as session cookies. The frontend makes requests to the PDS by proxying them through the backend, which handles the OAuth authorization.
-- [Token-Mediating Backend (TMB)](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps#name-token-mediating-backend): Similar to the BFF pattern, except the backend passes OAuth access tokens to the frontend once the session has been established, allowing the frontend to make direct requests to the PDS.
-- [Client Assertion Backend](https://github.com/bluesky-social/proposals/tree/main/0010-client-assertion-backend): A proposed alternative to the TMB pattern with simplified server-side logic.
-
-Of these three, the BFF pattern is the currently recommended approach for building confidential-client applications. This is demonstrated in the [cookbook/go-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/go-oauth-web-app#readme) and [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app#readme) examples.
+- **Client IDs**: In other OAuth ecosystems, it is often necessary for client apps to pre-register themselves with the resource server. This is not viable in a decentralized system (with many clients and many resource servers). In atproto, the client ID is a URL, which is fetched at auth time to determine OAuth features like redirect URI and scopes. See [Client ID Metadata Documents](/specs/oauth#client-id-metadata-document).
 
 ## Understanding DPoP
 
@@ -2114,12 +2161,100 @@ DPoP is mandatory in atproto OAuth. **If you're using an SDK**, it's handled aut
 
 The [cookbook/python-oauth-web-app](https://github.com/bluesky-social/cookbook/tree/main/python-oauth-web-app) contains a complete manual DPoP implementation in `atproto_oauth.py`. For the full specification, see [DPoP in the OAuth spec](/specs/oauth#demonstrating-proof-of-possession-d-po-p).
 
+## PKCE and PAR
+
+Two other security mechanisms are mandatory in atproto OAuth:
+
+- **[PKCE (Proof Key for Code Exchange)](/specs/oauth#proof-key-for-code-exchange-pkce)** prevents authorization code interception attacks. The client generates a random secret for each authorization request and proves possession of it when exchanging the code for tokens.
+
+- **[PAR (Pushed Authorization Requests)](/specs/oauth#pushed-authorization-requests-par)** sends authorization parameters directly to the server before redirecting the user, reducing URL exposure and enabling better request validation.
+
+Like DPoP, both are handled automatically by the SDKs. If implementing OAuth manually, see the [OAuth spec](/specs/oauth) for requirements.
+
+## Token Refresh
+
+OAuth access tokens in atproto have a limited lifetime. When a token expires, you'll need to use the refresh token to obtain a new access token. The SDKs handle this automatically, but if you're implementing OAuth manually:
+
+- Store the refresh token securely alongside the access token
+- When an API call fails with a 401, attempt a token refresh before retrying
+- The new access token will be bound to the same DPoP key pair
+
+## Session Storage
+
+For web applications using the BFF pattern, you'll need to associate OAuth sessions with user sessions. Common approaches include:
+
+- **Cookie-based sessions**: Store the OAuth tokens server-side, keyed by a session ID stored in an HTTP-only cookie
+- **Database-backed sessions**: Store tokens in a database with the user's account, enabling multi-device sessions
+
+See [Types of App](/guides/about-oauth#types-of-app) for architectural patterns.
+
+## Progressive scope requests
+
+An application does not always need all of its permissions at sign-in. The `scope` parameter in the [client metadata document](/specs/oauth#client-id-metadata-document) declares the maximum set of scopes the application may ever request, but individual authorization flows can request a subset. This makes it possible to start with minimal scopes and request more later, as the user opts into features that need them.
+
+### Selecting scopes before authorization
+
+For client-side applications where different users have different needs, one approach is to let users choose which [permissions](/specs/permission) to grant before the OAuth redirect. The application builds the [scope string](/specs/permission#scope-string-syntax) from the user's selections and passes it to [`authorize()`](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client#readme):
+
+```typescript
+const BASE_SCOPES = ["atproto"];
+
+// Request specific record collection access instead of broad permissions
+const OPTIONAL_SCOPES = [
+  // Access to your app's Lexicon records
+  { id: "posts", scope: "repo:com.example.post", label: "Create posts" },
+  { id: "likes", scope: "repo:com.example.like", label: "Like content" },
+  // Or access to Bluesky profile data
+  { id: "profile", scope: "rpc:app.bsky.actor.getProfile?aud=did:web:api.bsky.app#bsky_appview", label: "Read profile" },
+  { id: "blob",  scope: "blob:*/*", label: "Upload images/video" },
+];
+
+function buildScopeString(selected: Set<string>): string {
+  const granular = OPTIONAL_SCOPES
+    .filter((s) => selected.has(s.id))
+    .map((s) => s.scope);
+  return [...BASE_SCOPES, ...granular].join(" ");
+}
+
+// pass the built scope string to the authorization flow
+const url = await oauthClient.authorize(handle, {
+  scope: buildScopeString(userSelections),
+});
+```
+
+Note that `repo:com.example.post` grants full create/update/delete access to that collection. You can restrict to specific actions with query parameters: `repo:com.example.post?action=create&action=update`. See the [permission spec](/specs/permission#resource-types) for full syntax.
+
+After the callback, the application tracks which scopes were granted for the session, so that features can be shown or hidden accordingly.
+
+### Upgrading scopes for an existing session
+
+For applications using the [BFF pattern](/guides/about-oauth#types-of-app) with optional integrations — features that require scopes outside the application's primary [namespace authority](/specs/permission#namespace-authority) — scope upgrades can happen after the user is already signed in. The application stores the user's preference, initiates a new OAuth flow with the expanded scope set, and replaces the old session on callback:
+
+```typescript
+// Your app's core permissions
+const BASE_SCOPE =
+  "atproto blob:*/* repo:com.example.post repo:com.example.like";
+
+// Add permissions for another app's Lexicon (cross-namespace integration)
+const EXTENDED_SCOPE =
+  `${BASE_SCOPE} repo:social.othernet.feed.play repo:social.othernet.actor.status`;
+
+// start a new OAuth flow with the expanded scope
+const url = await oauthClient.authorize(handle, {
+  scope: wantsIntegration ? EXTENDED_SCOPE : BASE_SCOPE,
+});
+```
+
+The server stores the old session identifier alongside the OAuth state so the callback handler knows to replace it. On subsequent logins, the server can look up the user's stored preferences and include the expanded scopes automatically.
+
+Note that [permission sets](/specs/permission#permission-sets) can reduce the need for explicit scope upgrades: when a client refreshes its tokens, the computed permissions may be updated to reflect changes to the resolved sets. If a new capability falls within an existing permission set's [namespace authority](/specs/permission#namespace-authority), updating the published set is sufficient — no re-authorization required. Cross-namespace integrations will still require an explicit upgrade. See [Rolling out changes](/guides/permission-requests#rolling-out-changes) for guidance on coordinating scope changes with application releases.
+
 ## Further Reading and Resources
 
 - [Auth](/guides/auth)
-- [SDK authentication](/guides/sdk-auth)
-- [Scopes](/guides/scopes)
-- [Permission requests](/guides/permission-sets)
+- [About OAuth](/guides/about-oauth)
+- [Permission Requests](/guides/permission-requests)
+- [Permission Sets](/guides/permission-sets)
 - [OAuth spec](/specs/oauth)
 - [Permissions spec](/specs/permission)
 
@@ -2371,7 +2506,7 @@ You can provide these as part of our Railway [deployment guide](https://github.c
 
 You now have a complete, production-deployed app with persistent storage. However, it doesn't actually do anything with the AT Protocol yet! As you add features from here, you'll need to request additional permission scopes during the OAuth flow.
 
-By default, the app requests only the `atproto` scope. The `atproto` scope is required and offers basic authentication for an `atproto` identity, but it does not authorize the client to access any privileged information or perform any actions on behalf of the user. Refer to the [Scopes guide](/guides/scopes) for more information.
+By default, the app requests only the `atproto` scope. The `atproto` scope is required and offers basic authentication for an `atproto` identity, but it does not authorize the client to access any privileged information or perform any actions on behalf of the user. Refer to the [Permission Sets guide](/guides/permission-sets) for more information.
 
 To change the requested scope, update the SCOPE constant in `lib/auth/client.ts`. It should be a space-delimited string:
 
@@ -2470,20 +2605,17 @@ Some of the primary specifications comprising the initial version of the AT Prot
 
 
 ---
-atproto/src/app/[locale]/guides/permission-sets/en.mdx
+atproto/src/app/[locale]/guides/permission-requests/en.mdx
 ---
 import {Container} from "@/components/Container"
+import {ResponsiveTable} from '@/components/ResponsiveTable'
 import oauth from "./oauth-only.png"
 import skyblur from "./skyblur-oauth.png"
 import granular from "./skyblur-granular.png"
 import lexicon from "./skyblur-lexicon.png"
 import OauthScopeMetadata from './_snippets/oauth-scope-metadata.mdx'
 import OauthAuthUrl from './_snippets/oauth-auth-url.mdx'
-import PermissionSetLexicon from './_snippets/permission-set-lexicon.mdx'
-import GoatLexLint from './_snippets/goat-lex-lint.mdx'
-import GoatLexNew from './_snippets/goat-lex-new.mdx'
-import GoatLexPublish from './_snippets/goat-lex-publish.mdx'
-import GoatLexResolve from './_snippets/goat-lex-resolve.mdx'
+import oauthdomain from "./oauth-domain.jpg"
 
 export const header = {
   title: 'Permission Requests',
@@ -2491,17 +2623,21 @@ export const header = {
     'A permissions guide for app developers and Lexicon designers',
 }
 
-## For app developers
+This page explains how to **use** permission scopes in your OAuth flow. If you're building an app with custom Lexicons and want to **define and publish** your own permission sets, see [Permission Sets](/guides/permission-sets).
 
-This guide describes how to request permissions for your atproto application. [OAuth](/guides/auth) is used to authorize third-party applications to access users' social graphs, and is a prerequisite for the concepts described here.
+## Overview
 
-Control over atproto resources is described and granted using [permissions](/specs/permission). A group of a permissions related to a specific Lexicon namespace (record types and API endpoints) can be bundled together as a "permission set". Both are used in the context of [OAuth](/specs/auth) to grant client software access to account resources on a PDS: For example, the ability to write records of specific types to the user's public repository, or make authenticated API requests to remote services. Developers declare the permissions their app requires to function, and end users are shown the permissions when granting access to the app.
+This guide describes how to request and define permissions for your atproto application. [OAuth](/guides/auth) handles authorization, and this page covers how to specify *what* your app can access.
 
-In general, it is best to use existing permission sets for cleaner UI, but you can also request individual permissions and define your own permission sets as needed. Refer to the [OAuth flow examples](#oauth-flow-examples) section for how these requests appear in the OAuth flow.
+Control over atproto resources is granted using [permissions](/specs/permission). Individual permissions like `repo:com.example.post` grant access to writing specific record types or API endpoints. Related permissions can be bundled into a **permission set** with a human-readable title and description — these are what users see in the authorization dialog.
+
+If you're building an app with **custom Lexicons**, you should define permission sets for them. This gives users clear descriptions of what your app can do, rather than a list of opaque namespace IDs. See [Permission Set design](/guides/permission-sets#permission-set-design) for the structure.
+
+If you're building an app that only uses **existing Lexicons** (like Bluesky's `app.bsky.*`), you can reference their published permission sets, or request individual granular permissions. Refer to the [OAuth flow examples](#o-auth-flow-examples) section to see how these appear to users.
 
 ## Requesting permissions
 
-When your app initiates an OAuth flow with an atproto identity provider, it can request specific permission sets by including them in the `scope` parameter of the authorization request. This should be supplied as a *space-separated list* in the [`oauth-client-metadata.json` file](/specs/oauth#clients) when registering your OAuth client:
+When your app initiates an OAuth flow with an atproto identity provider, it can request specific permission sets by including them in the `scope` parameter of the authorization request. This should be supplied as a *space-separated list* in the [`oauth-client-metadata.json` file](specs/oauth#client-id-metadata-document) when registering your OAuth client:
 
 <OauthScopeMetadata />
 
@@ -2509,23 +2645,48 @@ OAuth in AT uses [Pushed Authorization Requests](https://auth0.com/blog/what-are
 
 <OauthAuthUrl />
 
-You should try to only request enough permissions to cover the features your app needs. [Transition scopes](/specs/oauth#authorization-scopes) appear to grant permissions to create, update, or delete any of a user's AT records, including posts from other applications. In general, these broad permission requests should be avoided. This helps build trust with your users, and minimizes friction during the authorization process.
+You should try to only request enough permissions to cover the features your app needs. We provide [transition scopes](/specs/oauth#transitional-scopes) that grant broad permissions to create, update, or delete any of a user's AT records, including posts from other applications — but in general, these broad permission requests should be avoided. Granular permissions help build trust with your users and minimize friction during the authorization process.
 
 From a user experience perspective, it's best to keep the number of requested permission sets low. Each additional permission set adds more information to the authorization dialog, which can lead to decision fatigue. It is possible to allow users to grant only a subset of requested permissions, but this can lead to edge cases.
 
 ## Permission types
 
-Permissions relate to user owned resources on PDS instances are are represented by five types:
+Permissions relate to user-owned resources on PDS instances and are represented by five types:
 
-- `repo`: Public Repository (records and collections)
-- `rpc`: Service Authentication (API calls to external services)
-- `blob`: uploaded media files
-- `identity`: DID and handle
-- `account`: hosting status, email address
+<ResponsiveTable
+  columns={[{label: 'Type'}, {label: 'Description'}, {label: 'Examples'}]}
+  rows={[
+    [{label: 'repo'}, {label: 'Write access to records in the user\'s repository'}, {label: 'repo:com.example.post, repo:com.example.post?action=create'}],
+    [{label: 'rpc'}, {label: 'Authenticated calls to remote API endpoints'}, {label: 'rpc:app.bsky.actor.getProfile?aud=did:web:api.bsky.app#bsky_appview, rpc:app.example.moderation.createReport?aud=*'}],
+    [{label: 'blob'}, {label: 'Media file uploads to the PDS. Cannot be included in permission sets.'}, {label: 'blob:*/* (any type), blob:image/* (images only)'}],
+    [{label: 'identity'}, {label: 'DID document and handle'}, {label: 'identity:handle, identity:*'}],
+    [{label: 'account'}, {label: 'Account hosting details. Cannot be included in permission sets.'}, {label: 'account:email, account:email?action=manage'}],
+  ]}
+/>
 
-Wildcards (*) are allowed in scope string syntax, and grants access to all records — the most common example being `blob:*/*`, for working with images and video. Partial wildcards are *not* supported — for example, `app.bsky.*` is not a valid scope string. If you wanted to request multiple permissions from a particular namespace or Lexicon, you would need to list them out individually, or use a [permission set](#for-lexicon-designers). This is intentional, to avoid overbroad permission requests.
+Wildcards (*) are allowed in scope string syntax, and grants access to all records — the most common example being `blob:*/*`, for working with images and video. Partial wildcards are *not* supported — for example, `repo: app.bsky.*` is not a valid scope string. If you wanted to request multiple permissions from a particular namespace or Lexicon, you would need to list them out individually, or use a [permission set](/guides/permission-sets). This is intentional, to avoid overbroad permission requests.
 
-Permission sets are themselves Lexicon schemas and are namespaced like other Lexicons. Unlike other Lexicons, permission sets are prefixed with `include:` in the scope string, and are dynamic; they can be updated.
+Permission sets are themselves Lexicon schemas and are namespaced like other Lexicons. Permission sets are prefixed with `include:` in the scope string. Unlike other Lexicons, they can be updated in [most contexts](#rolling-out-changes).
+
+## Clients
+
+OAuth client software is identified by a globally unique `client_id`. Distinct variants of client software may have distinct `client_id` values; for example the browser app and Android (mobile OS) variants of the same software might have different `client_id` values. The `client_id` must be a fully-qualified web URL from which the client-metadata JSON document can be fetched. For example, `https://app.example.com/oauth-client-metadata.json`. Some more about the `client_id`:
+
+- it must be a well-formed URL, following the W3C URL specification
+- the schema must be `https://`, and there must not be a port number included. Note that there is a [special exception](/specs/oauth#localhost-client-development) for `http://localhost` `client_id` values for development.
+- the path does not need to include `oauth-client-metadata.json`, but it is helpful convention.
+
+<Note>
+If you have been using `client-metadata.json` rather than `oauth-client-metadata.json`, you can make this change to have your domain display on the auth flow page, rather than a URL string.
+</Note>
+
+<Container>
+  <Image src={oauthdomain} alt="" className="w-full max-w-md mx-auto" />
+</Container>
+
+The auth flow page will display all the relevant permissions being granted. This is true both for apps using [granular permissions](/specs/permission), and for those using the [transitional](/specs/oauth#authorization-scopes) OAuth scopes.
+
+Client Apps should be sure to check which auth scopes were actually approved during the auth flow. In particular, when requesting permission to read an account email address (`account:email`), the user might decline that permission while granting others. In theory, any individual permission might be denied while the overall request is granted.
 
 ## Rolling out changes
 
@@ -2533,57 +2694,11 @@ When you update your app to use new permission sets, it's important to coordinat
 
 Your release and deployment process for the [client metadata document](/specs/oauth#clients) may be separate from your app's code deployment process. Make sure to plan accordingly — an updated `oauth-client-metadata.json` that requests new permissions must be live before a version of your app that requires those permissions.
 
-## For Lexicon designers
-
-Lexicons are authored in JSON — you can find examples in the [Lexicon Guide](/guides/lexicon). Atmosphere HTTP API methods each scope and implement a particular set of Lexicons, so Lexicons must include valid query parameters, request bodies, and response bodies as appropriate. Each Lexicon, in turn, becomes a permission scope — in other words, `app.bsky.feed.post` is an AT record format, a web endpoint, and a granular permission all at once.
-
-Lexicon schemas are published publicly as records in atproto Lexicon repositories. Refer to [Lexicon Publication and Resolution](/specs/lexicon#lexicon-publication-and-resolution) for technical details.
-
-## Permission Set design
-
-Full-featured client apps require a large number of granular permissions to function: dozens or even hundreds of individual permissions. To simplify permission management, Lexicon designers can define "sets" of permissions as part of the schemas they publish. These permission sets are themselves Lexicon schemas and are referred to by namespace ID, such as `com.example.authBasicFeatures`.
-
-For example, your application could request a permission set like `include:com.example.authBasicFeatures?aud=did:web:api.example.com%23svc_appview`. This would resolve to a Lexicon that defines a set of permissions required for the app to function:
-
-<PermissionSetLexicon />
-
-Note the `auth` prefix in the `app.example.feed.authOnlyPost` and `com.example.authBasicFeatures` examples. This is a naming convention to indicate that the Lexicon is designed for use as a permission set.
-
-Permission sets are limited to expressing permissions that reference resources under the same NSID namespace as the set itself. For example, the set `app.example.feed.authOnlyPost` could include permissions to `app.example.feed.post` records and making `app.example.feed.getPostThread` API endpoint requests to remote services. But it could not grant permissions to `app.example.actor.profile`. A permission set `app.example.authFull`, which is a level up in the hierarchy, could include permissions to all these resources.
-
-The `title` and `details` fields are descriptive, and will be displayed as part of the OAuth flow; see the [OAuth flow examples](#oauth-flow-examples) section for an example. Internationalization of these descriptive fields is supported — refer to [the permission sets spec](/specs/permission#permission-sets).
-
-The use of `inheritAud` in the `rpc` permission allows you to [control inheritance behavior](/specs/permission#rpc).
-
-The `blob:*/*` permission for image/video handling cannot be included in permission sets and must always be requested separately.
-
-## Linting and validating
-
-You can use [`goat`](https://github.com/bluesky-social/goat) to create and publish Lexicons. Before publishing, `goat` can also be used to lint and validate your Lexicon. For example, pulling and linting `app.bsky.feed.post`:
-
-<GoatLexLint />
-
-Nobody's perfect 😊
-
-You can create a new Lexicon record with `goat lex new record`:
-
-<GoatLexNew />
-
-Develop your Lexicon following the [style guide](/guides/lexicon-style-guide), and then eventually publish it with `goat lex publish`:
-
-<GoatLexPublish />
-
-After publishing a new Lexicon, you can verify that it is live with `goat lex resolve`:
-
-<GoatLexResolve />
-
-## Revising Permission Sets
-
 Permission sets can be revised, but removing them or making destructive changes can break existing applications. In general, permission sets should be closely tied to the applications they are designed for, but not necessarily 1:1. Remember that atproto applications can utilize multiple different Lexicons.
 
 ## OAuth flow examples
 
-Apps that are using atproto identity providers *solely* for authentication [only need to request the `atproto` permission](/guides/scopes). This provides the same OAuth flow that you might expect from other identity providers; no features of the Atmosphere social graph are used, and no additional permissions are required:
+Apps that are using atproto identity providers *solely* for authentication [only need to request the `atproto` permission](/guides/permission-sets). This provides the same OAuth flow that you might expect from other identity providers; no features of the Atmosphere social graph are used, and no additional permissions are required:
 
 <Container>
   <Image src={oauth} alt="" className="w-full max-w-md mx-auto"/>
@@ -2619,11 +2734,107 @@ This is all at the discretion of app developers and Lexicon designers. We provid
 
 - [Auth](/guides/auth)
 - [SDK authentication](/guides/sdk-auth)
-- [OAuth patterns](/guides/oauth-patterns)
-- [Scopes](/guides/scopes)
+- [About OAuth](/guides/about-oauth)
+- [Permission Sets](/guides/permission-sets)
+- [OAuth Patterns](/guides/oauth-patterns)
+- [Publishing Lexicons](/guides/publishing-lexicons)
 - [OAuth spec](/specs/oauth)
 - [Permissions spec](/specs/permission)
 
+
+---
+atproto/src/app/[locale]/guides/permission-sets/en.mdx
+---
+import {Container} from "@/components/Container"
+import PermissionSetLexicon from '../permission-requests/_snippets/permission-set-lexicon.mdx'
+
+export const header = {
+  title: 'Permission Sets',
+  description: 'OAuth permission scopes and sets',
+}
+
+This page explains how to **define and publish** permission sets for custom Lexicons. If you just want to **use** existing permission scopes in your OAuth flow, see [Permission Requests](/guides/permission-requests).
+
+## Understanding Permission Sets
+
+The OAuth flow uses permission "scopes" which describe the level of access granted with the session. Rather than requesting broad access to a user's account, atproto apps should request granular permissions for specific record types or API endpoints.
+
+The core pattern is straightforward: **request access to only the collections your app needs**. For example, if your app creates posts and likes using your own Lexicon:
+
+```
+repo:com.example.post repo:com.example.like blob:*/*
+```
+
+This gives your app permission to create/update/delete records in `com.example.post` and `com.example.like` collections, plus permission to upload media. The user's authorization dialog will clearly show these specific permissions — rather than the ominous "access to nearly everything" that broad scopes like `transition:generic` produce.
+
+For cleaner authorization UIs, you can bundle related permissions into **permission sets** with human-readable descriptions — see [Permission Set design](#permission-set-design) below.
+
+### Quick start
+
+Here's a minimal `oauth-client-metadata.json` for an app that creates its own record types:
+
+```json
+{
+  "client_id": "https://example.com/oauth-client-metadata.json",
+  "client_name": "My Example App",
+  "client_uri": "https://example.com",
+  "redirect_uris": ["https://example.com/oauth/callback"],
+  "grant_types": ["authorization_code", "refresh_token"],
+  "response_types": ["code"],
+  "scope": "atproto repo:com.example.post repo:com.example.like blob:*/*",
+  "token_endpoint_auth_method": "none",
+  "dpop_bound_access_tokens": true
+}
+```
+
+This requests identity (`atproto`), write access to two record collections, and media upload. For a complete setup guide, see [About OAuth](/guides/about-oauth).
+
+### Minimal permissions
+
+The absolute minimum for an app using atproto OAuth (identity-only, no data access):
+- `atproto`
+
+If you also need to request Bluesky profile data:
+- `rpc:app.bsky.actor.getProfile?aud=did:web:api.bsky.app#bsky_appview`
+
+If you need to upload images or videos:
+- `blob:*/*`
+
+While coarse-grained "transition scopes" like `transition:generic` are still supported, we encourage adopting granular permissions. For an overview of transition scopes, see [Authorization Scopes](/specs/oauth#authorization-scopes). For the full granular permission spec, see [Permissions](/specs/permission).
+
+## Permission Set design
+
+Full-featured client apps require a large number of granular permissions to function: dozens or even hundreds of individual permissions. To simplify permission management, Lexicon designers can define "sets" of permissions as part of the schemas they publish. These permission sets are themselves Lexicon schemas and are referred to by namespace ID, such as `com.example.authBasicFeatures`.
+
+For example, your application could request a permission set like `include:com.example.authBasicFeatures?aud=did:web:api.example.com%23svc_appview`. This would resolve to a Lexicon that defines a set of permissions required for the app to function:
+
+<PermissionSetLexicon />
+
+Note the `auth` prefix in the `app.example.feed.authOnlyPost` and `com.example.authBasicFeatures` examples. This is a naming convention to indicate that the Lexicon is designed for use as a permission set.
+
+Permission sets are limited to expressing permissions that reference resources under the same NSID namespace as the set itself. For example, the set `app.example.feed.authOnlyPost` could include permissions to `app.example.feed.post` records and making `app.example.feed.getPostThread` API endpoint requests to remote services. But it could not grant permissions to `app.example.actor.profile`. A permission set `app.example.authFull`, which is a level up in the hierarchy, could include permissions to all these resources.
+
+The `title` and `details` fields are descriptive, and will be displayed as part of the OAuth flow. Internationalization of these descriptive fields is supported — refer to [the permission sets spec](/specs/permission#permission-sets).
+
+The use of `inheritAud` in the `rpc` permission allows you to [control inheritance behavior](/specs/permission#rpc).
+
+The `blob:*/*` permission for image/video handling cannot be included in permission sets and must always be requested separately.
+
+Permission sets are Lexicons too, and are published using the same tooling. See [Publishing Lexicons](/guides/publishing-lexicons) for instructions on using `goat` to create, lint, and publish your Lexicons.
+
+## Progressive scope requests
+
+Your app doesn't need to request all permissions at sign-in. You can start with minimal scopes and request more later as users opt into features. For implementation patterns including dynamic scope selection and upgrading existing sessions, see [OAuth Patterns](/guides/oauth-patterns#progressive-scope-requests).
+
+## Further Reading and Resources
+
+- [Auth](/guides/auth)
+- [SDK authentication](/guides/sdk-auth)
+- [About OAuth](/guides/about-oauth)
+- [Permission Requests](/guides/permission-requests)
+- [OAuth Patterns](/guides/oauth-patterns)
+- [OAuth spec](/specs/oauth)
+- [Permissions spec](/specs/permission)
 
 ---
 atproto/src/app/[locale]/guides/publishing-lexicons/en.mdx
@@ -2838,7 +3049,7 @@ For more context, see [Atproto for distributed systems engineers](/articles/atpr
 
 ## Prerequisites
 
-Reading and writing AT data repositories requires an authenticated client. You can authenticate with [password authentication](/guides/sdk-auth) or [OAuth](/guides/oauth-patterns). The guides in this section assume you have already set up an authenticated client.
+Reading and writing AT data repositories requires an authenticated client. You can authenticate with [password authentication](/guides/sdk-auth) or [OAuth](/guides/about-oauth). The guides in this section assume you have already set up an authenticated client.
 
 ## API Methods
 
@@ -2887,117 +3098,6 @@ After [authenticating](/guides/sdk-auth#creating-a-client), you'll be able to ma
 - [Record Key spec](/specs/record-key)
 - [URI scheme](/specs/at-uri-scheme)
 
-
----
-atproto/src/app/[locale]/guides/scopes/en.mdx
----
-import {Container} from "@/components/Container"
-import oauthdomain from "./oauth-domain.jpg"
-
-export const header = {
-  title: 'Scopes',
-  description: 'OAuth permission scopes and sets',
-}
-
-## Implementing OAuth Scopes
-
-The OAuth flow requires permission "scopes" which describe the level of access granted with the session. For now, granular permissions have been implemented on the `bsky.social` hosting service, and the [self-hosted PDS distribution](/guides/self-hosting). Work on permission sets (including lexicon resolution) is in progress. Developers may start to implement more granular permissions -- for example, apps only asking for permissions to specific record types or API endpoints. We expect most apps to use the higher-level "permission sets" when they become available, which will provide more accessible language about the permissions being granted.
-
-The minimal set of OAuth permissions that a third-party AT application should request to sign in with Bluesky are:
-- `atproto`
-
-If you are making use of Bluesky profile information, you may also need:
-- `rpc:app.bsky.actor.getProfile?aud=did:web:api.bsky.app#bsky_appview`
-
-If you need to link any uploaded images or videos to the records (posts) you create, you will also need:
-- `blob:*/*`
-
-The ergonomics of OAuth scopes in atproto are still evolving. This minimal set is designed to provide a known-good starting point for app developers that does not grant unnecessary permissions. While we finalize granular permission scopes, we are also supporting a set of temporary coarse-grained scopes called the "transition scopes". There are currently no plans to deprecate either the transition scopes or the use of App Passwords. For an overview of these transition scopes, and more in-depth information on OAuth, see [Authorization Scopes](/specs/oauth#authorization-scopes). For the granular permission scopes, see [Permissions](/specs/permission).
-
-## Clients
-
-OAuth client software is identified by a globally unique `client_id`. Distinct variants of client software may have distinct `client_id` values; for example the browser app and Android (mobile OS) variants of the same software might have different `client_id` values. The `client_id` must be a fully-qualified web URL from which the client-metadata JSON document can be fetched. For example, `https://app.example.com/oauth-client-metadata.json`. Some more about the `client_id`:
-
-- it must be a well-formed URL, following the W3C URL specification
-- the schema must be `https://`, and there must not be a port number included. Note that there is a [special exception](/specs/oauth#localhost-client-development) for `http://localhost` `client_id` values for development.
-- the path does not need to include `oauth-client-metadata.json`, but it is helpful convention.
-
-<Note>
-If you have been using `client-metadata.json` rather than `oauth-client-metadata.json`, you can make this change to have your domain display on the auth flow page, rather than a URL string.
-</Note>
-
-<Container>
-  <Image src={oauthdomain} alt="" className="w-full max-w-md mx-auto" />
-</Container>
-
-The auth flow page will display all the relevent permissions being granted. This is true both for apps using [granular permissions](/specs/permission), and for those using the [transitional](/specs/oauth#authorization-scopes) OAuth scopes.
-
-Client Apps should be sure to check which auth scopes were actually approved during the auth flow. In particular, when requesting permission to read an account email address (`account:email`), the user might decline that permission while granting others. In theory, any individual permission might be denied while the overall request is granted.
-
-## Requesting scopes progressively
-
-An application does not always need all of its permissions at sign-in. Using broad scopes like `transition:generic` is the quickest way to get a prototype working, but it grants the app access to nearly everything in the user's account — and the authorization dialog reflects that, which can discourage people from trying it.
-
-The `scope` parameter in the [client metadata document](/specs/oauth#client-id-metadata-document) declares the maximum set of scopes the application may ever request, but individual authorization flows can request a subset. This makes it possible to start with minimal scopes and request more later, as the user opts into features that need them.
-
-### Selecting scopes before authorization
-
-For client-side applications where different users have different needs, one approach is to let users choose which [permissions](/specs/permission) to grant before the OAuth redirect. The application builds the [scope string](/specs/permission#scope-string-syntax) from the user's selections and passes it to [`authorize()`](https://github.com/bluesky-social/atproto/tree/main/packages/oauth/oauth-client#readme):
-
-```typescript
-const BASE_SCOPES = ["atproto"];
-
-const OPTIONAL_SCOPES = [
-  { id: "create", scope: "repo:*?action=create", label: "Create records" },
-  { id: "update", scope: "repo:*?action=update", label: "Update records" },
-  { id: "delete", scope: "repo:*?action=delete", label: "Delete records" },
-  { id: "blob",   scope: "blob:*/*",             label: "Upload blobs" },
-];
-
-function buildScopeString(selected: Set<string>): string {
-  const granular = OPTIONAL_SCOPES
-    .filter((s) => selected.has(s.id))
-    .map((s) => s.scope);
-  return [...BASE_SCOPES, ...granular].join(" ");
-}
-
-// pass the built scope string to the authorization flow
-const url = await oauthClient.authorize(handle, {
-  scope: buildScopeString(userSelections),
-});
-```
-
-After the callback, the application tracks which scopes were granted for the session, so that features can be shown or hidden accordingly.
-
-### Upgrading scopes for an existing session
-
-For applications using the [BFF pattern](/guides/oauth-patterns#types-of-app) with optional integrations — features that require scopes outside the application's primary [namespace authority](/specs/permission#namespace-authority) — scope upgrades can happen after the user is already signed in. The application stores the user's preference, initiates a new OAuth flow with the expanded scope set, and replaces the old session on callback:
-
-```typescript
-const BASE_SCOPE =
-  "atproto blob:*/* repo:com.example.post repo:com.example.like";
-
-const EXTENDED_SCOPE =
-  `${BASE_SCOPE} repo:com.other.feed.play repo:com.other.actor.status`;
-
-// start a new OAuth flow with the expanded scope
-const url = await oauthClient.authorize(handle, {
-  scope: wantsIntegration ? EXTENDED_SCOPE : BASE_SCOPE,
-});
-```
-
-The server stores the old session identifier alongside the OAuth state so the callback handler knows to replace it. On subsequent logins, the server can look up the user's stored preferences and include the expanded scopes automatically.
-
-Note that [permission sets](/specs/permission#permission-sets) can reduce the need for explicit scope upgrades: when a client refreshes its tokens, the computed permissions may be updated to reflect changes to the resolved sets. If a new capability falls within an existing permission set's [namespace authority](/specs/permission#namespace-authority), updating the published set is sufficient — no re-authorization required. Cross-namespace integrations will still require an explicit upgrade. See [Rolling out changes](/guides/permission-sets#rolling-out-changes) for guidance on coordinating scope changes with application releases.
-
-## Further Reading and Resources
-
-- [Auth](/guides/auth)
-- [SDK authentication](/guides/sdk-auth)
-- [OAuth patterns](/guides/oauth-patterns)
-- [Permission requests](/guides/permission-sets)
-- [OAuth spec](/specs/oauth)
-- [Permissions spec](/specs/permission)
 
 ---
 atproto/src/app/[locale]/guides/sdk-auth/en.mdx
@@ -3073,9 +3173,10 @@ The `com.atproto.server.createSession` API endpoint called by login methods retu
 ## Further Reading and Resources
 
 - [Auth](/guides/auth)
-- [OAuth patterns](/guides/oauth-patterns)
-- [Scopes](/guides/scopes)
-- [Permission requests](/guides/permission-sets)
+- [About OAuth](/guides/about-oauth)
+- [Permission Requests](/guides/permission-requests)
+- [Permission Sets](/guides/permission-sets)
+- [OAuth Patterns](/guides/oauth-patterns)
 - [OAuth spec](/specs/oauth)
 - [Permissions spec](/specs/permission)
 
