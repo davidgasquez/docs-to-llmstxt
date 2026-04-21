@@ -1681,7 +1681,7 @@ Moderation in atproto consists of multiple, stackable systems, including:
 
 Developers building client applications should understand how to apply labels and user controls.
 
-**Labels** are a form of metadata about any account or content in the AT ecosystem. Labels are published by *moderation services*, which are either hardcoded into the application or chosen by the user. They are attached to records in the responses under the `labels` key.
+**Labels** are a form of metadata about any account or content in the AT ecosystem. Labels are published by *moderation services*, which are either hardcoded into the application or chosen by the user. They are attached to records in the responses under the `labels` key. Labels can be time-limited.
 
 A label is published with the following information:
 
@@ -3265,6 +3265,10 @@ One of the most powerful ways to get social graph data from AT Protocol is throu
 [Microcosm](https://constellation.microcosm.blue) provides a set of resources for working with backlinks. Because all AT Protocol records are openly available and addressible via an `at://` URI, this makes it possible to encode nested API queries into individual URLs. Microcosm [does this](https://constellation.microcosm.blue/xrpc/blue.microcosm.links.getBacklinks?subject=at%3A%2F%2Fdid%3Aplc%3Aa4pqq234yw7fqbddawjo7y35%2Fapp.bsky.feed.post%2F3m237ilwc372e&source=app.bsky.feed.like%3Asubject.uri&limit=16), for example.
 
 For Claude code plugins that implement backlinks, see [protopack](https://tangled.org/zzstoatzz.io/protopack.git).
+
+## Reusing Lexicons
+
+When building new experiences on atproto, it's up to you to decide how much to reuse the existing social graph from popular Lexicons on the network. For example, some apps might choose to reuse "follow" or "block" relationships from `app.bsky.graph` — perhaps by integrating Microcosm — while others might implement their own. You could also reuse the media blobs from existing posts to build an image board or video sharing app that bootstraps with existing content. This has implications for how much data you need to [backfill](/guides/backfilling), and how much hosting infrastructure you may need to drive an [app view](/guides/the-at-stack#app-views).
 
 ## Further Reading and Resources
 
