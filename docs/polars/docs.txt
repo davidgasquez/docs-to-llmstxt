@@ -5799,16 +5799,20 @@ Let's look at some examples of common operations:
 ---
 polars/docs/source/polars-on-premises/index.md
 ---
-# Introducing Polars on-premises
-Interested in running Polars on-premises?
+# Polars On-Prem
+Polars On-Prem lets you host a Polars cluster on your own hardware or cloud provider. Once
+connected, you can run queries remotely, either executing multiple queries in parallel, or
+distributing a single query across multiple nodes for large-scale workloads.
+Interested in running Polars On-Prem?
 [Sign up here to apply](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv).
-After installing Polars on-premises either on bare-metal or on Kubernetes, you can connect to your
+After that you can install by getting the latest version [here](/polars-on-premises/releases).
+After installing Polars On-Prem either on bare-metal or on Kubernetes, you can connect to your
 cluster using the Polars Cloud Python client.
 ```python
 import polars as pl
 import polars_cloud as pc
-# Connect to your Polars on-premises cluster
-ctx = pc.ClusterContext(compute_address="your-cluster-compute-address", insecure=True)
+# Connect to your Polars On-Prem cluster
+ctx = pc.ClusterContext(compute_address="your-cluster-compute-address")
 result = (
 pl.LazyFrame()
 .with_columns(a=pl.arange(0, 100000000).sum())
@@ -5821,15 +5825,30 @@ print(result)
 ---
 polars/docs/source/polars-on-premises/releases.md
 ---
-After obtaining a license for Polars on-premises by
+After obtaining a license for Polars On-Prem by
 [signing up here](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv) you will receive an access key for
-our private Docker registry as well as a JSON-formatted license for running Polars on-premises.
+our private Docker registry as well as a JSON-formatted license for running Polars On-Prem.
 ## Binary
 To pull the binary, run the following command:
 ```sh
-curl -L 'https://get.onprem.pola.rs?version=' --data @license.json --output polars-on-premises
+$ curl -L 'https://get.onprem.pola.rs?version=' --data @license.json --output polars-on-premises
 ```
-### 0.2.4 (latest)
+## Docker Image
+To pull the docker image:
+```sh
+$ docker login -u polarscustomer -p 
+$ docker pull --platform linux/amd64 polarscloud/polars-on-premise:
+```
+### 0.3.1 (latest)
+- `polars` [1.40.1](https://github.com/pola-rs/polars/releases/tag/py-1.40.1)
+- `polars-cloud` [0.6.1](https://github.com/pola-rs/polars-cloud-client/releases/tag/client-0.6.1)
+**Highlights**
+- Apply pre-slice in scan row count estimation
+- Distributed row index
+- Implement lowering for row-index scans w/o predicates or pre-slices
+- OpenLineage support
+- Track shuffle outputs on the scheduler; This will later enable partial stage recovery.
+### 0.2.4
 - `polars` [1.39.3](https://github.com/pola-rs/polars/releases/tag/py-1.39.3)
 - `polars-cloud` [0.6.0](https://github.com/pola-rs/polars-cloud-client/releases/tag/client-0.6.0)
 **Highlights**
@@ -5862,8 +5881,8 @@ next releases)
 ## Helm chart
 Helm chart releases are announced and documented on our
 [chart repo](https://github.com/polars-inc/helm-charts/releases) directly. The version of the
-embedded Polars on-premises binary is documented in the respective release summaries, or via a run
-of the following command:
+embedded Polars On-Prem binary is documented in the respective release summaries, or via a run of
+the following command:
 ```sh
 helm search repo polars-inc --versions
 ```
@@ -5878,19 +5897,19 @@ polars/docs/source/polars-on-premises/bare-metal/environment-variables.md
 | ----------------- | ----------------------------------------------------------------------------------------------- |
 | `POLARS_TEMP_DIR` | Override the default temporary directory Polars uses for scratch files and some I/O operations. |
 You may also set any Polars OSS-recognized environment variables.
-## Polars on-premises
+## Polars On-Prem
 | Variable | Description |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `OTLP_ENDPOINT` | Target endpoint for sending OTLP traces/metrics/logs to your OpenTelemetry collector/observability stack.e.g. `http://otel-collector:4317`. |
 | `OTEL_SERVICE_INSTANCE_ID` | OpenTelemetry `service.instance.id` that uniquely identifies this node in telemetry.Must match `instance_id`. |
-| `PLC_LOG_LEVEL` | Controls logging verbosity for the Polars on-premises components (e.g. scheduler/worker).e.g. `Info`, `Debug`, `Trace`, _etc._ (follows the Rust [naming](https://docs.rs/log/latest/log/enum.Level.html)). |
+| `PLC_LOG_LEVEL` | Controls logging verbosity for the Polars On-Prem components (e.g. scheduler/worker).e.g. `Info`, `Debug`, `Trace`, _etc._ (follows the Rust [naming](https://docs.rs/log/latest/log/enum.Level.html)). |
 ---
 polars/docs/source/polars-on-premises/bare-metal/getting-started.md
 ---
-First of all, make sure to obtain a license for Polars on-premises by
+First of all, make sure to obtain a license for Polars On-Prem by
 [signing up here](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv). You will receive a JSON-formatted
-license key with which you can download Polars On-Premises.
-## Downloading Polars On-Premises
+license key with which you can download Polars On-Prem.
+## Downloading Polars On-Prem
 #### Using `uv`
 The simplest way to get started is to use our private PyPi index. You can log in to the index using
 the given license key. This will automatically install the correct Polars version and work well
@@ -5932,7 +5951,7 @@ directory.
 ```toml
 cluster_id = "polars-cluster"
 instance_id = "node-0"
-license = "./license.json" # Path to your Polars on-premises license. This is a JSON file containing your company name, license expiry, and license signature.
+license = "./license.json" # Path to your Polars On-Prem license. This is a JSON file containing your company name, license expiry, and license signature.
 # Component that receives the Polars queries from the Python client.
 [scheduler]
 enabled = true
@@ -5967,8 +5986,8 @@ polars/docs/source/polars-on-premises/bare-metal/python-environment.md
 ---
 ## Virtual Environment
 The simplest method is using the Python wheel. This ensures that your virtual environment is
-properly set up to run Polars On-Premises. Note that when using Python UDFs, the server must have
-the same Python packages installed as the client.
+properly set up to run Polars On-Prem. Note that when using Python UDFs, the server must have the
+same Python packages installed as the client.
 ### Python wheel
 To install the Python wheel, use our private PyPi index with your license key.
 ```shell
@@ -6007,8 +6026,8 @@ $ ./polars-on-premises service --config-path /etc/polars-cloud/config.toml
 polars/docs/source/polars-on-premises/bare-metal/misc/slurm.md
 ---
 # Slurm
-The quickstart below shows one way to run Polars queries on a Polars on-premises cluster using the
-Slurm Workflow Manager. As this is not an introduction to Slurm and its intricacies we will focus on
+The quickstart below shows one way to run Polars queries on a Polars On-Prem cluster using the Slurm
+Workflow Manager. As this is not an introduction to Slurm and its intricacies we will focus on
 making a barebone setup functional.
 !!! info "Docker Compose setup"
 This how-to has been tested using the containerized setup from [this repo](https://github.com/giovtorres/slurm-docker-cluster.git).
@@ -6266,8 +6285,8 @@ $POLARS_ONPREM_BIN service --config-path=/tmp/polars/config.toml
 polars/docs/source/polars-on-premises/bare-metal/configuration/anonymous-results.md
 ---
 # Anonymous results
-For remote Polars queries without a specific output sink, Polars on-premises can automatically add
-an output sink. We call this sink an anonymous results sink. Infrastructure-wise, these sinks can be
+For remote Polars queries without a specific output sink, Polars On-Prem can automatically add an
+output sink. We call this sink an anonymous results sink. Infrastructure-wise, these sinks can be
 backed by S3-compatible storage or another shared filesystem accessible from all worker nodes and
 the Python client. The data written to this location is not automatically deleted, so you need to
 configure a retention policy for this data yourself.
@@ -6418,7 +6437,7 @@ scheduler_service.public_addr = "127.0.0.1:4002"
 polars/docs/source/polars-on-premises/bare-metal/configuration/license.md
 ---
 # License
-Polars on-premises requires a license key to run. If you haven't contacted Polars yet,
+Polars On-Prem requires a license key to run. If you haven't contacted Polars yet,
 [sign up here to apply](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv). A license key looks like
 this:
 ```json
@@ -6434,10 +6453,10 @@ license = "/etc/polars/license.json"
 ```
 The cluster verifies the license key periodically, and will shutdown once the license expires.
 ## EULA license
-Polars on-premises is licensed under the End User License Agreement (EULA) which can be found in the
-Polars on-premises binary. The EULA must be accepted by setting the `POLARS_EULA_ACCEPTED`
-environment variable to `1`. If the environment variable is not set, the executable will print the
-EULA and exit. You can also manually print the EULA using the following command:
+Polars On-Prem is licensed under the End User License Agreement (EULA) which can be found in the
+Polars On-Prem binary. The EULA must be accepted by setting the `POLARS_EULA_ACCEPTED` environment
+variable to `1`. If the environment variable is not set, the executable will print the EULA and
+exit. You can also manually print the EULA using the following command:
 ```bash
 polars-on-premises --print-eula
 ```
@@ -6468,8 +6487,8 @@ configured as shown above using the `database_path` key. The storage needed for 
 order of several tens of MB, depending on the number of queries and their complexity.
 The location of the observatory database can be configured through the `observatory.database_path`
 configuration option. If this points to a directory, a file in that directory will be created.
-Polars on-premises will automatically add the `cluster_id` to this file name to ensure uniqueness
-within the directory.
+Polars On-Prem will automatically add the `cluster_id` to this file name to ensure uniqueness within
+the directory.
 ```toml
 [observatory]
 enabled = true
@@ -6485,7 +6504,7 @@ a cluster with 32 worker nodes, with a history of 1 hour, you would need around
 The host metrics exporter supports collecting CPU and memory usage metrics from the process tree,
 and cgroups v1 and v2. Since traversing the process tree, and collecting metrics for each process is
 quite compute expensive, and a cgroup's usage can be instantly queried, we recommend to always run
-Polars on-premises in a cgroup.
+Polars On-Prem in a cgroup.
 If you don't use the dashboard's host metrics feature, we recommend disabling the host metrics
 exporter.
 ```toml
@@ -6505,15 +6524,15 @@ enabled = false
 enabled = false
 ```
 ## Telemetry
-Polars on-premises uses OpenTelemetry as its telemetry framework. To receive OTLP metrics and
-traces, configure the `OTLP_ENDPOINT` environment variable to point to your OTLP collector. Logs are
-written to standard output/error in JSON format. The log level can be configured using the
-`PLC_LOG_LEVEL` environment variable.
+Polars On-Prem uses OpenTelemetry as its telemetry framework. To receive OTLP metrics and traces,
+configure the `OTLP_ENDPOINT` environment variable to point to your OTLP collector. Logs are written
+to standard output/error in JSON format. The log level can be configured using the `PLC_LOG_LEVEL`
+environment variable.
 ---
 polars/docs/source/polars-on-premises/bare-metal/configuration/network-addresses.md
 ---
 # Network addresses
-Polars on-premises exposes several network services for communication between nodes. Each of these
+Polars On-Prem exposes several network services for communication between nodes. Each of these
 services can be configured to bind to a specific network address. This can be important when running
 a node on a specific network interface or when preventing port collisions. Most of the addresses are
 configured by default, except:
@@ -6626,7 +6645,7 @@ how to annotate Polars queries and inspect them in an OpenLineage collector.
 polars/docs/source/polars-on-premises/bare-metal/configuration/persistence.md
 ---
 # Persistence and query history
-The observatory database is used to store more than metrics. Restarting a Polars on-premises cluster
+The observatory database is used to store more than metrics. Restarting a Polars On-Prem cluster
 with the same database path will allow the observatory to read back historical query data. Keep in
 mind that the engine (SQLite) does not allow concurrent access, and a database can only be
 associated with a single cluster at a time.
@@ -6641,7 +6660,7 @@ database_path = "/mnt/data/observatory.db"
 polars/docs/source/polars-on-premises/bare-metal/configuration/reference.md
 ---
 # Config file reference
-This page describes the different configuration options for Polars on-premises. The config file is a
+This page describes the different configuration options for Polars On-Prem. The config file is a
 standard TOML file with different sections. Any of the configuration can be overridden using
 environment variables in the following format: `PC_CUBLET__section_name__key`.
 Example configuration files can be found at
@@ -6653,7 +6672,7 @@ together.
 | -------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `cluster_id` | string | Logical ID for the cluster; workers and scheduler that share this ID will form a single cluster.e.g. `prod-eu-1`; must be unique among all clusters. |
 | `instance_id` | string | Unique ID for this node within the cluster, used for addressing and leader selection.e.g. `scheduler`, `worker_0`; must be unique per cluster. |
-| `license` | path | Absolute path to the Polars on-premises license file required to start the process.e.g. `/etc/polars/license.json`. |
+| `license` | path | Absolute path to the Polars On-Prem license file required to start the process.e.g. `/etc/polars/license.json`. |
 | `memory_limit` | integer | Hard memory budget for all components in this node; enforced via cgroups when delegated.e.g. `1073741824` (1 GiB), `10737418240` (10 GiB). |
 ### `[scheduler]` section
 | Key | Type | Description |
@@ -6717,10 +6736,10 @@ together.
 | `shuffle_service.public_addr.hostname` | string | Alternative to `ip`, resolved once at startup.e.g. `my-host-2`. |
 ### `[observatory]` section
 | Key | Type | Description |
-| ------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `enabled` | boolean | Enable sending/receiving profiling data so clients can call `result.await_profile()`. `true` on both scheduler and workers if you want profiles on queries; `false` to disable. |
 | `max_metrics_bytes_total` | integer | How many bytes all the worker host metrics will consume in total. If a system-wide memory limit is specified then this is added to the share that the scheduler takes. For every worker, about 50 bytes of metrics are stored per second. |
-| `database_path` | string | Location to use for storing profiling data. An SQLite database file will be created here, or if a file already exists it will be opened. If this points to a directory, a file in that directory will be created. Polars on-premises will automatically add the `cluster_id` to this file name to ensure uniqueness within the directory. |
+| `database_path` | string | Location to use for storing profiling data. An SQLite database file will be created here, or if a file already exists it will be opened. If this points to a directory, a file in that directory will be created. Polars On-Prem will automatically add the `cluster_id` to this file name to ensure uniqueness within the directory. |
 | `service` | object | Object used for configuring the bind address of the observatory service. This is an internal service in the scheduler for receiving profiling data from all nodes. Defaults to `0.0.0.0:5049`. |
 | `service.bind_addr` | string | Bind address for the observatory service.e.g. `0.0.0.0:5049`. |
 | `service.bind_addr.ip` | string | IP address for the observatory service bind address.e.g. `192.168.1.1`. |
@@ -6761,16 +6780,16 @@ polars/docs/source/polars-on-premises/bare-metal/configuration/resource-limits.m
 # Resource limits
 Polars will always attempt to use all available CPU resources, and consumes memory resources as
 needed. If possible, assign physical cores to Polars to avoid contention with other processes.
-Polars on-premises workers consist of a main process and an executor process, with the latter doing
-most computation. If the executor dies, it will lose all progress of the stage it was working on.
-All progress of previous stages (i.e. shuffle data) is managed by the main process.
+Polars On-Prem workers consist of a main process and an executor process, with the latter doing most
+computation. If the executor dies, it will lose all progress of the stage it was working on. All
+progress of previous stages (i.e. shuffle data) is managed by the main process.
 In other words, if the system is low on memory, the first process that should be killed, is the
-executor process. Polars on-premises will already automatically configure `oom-score-adj` on its
+executor process. Polars On-Prem will already automatically configure `oom-score-adj` on its
 executor process.
 If there are other system critical processes, we recommend either delegating a cgroup to Polars
-on-premises, or manually setting up cgroup limits for the entire Polars on-premises service.
-### Delegating cgroup to Polars on-premises
-Cgroups can contain subgroups, each with independent limits. Polars on-premises can create these
+On-Prem, or manually setting up cgroup limits for the entire Polars on-premises service.
+### Delegating cgroup to Polars On-Prem
+Cgroups can contain subgroups, each with independent limits. Polars On-Prem can create these
 cgroups, and choose proper memory limits for each of its components. To use this feature, ensure you
 delegate cgroups to the Polars On-Premise process and configure `memory_limit` in the configuration
 file.
@@ -6784,16 +6803,15 @@ memory_limit = 10737418240 # 10 GiB
 ### Manually configuring cgroup limits
 You can also manually configure a memory limit on a cgroup containing all the processes. For example
 using Systemd's `resource-control`. The disadvantage of this approach is that the individual
-components will contend for the same memory capacity, which may prevent Polars on-premises from
+components will contend for the same memory capacity, which may prevent Polars On-Prem from
 gracefully handling OOM errors on the executor.
 ---
 polars/docs/source/polars-on-premises/bare-metal/configuration/shuffle-data.md
 ---
 # Shuffle data
-When running distributed queries, data needs to be transferred in between the nodes. Polars
-on-premises requires a configuration for this storage location. You should decide and benchmark
-which location is the best for your infrastructure, as it has a large impact on query execution
-times.
+When running distributed queries, data needs to be transferred in between the nodes. Polars On-Prem
+requires a configuration for this storage location. You should decide and benchmark which location
+is the best for your infrastructure, as it has a large impact on query execution times.
 ## Worker local storage
 When using local storage, Polars queries write shuffle data directly to a file. This is preferably
 configured with a node local SSD. For other nodes to access the data, the following sequence
@@ -6811,7 +6829,7 @@ shuffle_location.local.path = "/mnt/storage/polars/shuffle"
 ```
 ## Worker shared storage
 If your infrastructure has some shared storage file system, such as NFS (or CephFs, etc.), Polars
-on-premises can use that for its shuffle data too. This reduces shuffle complexity, as Polars can
+On-Prem can use that for its shuffle data too. This reduces shuffle complexity, as Polars can
 directly write to the remote shared disk, and any worker can directly read from it. This setup can
 lead to improved performance when the network storage provider is fast enough. In addition, it
 provides automatic shuffle data persistence in case of worker node failure.
@@ -6875,10 +6893,10 @@ for a node, you can set the environment variable
 ---
 polars/docs/source/polars-on-premises/kubernetes/getting-started.md
 ---
-First of all, make sure to obtain a license for Polars on-premises by
+First of all, make sure to obtain a license for Polars On-Prem by
 [signing up here](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv). You will receive an access key for
-our private Docker registry as well as a JSON-formatted license for running Polars on-premises.
-Polars on-premises for Kubernetes is distributed through our Helm Chart, which can be found in our
+our private Docker registry as well as a JSON-formatted license for running Polars On-Prem.
+Polars On-Prem for Kubernetes is distributed through our Helm Chart, which can be found in our
 [helm-charts repository](https://github.com/polars-inc/helm-charts/).
 ## Usage
 [Helm](https://helm.sh) must be installed to use the charts. Please refer to Helm
@@ -6899,8 +6917,8 @@ OpenLineage is an open platform for collection and analysis of data lineage. See
 Polars acts as an OpenLineage **producer** â€” it emits `RunEvent` and optionally `DatasetEvent` when
 a query executes. Job identity (`JobEvent`) must be provided by the caller, typically an
 orchestrator such as Airflow or Dagster.
-!!! note "OpenLineage is only supported for Polars on-premises"
-Note that OpenLineage is currently only supported for Polars on-premises and not for Polars Cloud. Obtain a license for Polars on-premises by [signing up here](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv).
+!!! note "OpenLineage is only supported for Polars On-Prem"
+Note that OpenLineage is currently only supported for Polars On-Prem and not for Polars Cloud. Obtain a license for Polars on-premises by [signing up here](https://w0lzyfh2w8o.typeform.com/to/zuoDgoMv).
 ## Setup
 At a minimum, three components are required:
 1. A Polars cluster configured with lineage transport
@@ -7860,7 +7878,7 @@ All compute runs in your own cloud environment. The main reason is that this ens
 never leaves your environment and that the compute is always close to your data.
 You can learn more about how this setup in
 [the infrastructure section of the documentation](providers/aws/infra.md).
-## Can you run Polars Cloud on-premises?
+## Can you run Polars Cloud On-Prem?
 Currently, Polars Cloud is only available to organizations that are on AWS. Support for on-premises
 infrastructure is on our roadmap and will become available soon.
 ## What does Polars Cloud offer me beyond Polars?
